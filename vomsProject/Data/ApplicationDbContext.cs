@@ -6,8 +6,11 @@ using System.Text;
 
 namespace vomsProject.Data
 {
-    public class ApplicationDbContext : IdentityDbContext
+    public class ApplicationDbContext : IdentityDbContext<User>
     {
+        public DbSet<Page> Pages { get; set; }
+        public DbSet<Permission> Permissions { get; set; }
+        public DbSet<Solution> Solutions { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
