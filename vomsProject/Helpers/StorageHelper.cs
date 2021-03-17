@@ -50,7 +50,7 @@ namespace vomsProject.Helpers
             }
             catch (Exception e)
             {
-                Console.WriteLine("(UploadtoBlob-method) The exception is: " + e);
+                Console.WriteLine("(UploadtoBlob-method) failed with following exception: " + e);
                 return false;
             }
         }
@@ -65,6 +65,7 @@ namespace vomsProject.Helpers
             }
             catch (Exception e)
             {
+                Console.WriteLine("(GetImageUrl-method) failed with following exception: " + e);
                 return null;
             }
         }
