@@ -1,4 +1,5 @@
 ﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -24,14 +25,22 @@ namespace vomsProject.Helpers
         {
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
 
+            string uniqueIdentifier = Guid.NewGuid().ToString();
+
             try
             {
-                await containerClient.UploadBlobAsync(file.Name, file);
+                await containerClient.UploadBlobAsync(uniqueIdentifier, file);
+                //Create ImageTable
+                // - Id(PK), Name, Url(FK to solution), AltText, possible link to pages which uses this element.
+
+                //Add to database /textstring (UniqueIdentifier,www.urlimage.com)
+                //--getImage(Id) - Returns string(Url). 
+
                 return true;
             }
             catch (Exception e)
             {
-                Console.WriteLine("The exception is: " + e);
+                Console.WriteLine("(UploadtoBlob-method) The exception is: " + e);
                 return false;
             }
         }
