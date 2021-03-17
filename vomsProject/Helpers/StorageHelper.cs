@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using vomsProject.Data;
 
 namespace vomsProject.Helpers
 {
@@ -21,20 +22,22 @@ namespace vomsProject.Helpers
             return containerClient;
         }
 
-        public async Task<bool> UploadToBlob(FileStream file)
+        public async Task<bool> UploadToBlob(FileStream file, ApplicationDbContext dbContext, Page Page)
         {
             BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            var _context = dbContext;
 
             string uniqueIdentifier = Guid.NewGuid().ToString();
 
             try
             {
                 await containerClient.UploadBlobAsync(uniqueIdentifier, file);
-                //Create ImageTable
-                // - Id(PK), Name, Url(FK to solution), AltText, possible link to pages which uses this element.
-
-                //Add to database /textstring (UniqueIdentifier,www.urlimage.com)
-                //--getImage(Id) - Returns string(Url). 
+                await _context.Images.AddAsync(new Image
+                {
+                    ImageUrl = uniqueIdentifier,
+                    Page = Page,
+                    Solution = Page.Solution
+                });
 
                 return true;
             }
