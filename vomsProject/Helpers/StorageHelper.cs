@@ -54,5 +54,19 @@ namespace vomsProject.Helpers
                 return false;
             }
         }
+
+        public string GetImageUrl(string name, ApplicationDbContext dbContext)
+        {            
+            try
+            {
+                var image = dbContext.Images.FirstOrDefault(x => x.ImageUrl == name);
+                var imageUrl = image.ImageUrl;
+                return imageUrl;
+            }
+            catch (Exception e)
+            {
+                return null;
+            }
+        }
     }
 }
