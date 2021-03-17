@@ -12,6 +12,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vomsProject.Data;
+using vomsProject.Helpers;
 
 namespace vomsProject
 {
@@ -35,6 +36,8 @@ namespace vomsProject
             services.AddDefaultIdentity<User>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
+
+            services.Add(new ServiceDescriptor(typeof(StorageHelper), (provider) => new StorageHelper(Configuration.GetConnectionString("BlobStorageConnection"), Configuration["BlobStorageName"]), ServiceLifetime.Scoped));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
