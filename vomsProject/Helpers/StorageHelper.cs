@@ -11,20 +11,27 @@ namespace vomsProject.Helpers
 {
     public class StorageHelper
     {
-        static readonly string _connectionString = "DefaultEndpointsProtocol=https;AccountName=sejersenstorageaccount;AccountKey=JJ1SzAPaRZ1G+Tu3Sz/3rhsxqeu63pdZCs1nVfB00nLm9agANyf86WKx22e1/zIzTw9DCQBarXJpoxOoxcmRVg==;EndpointSuffix=core.windows.net";
-        static BlobServiceClient blobServiceClient = new BlobServiceClient(_connectionString);
-        static readonly string containerName = "voms";
+        private string _connectionString;
+        BlobServiceClient _blobServiceClient;
+        private string _containerName;
+
+        public StorageHelper(string connectionString, string containerName)
+        {
+            _connectionString = connectionString;
+            _blobServiceClient = new BlobServiceClient(_connectionString);
+            _containerName = !string.IsNullOrWhiteSpace(containerName) ? containerName : "voms";
+        }
 
         public BlobContainerClient GetBlobContainer()
         {
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
             return containerClient;
         }
 
         public async Task<bool> UploadToBlob(FileStream file, ApplicationDbContext dbContext, Page Page)
         {
-            BlobContainerClient containerClient = blobServiceClient.GetBlobContainerClient(containerName);
+            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var _context = dbContext;
 
             string uniqueIdentifier = Guid.NewGuid().ToString();
