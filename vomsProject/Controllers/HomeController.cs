@@ -26,9 +26,10 @@ namespace vomsProject.Controllers
 
         public IActionResult Index()
         {
-            var image = _storageHelper.GetImageUrl("Mikkel.jpg", _dbContext);
+            var model = new Image();
+            model.ImageUrl = _storageHelper.GetImageUrl("Mikkel.jpg", _dbContext);
 
-            return View(image);
+            return View(model);
         }
 
         public IActionResult Privacy()
