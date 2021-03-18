@@ -60,8 +60,12 @@ namespace vomsProject.Helpers
             try
             {
                 var image = dbContext.Images.FirstOrDefault(x => x.ImageUrl == name);
-                var imageUrl = image.ImageUrl;
-                return imageUrl;
+                if (image != null)
+                {
+                    var imageUrl = image.ImageUrl;
+                    return imageUrl;
+                }
+                return null;
             }
             catch (Exception e)
             {
