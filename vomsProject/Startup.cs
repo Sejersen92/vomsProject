@@ -1,16 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
 
@@ -42,7 +36,10 @@ namespace vomsProject
             services.Add(new ServiceDescriptor(typeof(DatabaseHelper), (provider)
                 => new DatabaseHelper(),ServiceLifetime.Scoped));
         }
-
+        private bool isHostRootDomain(HttpContext context)
+        {
+            return context.Request.Host.Host == Configuration["RootDomain"];
+        }
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
@@ -60,17 +57,33 @@ namespace vomsProject
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 
-            app.UseRouting();
-
-            app.UseAuthentication();
-            app.UseAuthorization();
-
-            app.UseEndpoints(endpoints =>
+            app.UseWhen(isHostRootDomain, (app) =>
             {
-                endpoints.MapControllerRoute(
-                    name: "default",
-                    pattern: "{controller=Home}/{action=Index}/{id?}");
-                endpoints.MapRazorPages();
+                app.UseRouting();
+
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
+                {
+                    endpoints.MapControllerRoute(
+                        name: "default",
+                        pattern: "{controller=Home}/{action=Index}/{id?}");
+                    endpoints.MapRazorPages();
+                });
+            });
+
+            app.UseWhen((context) => !isHostRootDomain(context), (app) =>
+            {
+                app.UseRouting();
+
+                app.UseEndpoints(endpoints=>
+                {
+                    endpoints.MapControllerRoute(
+                        name: "Page", 
+                        pattern: "/{*pageName}",
+                        defaults: new { controller = "Page", action = "Index" });
+                });
             });
         }
     }
