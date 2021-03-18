@@ -55,18 +55,18 @@ namespace vomsProject.Helpers
             }
         }
 
-        public string GetImageUrl (string name, ApplicationDbContext dbContext)
+        public string GetImageUrl (int pageId, ApplicationDbContext dbContext)
         {
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             
             try
             {
-                var image = dbContext.Images.FirstOrDefault(x => x.ImageUrl == name);
+                var image = dbContext.Images.FirstOrDefault(x => x.Page.Id == pageId);
                 if (image != null)
                 {
-                    var imageUrl = image.ImageUrl;
+                    var blobName = image.ImageUrl;
 
-                    BlobClient blobClient = containerClient.GetBlobClient(imageUrl);
+                    BlobClient blobClient = containerClient.GetBlobClient(blobName);
                     var imageUri = blobClient.Uri;
 
                     return imageUri.ToString();

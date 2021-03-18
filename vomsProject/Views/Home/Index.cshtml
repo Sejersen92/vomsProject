@@ -4,8 +4,11 @@
 }
 
 <div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://docs.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
-    <img src="@Model.ImageUrl"/>
-    <p>Image</p>
+    <h1 class="display-4">VOMS, your one-stop destination for awesome things</h1>
+    <p>Learn more about our offers here! <a href="#">Mousefuck this button</a></p>
+
+    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    {
+        <img src="@Model.ImageUrl" alt="@Model.ImageUrl"/>
+    }
 </div>
