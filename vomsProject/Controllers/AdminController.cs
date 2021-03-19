@@ -34,9 +34,16 @@ namespace vomsProject.Controllers
 
             if (!string.IsNullOrWhiteSpace(userId))
             {
-                result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
+                try
+                {
+                    result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
+                }
+                catch (Exception e )
+                {
+                    Console.WriteLine(e);
+                    return result;
+                }    
             }
-            
             return result;
         }
     }
