@@ -13,29 +13,38 @@
 
         if (Model != null)
         {
-            <div class="Solutions">
+            <div class="Solutions card" style="width: 18rem;">
                 @foreach (var solution in Model)
                 {
                     if (solution != null)
                     {
-                        <p>Title: @solution.Subdomain</p>
-                        <p>Id: @solution.Id</p>
-                        <p>Assigned users: </p>
-                        foreach (var user in solution.Users)
-                        {
-                            <p>@user.UserName</p>
-                        }
+                        <a href="#">
+                            <div class="card-body">
+                                <h5>Title: @solution.Subdomain</h5>
+                                <p>Id: @solution.Id</p>
+                                <p>Assigned users: </p>
+                                @foreach (var user in solution.Users)
+                                {
+                                    <p>@user.UserName</p>
+                                }
+                            </div>
+                        </a>
                     }
                 }
             </div>
 
-            <div class="form-control">
+            <div class="mb-3 mt-3 row justify-content-center" style="border: 1px black solid; text-align: center">
                 @using (Html.BeginForm("CreateProject", "Admin", FormMethod.Post))
                 {
-                    <span>Enter the title of your project:</span> @Html.TextBox("title")<br />
-                    <span>Please enter the specified users emailaddress', separated by comma: </span> @Html.TextBox("users")<br />
-
-                    <input id="Submit" type="submit" value="submit" />
+                    <div class="col-auto mb-2 mt-2">
+                        <span class="visually-hidden">Enter the title of your project:</span> 
+                        @Html.TextBox("title", null, new { @style = "form-control-plaintext" }) <br />
+                    </div>
+                    <div class="col-auto mb-2 mt-2">
+                        <span class="visually-hidden">Please enter the specified users emailaddress', separated by comma: </span> <br />
+                        @Html.TextArea("users", null, new { @style = "form-control-plaintext" })
+                    </div>
+                    <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
                 }
             </div>
         }
