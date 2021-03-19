@@ -18,14 +18,24 @@
                 {
                     if (solution != null)
                     {
-                        <p>Domain: @solution.Domain</p>
+                        <p>Title: @solution.Subdomain</p>
                         <p>Id: @solution.Id</p>
                         <p>Assigned users: </p>
                         foreach (var user in solution.Users)
                         {
-                            <p>@user.UserName - @user.Id</p>
+                            <p>@user.UserName</p>
                         }
                     }
+                }
+            </div>
+
+            <div class="form-control">
+                @using (Html.BeginForm("CreateProject", "Admin", FormMethod.Post))
+                {
+                    <span>Enter the title of your project:</span> @Html.TextBox("title")<br />
+                    <span>Please enter the specified users emailaddress', separated by comma: </span> @Html.TextBox("users")<br />
+
+                    <input id="Submit" type="submit" value="submit" />
                 }
             </div>
         }

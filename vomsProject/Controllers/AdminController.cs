@@ -46,5 +46,23 @@ namespace vomsProject.Controllers
             }
             return result;
         }
+
+        [HttpPost]
+        public IEnumerable<string> CreateProject(string title, string users)
+        {
+            var userlist = users.Split(",");
+            var databaseUsers = _dbContext.Users.Where(x => userlist.Contains(x.UserName));
+
+            var project = new Solution()
+            {
+                Subdomain = title,
+                Users = databaseUsers.ToList()
+            };
+
+            _dbContext.Solutions.Add(project);
+            _dbContext.SaveChangesAsync();
+
+            return userlist;
+        }
     }
 }
