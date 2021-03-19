@@ -19,6 +19,7 @@
         placeholder: 'Write your article...',
         theme: 'bubble'
     });
+    quill.setContents(@Html.Raw(Model.Content != "" ? Model.Content : "{ops:[]}"));
     function save() {
         $.ajax({
             type: "POST",
