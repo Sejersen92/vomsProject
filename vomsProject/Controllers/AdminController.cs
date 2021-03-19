@@ -29,7 +29,6 @@ namespace vomsProject.Controllers
 
         public IActionResult Pages(int id)
         {
-
             var databasePages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
 
             return View(databasePages);
