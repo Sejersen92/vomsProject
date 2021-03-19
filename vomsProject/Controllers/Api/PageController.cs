@@ -10,8 +10,8 @@ namespace vomsProject.Controllers.Api
 {
     public class PublishDTO
     {
-        public string content;
-        public string html;
+        public object content { get; set; }
+        public string html { get; set; }
     }
     [Route("api/[controller]")]
     [ApiController]
@@ -23,16 +23,19 @@ namespace vomsProject.Controllers.Api
             Context = context;
         }
         [Route("{id}/update")]
-        public async Task Update([FromRoute] int id, string body)
+        [HttpPost]
+        public async Task Update(int id, [FromBody] object body)
         {
             var page = Context.Pages.Find(id);
-            page.Content = body;
+            page.Content = body.ToString();
             await Context.SaveChangesAsync();
         }
-        public async Task Publish(int id, PublishDTO body)
+        [Route("{id}/publish")]
+        [HttpPost]
+        public async Task Publish(int id, [FromBody] PublishDTO body)
         {
             var page = Context.Pages.Find(id);
-            page.Content = body.content;
+            page.Content = body.content.ToString();
             page.HtmlRenderContent = body.html;
             await Context.SaveChangesAsync();
         }

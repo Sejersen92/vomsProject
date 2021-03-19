@@ -23,17 +23,19 @@
         $.ajax({
             type: "POST",
             url: "/api/page/@(Model.Id)/update",
-            data: quill.getContents()
+            contentType: "application/json",
+            data: JSON.stringify(quill.getContents())
         });
     }
     function publish() {
         $.ajax({
             type: "POST",
             url: "/api/page/@(Model.Id)/Publish",
-            data: {
+            contentType: "application/json",
+            data: JSON.stringify({
                 content: quill.getContents(),
                 html: quill.root.innerHTML
-            }
+            })
         });
     }
 </script>
