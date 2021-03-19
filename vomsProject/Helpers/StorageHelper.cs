@@ -1,5 +1,6 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -84,7 +85,7 @@ namespace vomsProject.Helpers
         {
             try
             {
-                var solutions = dbContext.Solutions.Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
+                var solutions = dbContext.Solutions.Include(solutions => solutions.Users).Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
                 if (solutions.Any())
                 {
                     return solutions;
