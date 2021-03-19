@@ -1,0 +1,41 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using vomsProject.Data
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@model IEnumerable<Solution>
+
+<div>
+    @if (SignInManager.IsSignedIn(User))
+    {
+        <h3>Hello @User.Identity.Name!</h3>
+        <p>Here are your solution(s)</p>
+
+        if (Model != null)
+        {
+            <div class="Solutions">
+                @foreach (var solution in Model)
+                {
+                    if (solution != null)
+                    {
+                        <p>Domain: @solution.Domain</p>
+                        <p>Id: @solution.Id</p>
+                        <p>Assigned users: </p>
+                        foreach (var user in solution.Users)
+                        {
+                            <p>@user.UserName - @user.Id</p>
+                        }
+                    }
+                }
+            </div>
+        }
+    }
+    else
+    {
+        <h3>You do not have access to this page, please click on either of the buttons below.</h3>
+        <div class="btn-group">
+            <a class="btn btn-info" asp-area="Identity" asp-page="/Account/Register">Register</a>
+            <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
+        </div>
+    }
+</div>

@@ -55,10 +55,10 @@ namespace vomsProject.Helpers
             }
         }
 
-        public string GetImageUrl (int pageId, ApplicationDbContext dbContext)
+        public string GetImageUrl(int pageId, ApplicationDbContext dbContext)
         {
             BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            
+
             try
             {
                 var image = dbContext.Images.FirstOrDefault(x => x.Page.Id == pageId);
@@ -78,6 +78,25 @@ namespace vomsProject.Helpers
                 Console.WriteLine("(GetImageUrl-method) failed with following exception: " + e);
                 return null;
             }
+        }
+
+        public IEnumerable<Solution> GetSolutions(string userId, ApplicationDbContext dbContext)
+        {
+            try
+            {
+                var solutions = dbContext.Solutions.Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
+                if (solutions.Any())
+                {
+                    return solutions;
+                }
+                return null;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("(GetSolutions) caused an error: " + e);
+                return null;
+            }
+
         }
     }
 }
