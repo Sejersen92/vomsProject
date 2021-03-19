@@ -18,17 +18,19 @@
                 {
                     if (solution != null)
                     {
-                        <a href="#">
-                            <div class="card-body">
-                                <h5>Title: @solution.Subdomain</h5>
-                                <p>Id: @solution.Id</p>
-                                <p>Assigned users: </p>
-                                @foreach (var user in solution.Users)
-                                {
-                                    <p>@user.UserName</p>
-                                }
+                        <div class="card-body">
+                            <h5>Title: @solution.Subdomain</h5>
+                            <p>Id: @solution.Id</p>
+                            <p>Assigned users: </p>
+                            @foreach (var user in solution.Users)
+                            {
+                                <p>@user.UserName</p>
+                            }
+                            <div class="btn-group">
+                                <a class="btn btn-info m-2" href="">Admin</a>
+                                <a class="btn btn-primary m-2" asp-area="Admin" asp-page="/Page/Id">Site</a>
                             </div>
-                        </a>
+                        </div>
                     }
                 }
             </div>
@@ -37,7 +39,7 @@
                 @using (Html.BeginForm("CreateProject", "Admin", FormMethod.Post))
                 {
                     <div class="col-auto mb-2 mt-2">
-                        <span class="visually-hidden">Enter the title of your project:</span> 
+                        <span class="visually-hidden">Enter the title of your project:</span>
                         @Html.TextBox("title", null, new { @style = "form-control-plaintext" }) <br />
                     </div>
                     <div class="col-auto mb-2 mt-2">

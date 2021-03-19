@@ -27,6 +27,14 @@ namespace vomsProject.Controllers
             return View(model);
         }
 
+        public IActionResult Pages(int id)
+        {
+
+            var databasePages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
+
+            return View(databasePages);
+        }
+
         private IEnumerable<Solution> Solutions()
         {
             var result = new List<Solution>();
@@ -38,11 +46,11 @@ namespace vomsProject.Controllers
                 {
                     result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
                 }
-                catch (Exception e )
+                catch (Exception e)
                 {
                     Console.WriteLine(e);
                     return result;
-                }    
+                }
             }
             return result;
         }

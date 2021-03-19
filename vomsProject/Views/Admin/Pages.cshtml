@@ -1,0 +1,14 @@
+﻿@using Microsoft.AspNetCore.Identity
+@using vomsProject.Data
+@inject SignInManager<User> SignInManager
+@inject UserManager<User> UserManager
+
+@model IEnumerable<Page>
+
+@foreach (var thePage in Model)
+{
+    <div class="card card-body">
+        <p>@thePage.PageName</p>
+        @Html.ActionLink(thePage.PageName, "index", "Page", thePage.Id)
+    </div>
+}
