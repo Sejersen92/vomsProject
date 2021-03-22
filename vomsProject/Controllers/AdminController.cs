@@ -27,7 +27,7 @@ namespace vomsProject.Controllers
             return View(model);
         }
 
-        public IActionResult Pages(int id)
+        public IActionResult Pages([FromRoute]int id)
         {
             var databasePages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
 

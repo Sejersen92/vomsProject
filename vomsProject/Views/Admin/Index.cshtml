@@ -27,8 +27,7 @@
                                 <p>@user.UserName</p>
                             }
                             <div class="btn-group">
-                                <a class="btn btn-info m-2" href="">Admin</a>
-                                <a class="btn btn-primary m-2" asp-area="Admin" asp-page="/Page/Id">Site</a>
+                                @Html.ActionLink("Site","Pages","Admin", new { id = solution.Id }, new { @class= "btn btn-primary m-2" })
                             </div>
                         </div>
                     }
