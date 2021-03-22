@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -6,6 +7,7 @@ using System.Security.Claims;
 using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
+using vomsProject.Models;
 
 namespace vomsProject.Controllers
 {
@@ -20,6 +22,7 @@ namespace vomsProject.Controllers
             _dbContext = dbContext;
         }
 
+        [Authorize]
         public IActionResult Index()
         {
             var model = Solutions();
@@ -27,13 +30,17 @@ namespace vomsProject.Controllers
             return View(model);
         }
 
-        public IActionResult Pages([FromRoute]int id)
+        [Authorize]
+        public IActionResult Pages([FromRoute] int id)
         {
-            var databasePages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
+            var model = new PageOverview();
+            model.Pages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
+            model.SolutionId = id;
 
-            return View(databasePages);
+            return View(model);
         }
 
+        [Authorize]
         private IEnumerable<Solution> Solutions()
         {
             var result = new List<Solution>();
@@ -54,6 +61,7 @@ namespace vomsProject.Controllers
             return result;
         }
 
+        [Authorize]
         [HttpPost]
         public IEnumerable<string> CreateProject(string title, string users)
         {
@@ -70,6 +78,30 @@ namespace vomsProject.Controllers
             _dbContext.SaveChangesAsync();
 
             return userlist;
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<bool> CreatePageAsync (string title, int solutionId)
+        {
+            try
+            {
+                var page = new Page()
+                {
+                    PageName = title,
+                    Solution = await _dbContext.Solutions.FindAsync(solutionId)
+                };
+
+                _dbContext.Pages.Add(page);
+                await _dbContext.SaveChangesAsync();
+
+                return true;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return false;
+            }
         }
     }
 }

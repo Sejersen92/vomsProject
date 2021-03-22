@@ -3,12 +3,27 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 
-@model IEnumerable<Page>
+@model PageOverview
 
-@foreach (var thePage in Model)
+@foreach (var thePage in Model.Pages)
 {
     <div class="card card-body">
         <p>@thePage.PageName</p>
         @Html.ActionLink(thePage.PageName, "index", "Page", thePage.Id)
     </div>
 }
+
+<h3>Don't see any pages? Create one now!</h3>
+<div class="mb-3 mt-3 row justify-content-center" style="border: 1px black solid; text-align: center">
+    @using (Html.BeginForm("CreatePage", "Admin", FormMethod.Post))
+    {
+        <div class="col-auto mb-2 mt-2">
+            <span class="visually-hidden">Enter the title of your project:</span>
+            @Html.TextBox("title", null, new { @style = "form-control-plaintext" }) <br />
+        </div>
+        <div style="display:none">
+            <input type="text" name="solutionId" value="@Model.SolutionId"/>
+        </div>
+        <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
+    }
+</div>
