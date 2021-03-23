@@ -61,23 +61,30 @@ namespace vomsProject.Controllers
             return result;
         }
 
+
+
+        // TODO: This post function redirects. It sould instead rerender the index page.
         [Authorize]
         [HttpPost]
-        public IEnumerable<string> CreateProject(string title, string users)
+        public async Task<IActionResult> CreateProject(string title, string users)
         {
-            var userlist = users.Split(",");
-            var databaseUsers = _dbContext.Users.Where(x => userlist.Contains(x.UserName));
-
+            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var userlist = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
+            var databaseUsers = _dbContext.Users.Where(user => userlist.Contains(user.UserName) || user.Id == userid);
             var project = new Solution()
             {
                 Subdomain = title,
-                Users = databaseUsers.ToList()
+                Users = databaseUsers.ToList(),
             };
-
             _dbContext.Solutions.Add(project);
-            _dbContext.SaveChangesAsync();
-
-            return userlist;
+            _dbContext.Permissions.AddRange(databaseUsers.Select(user => new Permission()
+            {
+                PermissionLevel = user.Id == userid ? PermissionLevel.Admin : PermissionLevel.Editor,
+                User = user,
+                Solution = project
+            }));
+            await _dbContext.SaveChangesAsync();
+            return Redirect("Admin/Pages/" + project.Id);
         }
 
         [Authorize]
