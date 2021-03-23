@@ -61,12 +61,9 @@ namespace vomsProject.Controllers
             return result;
         }
 
-
-
-        // TODO: This post function redirects. It sould instead rerender the index page.
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreateProject(string title, string users)
+        public async Task<IActionResult> Index(string title, string users)
         {
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userlist = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
@@ -84,7 +81,7 @@ namespace vomsProject.Controllers
                 Solution = project
             }));
             await _dbContext.SaveChangesAsync();
-            return Redirect("Admin/Pages/" + project.Id);
+            return Index();
         }
 
         [Authorize]
