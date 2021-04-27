@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 using vomsProject.Data;
 using vomsProject.Helpers;
 using vomsProject.Models;
@@ -31,11 +32,12 @@ namespace vomsProject.Controllers
         }
 
         [Authorize]
-        public IActionResult Pages([FromRoute] int id)
+        public IActionResult SolutionOverview([FromRoute] int id)
         {
             var model = new PageOverview();
             model.Pages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
             model.SolutionId = id;
+            model.Solution = _dbContext.Solutions.Include(x => x.Users).FirstOrDefault(x => x.Id == id);
 
             return View(model);
         }
@@ -86,7 +88,7 @@ namespace vomsProject.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> CreatePage (string title, int id)
+        public async Task<IActionResult> CreatePage(string title, int id)
         {
             try
             {
@@ -99,15 +101,17 @@ namespace vomsProject.Controllers
                 _dbContext.Pages.Add(page);
                 await _dbContext.SaveChangesAsync();
 
-                return RedirectToAction("Pages", new {id = id});
+                return RedirectToAction("SolutionOverview", new { id = id });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return RedirectToAction("Pages", e);
+                return RedirectToAction("SolutionOverview", e);
             }
         }
 
+        [Authorize]
+        [HttpPost]
         public async Task<IActionResult> RemovePage(int pageId, int solutionId)
         {
             try
@@ -119,12 +123,58 @@ namespace vomsProject.Controllers
                 }
 
                 await _dbContext.SaveChangesAsync();
-                return RedirectToAction("Pages", new { id = solutionId });
+                return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return RedirectToAction("Pages", e);
+                return RedirectToAction("SolutionOverview", e);
+            }
+        }
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> RemoveUser(string id, int solutionId)
+        {
+            try
+            {
+                var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
+                var user = solution?.Users.FirstOrDefault(x => x.Id == id);
+                if (user != null)
+                {
+                    solution.Users.Remove(user);
+                    await _dbContext.SaveChangesAsync();
+                }
+
+                return RedirectToAction("SolutionOverview", new { id = solutionId });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return RedirectToAction("SolutionOverview", e);
+            }
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AddUser(string userEmail, int solutionId)
+        {
+            try
+            {
+                var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
+                var user = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
+
+                if (user == null) return RedirectToAction("SolutionOverview", new {id = solutionId});
+
+                solution.Users.Add(user);
+                await _dbContext.SaveChangesAsync();
+
+                return RedirectToAction("SolutionOverview", new { id = solutionId });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return RedirectToAction("SolutionOverview", e);
             }
         }
     }

@@ -35,6 +35,7 @@ namespace vomsProject.Controllers.Api
         public async Task Publish(int id, [FromBody] PublishDTO body)
         {
             var page = Context.Pages.Find(id);
+            page.IsPublished = true;
             page.Content = body.content.ToString();
             page.HtmlRenderContent = body.html;
             await Context.SaveChangesAsync();

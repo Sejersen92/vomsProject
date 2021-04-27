@@ -9,6 +9,7 @@ namespace vomsProject.Models
     public class PageOverview
     {
         public int SolutionId { get; set; }
+        public Solution Solution { get; set; }
         public IEnumerable<Page> Pages { get; set; }
     }
 }

@@ -11,6 +11,7 @@ namespace vomsProject.Data
         public string PageName { get; set; }
         public string Content { get; set; }
         public string HtmlRenderContent { get; set; }
+        public bool IsPublished { get; set; }
         public Solution Solution { get; set; }
     }
 }

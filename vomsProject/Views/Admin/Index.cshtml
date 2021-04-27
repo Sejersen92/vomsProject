@@ -5,14 +5,23 @@
 
 @model IEnumerable<Solution>
 
-<div>
+<div class="container">
     @if (SignInManager.IsSignedIn(User))
     {
         <h3>Hello @User.Identity.Name!</h3>
-        <h4>Here are your solution:</h4>
 
         if (Model != null)
         {
+            if (Model.Count() == 1)
+            {
+                <h4>Here is your solution:</h4>
+            }
+            else
+            {
+                <h4>Here are your solutions:</h4>
+            }
+
+
             <div class="Solutions" style="width: 18rem;">
                 @foreach (var solution in Model)
                 {
@@ -27,28 +36,30 @@
                                 <p>@user.UserName</p>
                             }
                             <div class="btn-group">
-                                @Html.ActionLink("Site","Pages","Admin", new { id = solution.Id }, new { @class= "btn btn-primary m-2" })
+                                @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary m-2" })
                             </div>
                         </div>
                     }
                 }
             </div>
-
-            <div class="mb-3 mt-3 row justify-content-center" style="border: 1px black solid; text-align: center">
-                @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
-                {
-                    <div class="col-auto mb-2 mt-2">
-                        <span class="visually-hidden">Enter the title of your project:</span>
-                        @Html.TextBox("title", null, new { @style = "form-control-plaintext" }) <br />
-                    </div>
-                    <div class="col-auto mb-2 mt-2">
-                        <span class="visually-hidden">Please enter the specified users emailaddress', separated by comma: </span> <br />
-                        @Html.TextArea("users", null, new { @style = "form-control-plaintext" })
-                    </div>
-                    <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
-                }
-            </div>
         }
+        <h4>Create a solution here</h4>
+        <div class="card">
+            @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
+            {
+                <div class="input-group m-2">
+                    <label class="input-group-text" for="title">Title</label>
+                    <input type="text" id="title" name="title" class="form-control" />
+                </div>
+                <div class="input-group m-2">
+                    <label class="input-group-text" for="users">Users</label>
+                    <input type="text" id="users" name="users" class="form-control" />
+                </div>
+                <h6 class="card-subtitle text-muted font-weight-lighter m-2">Separate users by comma, i.e. "email1@email.com,email2@email.com,email3@email.com".</h6>
+                <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
+            }
+        </div>
+
     }
     else
     {
