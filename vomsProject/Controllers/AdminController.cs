@@ -132,7 +132,7 @@ namespace vomsProject.Controllers
         }
 
         [Authorize]
-        [HttpGet]
+        [HttpPost]
         public async Task<IActionResult> RemoveUser(string id, int solutionId)
         {
             try
@@ -140,7 +140,7 @@ namespace vomsProject.Controllers
                 var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
                 var user = solution?.Users.FirstOrDefault(x => x.Id == id);
 
-                if (user == null) return RedirectToAction("SolutionOverview", new {id = solutionId});
+                if (user == null) return BadRequest("User doesn't exist");
 
                 solution.Users.Remove(user);
                 await _dbContext.SaveChangesAsync();

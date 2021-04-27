@@ -48,12 +48,15 @@
     <h6 class="card-subtitle mb-2">In this section you can add or remove user-access to this solution, and, if needed, delete this solution as well.</h6>
     <div class="card-body">
         <h5 class="card-title">Users</h5>
-        @foreach (var user in Model.Solution.Users)
+        @if (Model.Solution.Users != null)
         {
-            <div class="m-2">
-                <h5 class="card-title mb-2">@user.UserName</h5>
-                @Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = user.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
-            </div>
+            @foreach (var user in Model.Solution.Users)
+            {
+                <div class="m-2">
+                    <h5 class="card-title mb-2">@user.UserName</h5>
+                    @Html.ActionLink("Remove", "RemoveUser", "Admin", new { Id = user.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
+                </div>
+            }
         }
         <h5 class="card-title mt-5">Add new user</h5>
         <form asp-action="AddUser" asp-controller="Admin" method="post">
@@ -62,7 +65,7 @@
                 <input class="form-control" type="email" id="userEmail" name="userEmail" />
             </div>
             <div style="display: none">
-                <input type="text" name="id" value="@Model.SolutionId" />
+                <input type="text" name="solutionId" value="@Model.SolutionId" />
             </div>
             <input type="submit" value="submit" class="btn btn-primary mb-3" />
         </form>
