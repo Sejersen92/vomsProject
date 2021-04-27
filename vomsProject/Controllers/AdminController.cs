@@ -48,17 +48,16 @@ namespace vomsProject.Controllers
             var result = new List<Solution>();
             var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
 
-            if (!string.IsNullOrWhiteSpace(userId))
+            if (string.IsNullOrWhiteSpace(userId)) return result;
+
+            try
             {
-                try
-                {
-                    result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    return result;
-                }
+                result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return result;
             }
             return result;
         }
@@ -140,11 +139,11 @@ namespace vomsProject.Controllers
             {
                 var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
                 var user = solution?.Users.FirstOrDefault(x => x.Id == id);
-                if (user != null)
-                {
-                    solution.Users.Remove(user);
-                    await _dbContext.SaveChangesAsync();
-                }
+
+                if (user == null) return RedirectToAction("SolutionOverview", new {id = solutionId});
+
+                solution.Users.Remove(user);
+                await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
