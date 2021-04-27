@@ -86,25 +86,45 @@ namespace vomsProject.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<bool> CreatePageAsync (string title, int solutionId)
+        public async Task<IActionResult> CreatePage (string title, int id)
         {
             try
             {
                 var page = new Page()
                 {
                     PageName = title,
-                    Solution = await _dbContext.Solutions.FindAsync(solutionId)
+                    Solution = await _dbContext.Solutions.FindAsync(id)
                 };
 
                 _dbContext.Pages.Add(page);
                 await _dbContext.SaveChangesAsync();
 
-                return true;
+                return RedirectToAction("Pages", new {id = id});
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return false;
+                return RedirectToAction("Pages", e);
+            }
+        }
+
+        public async Task<IActionResult> RemovePage(int pageId, int solutionId)
+        {
+            try
+            {
+                var page = await _dbContext.Pages.FindAsync(pageId);
+                if (page != null)
+                {
+                    _dbContext.Pages.Remove(page);
+                }
+
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Pages", new { id = solutionId });
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return RedirectToAction("Pages", e);
             }
         }
     }

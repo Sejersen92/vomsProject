@@ -5,28 +5,40 @@
 
 @model PageOverview
 
-<div class="Solutions" >
+<div class="Solutions mb-3">
     <h3>Here are you pages:</h3>
     @foreach (var thePage in Model.Pages)
     {
-        <div class="card card-body m-2" style="width: 18rem;">
-            <p>@thePage.PageName</p>
-            @Html.ActionLink("Content", "index", "Page", new { id = thePage.Id }, new { @class = "btn btn-primary m-2" })
+        <div class="card" style="width: 18rem">
+            <div class="card-body">
+                <h5 class="card-title">@thePage.PageName</h5>
+            </div>
+            <div class="card-body">
+                <div class="card-link">
+                    @Html.ActionLink("See content", "index", "Page", new { id = thePage.Id })
+                </div>
+                <div class="card-link">
+                    @Html.ActionLink("Delete", "RemovePage", "Admin", new { pageId = thePage.Id, solutionId = Model.SolutionId })
+                </div>
+            </div>
         </div>
     }
 </div>
 
-<h3 style="text-align:center">Don't see any pages? Create one now!</h3>
-<div class="mb-3 mt-3 row justify-content-center" style="border: 1px black solid; text-align: center">
-    @using (Html.BeginForm("CreatePage", "Admin", FormMethod.Post))
-    {
-        <div class="col-auto mb-2 mt-2">
-            <span class="visually-hidden">Enter the title of your project:</span>
-            @Html.TextBox("title", null, new { @style = "form-control-plaintext" }) <br />
-        </div>
-        <div style="display:none">
-            <input type="text" name="solutionId" value="@Model.SolutionId" />
-        </div>
-        <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
-    }
+
+<div class="card">
+    <h5 class="card-title">Page-creation</h5>
+    <h6 class="card-subtitle">In this section you can create new pages for your solution</h6>
+    <div class="mb-3 mt-3 row justify-content-center" style="border: 1px black solid; text-align: center">
+        <form asp-action="CreatePage" asp-controller="Admin" method="post">
+            <div class="input-group mb-2 mt-2">
+                <label class="input-group-text">Enter the title of your project:</label>
+                <input class="form-control" type="text" id="title" name="title" />
+            </div>
+            <div style="display: none">
+                <input type="text" name="id" id="id" value="@Model.SolutionId" />
+            </div>
+            <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
+        </form>
+    </div>
 </div>
