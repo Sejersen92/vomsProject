@@ -173,7 +173,7 @@ namespace vomsProject.Controllers
                 var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
                 var user = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
 
-                if (user == null) return RedirectToAction("SolutionOverview", new {id = solutionId});
+                if (user == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
 
                 solution.Users.Add(user);
                 await _dbContext.SaveChangesAsync();
@@ -184,6 +184,41 @@ namespace vomsProject.Controllers
             {
                 Console.WriteLine(e);
                 return RedirectToAction("SolutionOverview", e);
+            }
+        }
+
+        /// <summary>
+        /// Deletes a selected solution. No Cascade-deletion --> Include Permissions, Page and users.
+        /// .Clear() removes all table-entities in the given context.
+        /// UPDE = UserPermission doesn't exist.
+        /// NUF = No users found.
+        /// NPF = No permissions found.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> DeleteSolution(int id)
+        {
+            try
+            {
+                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == id);
+
+                if (currentSolution == null) return BadRequest("Something went wrong.");
+                if (currentSolution.Users == null) return BadRequest("Something went wrong. (NUF)");
+                if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
+
+                currentSolution.Permissions.Clear();
+                currentSolution.Users.Clear();
+                _dbContext.Solutions.Remove(currentSolution);
+
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("Index");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return RedirectToAction("index", e);
             }
         }
     }

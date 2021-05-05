@@ -12,5 +12,6 @@ namespace vomsProject.Data
         public string Domain { get; set; }
         public ICollection<User> Users { get; set; }
         public ICollection<Page> Pages { get; set; }
+        public ICollection<Permission> Permissions { get; set; }
     }
 }

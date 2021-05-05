@@ -37,6 +37,7 @@
                             }
                             <div class="btn-group">
                                 @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary m-2" })
+                                @Html.ActionLink("Delete","DeleteSolution","Admin", new{ id = solution.Id}, new { @class = "btn btn-primary m-2" })
                             </div>
                         </div>
                     }
