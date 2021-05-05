@@ -9,17 +9,13 @@
     <h3>Here are you pages:</h3>
     @foreach (var thePage in Model.Pages)
     {
-        <div class="card" style="width: 18rem">
+        <div class="card m-2" style="width: 18rem">
             <div class="card-body">
                 <h5 class="card-title">@thePage.PageName</h5>
             </div>
             <div class="card-body">
-                <div class="card-link">
-                    @Html.ActionLink("See content", "index", "Page", new { id = thePage.Id })
-                </div>
-                <div class="card-link">
-                    @Html.ActionLink("Delete page", "RemovePage", "Admin", new { pageId = thePage.Id, solutionId = Model.SolutionId })
-                </div>
+                @Html.ActionLink("See content", "index", "Page", new { id = thePage.Id }, new { @class="card-link"})
+                @Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = thePage.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
             </div>
         </div>
     }
@@ -32,13 +28,13 @@
     <div class="mb-3 mt-3 row justify-content-center">
         <form asp-action="CreatePage" asp-controller="Admin" method="post">
             <div class="input-group mb-2 mt-2">
-                <label class="input-group-text">Enter the title of your project:</label>
+                <label class="input-group-text">Enter the title of your page:</label>
                 <input class="form-control" type="text" id="title" name="title" />
             </div>
             <div style="display: none">
                 <input type="text" name="id" value="@Model.SolutionId" />
             </div>
-            <input type="submit" value="submit" class="btn btn-primary mb-3" />
+            <input type="submit" value="Create page" class="btn btn-primary mb-3" />
         </form>
     </div>
 </div>

@@ -10,29 +10,24 @@ namespace vomsProject.Controllers
 {
     public class PageController : Controller
     {
-        ApplicationDbContext Context;
+        private readonly ApplicationDbContext _context;
         public PageController(ApplicationDbContext context)
         {
-            Context = context;
+            _context = context;
         }
 
         [Authorize]
         public IActionResult Index(int? id)
         {
-            Page page;
-            if (id == null)
-            {
-                page = Context.Pages.FirstOrDefault();
-            }
-            else
-                page = Context.Pages.Find(id);
-            if (page == null)
-            {
-                page = new Page();
-                page.Solution = Context.Solutions.FirstOrDefault();
-                Context.Pages.Add(page);
-                Context.SaveChanges();
-            }
+            var page = id == null ? _context.Pages.FirstOrDefault() : _context.Pages.Find(id);
+
+            if (page != null) return View(page);
+
+            page = new Page {Solution = _context.Solutions.FirstOrDefault()};
+
+            _context.Pages.Add(page);
+            _context.SaveChanges();
+
             return View(page);
         }
     }

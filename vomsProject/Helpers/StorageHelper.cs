@@ -12,30 +12,28 @@ namespace vomsProject.Helpers
 {
     public class StorageHelper
     {
-        private string _connectionString;
-        BlobServiceClient _blobServiceClient;
-        private string _containerName;
+        private readonly BlobServiceClient _blobServiceClient;
+        private readonly string _containerName;
 
         public StorageHelper(string connectionString, string containerName)
         {
-            _connectionString = connectionString;
-            _blobServiceClient = new BlobServiceClient(_connectionString);
+            _blobServiceClient = new BlobServiceClient(connectionString);
             _containerName = !string.IsNullOrWhiteSpace(containerName) ? containerName : "voms";
         }
 
         public BlobContainerClient GetBlobContainer()
         {
-            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
             return containerClient;
         }
 
         public async Task<bool> UploadToBlob(FileStream file, ApplicationDbContext dbContext, Page Page)
         {
-            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var _context = dbContext;
 
-            string uniqueIdentifier = Guid.NewGuid().ToString();
+            var uniqueIdentifier = Guid.NewGuid().ToString();
 
             try
             {
@@ -51,28 +49,26 @@ namespace vomsProject.Helpers
             }
             catch (Exception e)
             {
-                Console.WriteLine("(UploadtoBlob-method) failed with following exception: " + e);
+                Console.WriteLine("(UploadToBlob-method) failed with following exception: " + e);
                 return false;
             }
         }
 
         public string GetImageUrl(int pageId, ApplicationDbContext dbContext)
         {
-            BlobContainerClient containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
 
             try
             {
                 var image = dbContext.Images.FirstOrDefault(x => x.Page.Id == pageId);
-                if (image != null)
-                {
-                    var blobName = image.ImageUrl;
+                if (image == null) return null;
 
-                    BlobClient blobClient = containerClient.GetBlobClient(blobName);
-                    var imageUri = blobClient.Uri;
+                var blobName = image.ImageUrl;
 
-                    return imageUri.ToString();
-                }
-                return null;
+                var blobClient = containerClient.GetBlobClient(blobName);
+                var imageUri = blobClient.Uri;
+
+                return imageUri.ToString();
             }
             catch (Exception e)
             {
@@ -81,16 +77,12 @@ namespace vomsProject.Helpers
             }
         }
 
-        public IEnumerable<Solution> GetSolutions(string userId, ApplicationDbContext dbContext)
+        public static IEnumerable<Solution> GetSolutions(string userId, ApplicationDbContext dbContext)
         {
             try
             {
-                var solutions = dbContext.Solutions.Include(solutions => solutions.Users).Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
-                if (solutions.Any())
-                {
-                    return solutions;
-                }
-                return null;
+                var solutions = dbContext.Solutions.Include(x => x.Users).Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
+                return solutions.Any() ? solutions : null;
             }
             catch (Exception e)
             {

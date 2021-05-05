@@ -52,7 +52,7 @@ namespace vomsProject.Controllers
 
             try
             {
-                result.AddRange(_storageHelper.GetSolutions(userId, _dbContext));
+                result.AddRange(StorageHelper.GetSolutions(userId, _dbContext));
             }
             catch (Exception e)
             {
@@ -110,12 +110,12 @@ namespace vomsProject.Controllers
         }
 
         [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> RemovePage(int pageId, int solutionId)
+        [HttpGet]
+        public async Task<IActionResult> RemovePage(int id, int solutionId)
         {
             try
             {
-                var page = await _dbContext.Pages.FindAsync(pageId);
+                var page = await _dbContext.Pages.FindAsync(id);
                 if (page != null)
                 {
                     _dbContext.Pages.Remove(page);
@@ -132,7 +132,7 @@ namespace vomsProject.Controllers
         }
 
         [Authorize]
-        [HttpPost]
+        [HttpGet]
         public async Task<IActionResult> RemoveUser(string id, int solutionId)
         {
             try
