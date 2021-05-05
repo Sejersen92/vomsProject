@@ -6,6 +6,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Query;
 using vomsProject.Data;
 using vomsProject.Helpers;
 using vomsProject.Models;
@@ -34,10 +35,12 @@ namespace vomsProject.Controllers
         [Authorize]
         public IActionResult SolutionOverview([FromRoute] int id)
         {
-            var model = new PageOverview();
-            model.Pages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList();
-            model.SolutionId = id;
-            model.Solution = _dbContext.Solutions.Include(x => x.Users).FirstOrDefault(x => x.Id == id);
+            var model = new PageOverview
+            {
+                Pages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList(),
+                SolutionId = id,
+                Solution = _dbContext.Solutions.Include(x => x.Users).FirstOrDefault(x => x.Id == id)
+            };
 
             return View(model);
         }
@@ -67,8 +70,8 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> Index(string title, string users)
         {
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userlist = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
-            var databaseUsers = _dbContext.Users.Where(user => userlist.Contains(user.UserName) || user.Id == userid);
+            var userList = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
+            var databaseUsers = _dbContext.Users.Where(user => userList.Contains(user.UserName) || user.Id == userid);
             var project = new Solution()
             {
                 Subdomain = title,
@@ -131,16 +134,23 @@ namespace vomsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// SDE = Solution doesn't exist
+        /// UDE = User doesn't exist
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> RemoveUser(string id, int solutionId)
         {
             try
             {
-                var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
-                var user = solution?.Users.FirstOrDefault(x => x.Id == id);
+                var solution = await _dbContext.Solutions.Include(s => s.Users).FirstOrDefaultAsync(x => x.Id == solutionId);
+                var user = await _dbContext.Users.Include(y => y.Solutions).FirstOrDefaultAsync(x => x.Id == id);
 
-                if (user == null) return BadRequest("User doesn't exist");
+                if (user == null || !user.Solutions.Contains(solution)) return BadRequest("Something went wrong. (SDE/UDE)");
 
                 solution.Users.Remove(user);
                 await _dbContext.SaveChangesAsync();
