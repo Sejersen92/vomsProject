@@ -4,8 +4,11 @@
 @inject UserManager<User> UserManager
 
 @model IEnumerable<Solution>
+@{
+    var colClass = "";
+}
 
-<div class="container">
+<div class="container-xxl">
     @if (SignInManager.IsSignedIn(User))
     {
         <h3>Hello @User.Identity.Name!</h3>
@@ -14,30 +17,44 @@
         {
             if (Model.Count() == 1)
             {
+                colClass = "col-sm";
                 <h4>Here is your solution:</h4>
+            }
+            else if (Model.Count() > 1 && Model.Count() < 3)
+            {
+                colClass = "col-sm-4";
+                <h4>Here are your solutions:</h4>
             }
             else
             {
+                colClass = "col-sm-3";
                 <h4>Here are your solutions:</h4>
             }
 
-
-            <div class="Solutions" style="width: 18rem;">
+            <div class="row mb-3">
                 @foreach (var solution in Model)
                 {
                     if (solution != null)
                     {
-                        <div class="card card-body m-2">
-                            <h5>Title: @solution.Subdomain</h5>
-                            <p>id: @solution.Id</p>
-                            <p>Assigned users: </p>
-                            @foreach (var user in solution.Users)
-                            {
-                                <p>@user.UserName</p>
-                            }
-                            <div class="btn-group">
-                                @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary m-2" })
-                                @Html.ActionLink("Delete","DeleteSolution","Admin", new{ id = solution.Id}, new { @class = "btn btn-primary m-2" })
+                        <div class="@colClass">
+                            <div class="card" style="width: 18rem;">
+                                <div class="card-header">
+                                    <h5 class="card-title">Title: @solution.Subdomain</h5>
+                                    <p class="card-text">id: @solution.Id</p>
+                                </div>
+                                <div class="card-body">
+                                    <p>Assigned users: </p>
+                                    @foreach (var user in solution.Users)
+                                    {
+                                        <p>@user.UserName</p>
+                                    }
+                                </div>
+                                <div class="card-footer">
+                                    <div class="btn-group">
+                                        @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
+                                        @Html.ActionLink("Delete", "DeleteSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     }
@@ -48,16 +65,18 @@
         <div class="card">
             @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
             {
-                <div class="input-group m-2">
-                    <label class="input-group-text" for="title">Title</label>
-                    <input type="text" id="title" name="title" class="form-control" />
+                <div class="card-body">
+                    <div class="input-group m-2">
+                        <label class="input-group-text" for="title">Title</label>
+                        <input type="text" id="title" name="title" class="form-control" />
+                    </div>
+                    <div class="input-group m-2">
+                        <label class="input-group-text" for="users">Users</label>
+                        <input type="text" id="users" name="users" class="form-control" />
+                    </div>
+                    <h6 class="card-subtitle text-muted font-weight-lighter m-2">Separate users by comma, i.e. "email1@email.com,email2@email.com,email3@email.com".</h6>
+                    <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
                 </div>
-                <div class="input-group m-2">
-                    <label class="input-group-text" for="users">Users</label>
-                    <input type="text" id="users" name="users" class="form-control" />
-                </div>
-                <h6 class="card-subtitle text-muted font-weight-lighter m-2">Separate users by comma, i.e. "email1@email.com,email2@email.com,email3@email.com".</h6>
-                <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
             }
         </div>
 
