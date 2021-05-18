@@ -15,19 +15,15 @@
 
         if (Model != null)
         {
+            colClass = (Model.Count() == 1 ? "col-sm" : 
+                (Model.Count() == 2 ? "col-sm-4" : 
+                    (Model.Count() >= 3 ? "col-sm-3" : "col-sm")));
             if (Model.Count() == 1)
             {
-                colClass = "col-sm";
                 <h4>Here is your solution:</h4>
-            }
-            else if (Model.Count() > 1 && Model.Count() < 3)
-            {
-                colClass = "col-sm-4";
-                <h4>Here are your solutions:</h4>
             }
             else
             {
-                colClass = "col-sm-3";
                 <h4>Here are your solutions:</h4>
             }
 

@@ -91,5 +91,20 @@ namespace vomsProject.Helpers
             }
 
         }
+
+        public IEnumerable<Solution> GetSolutions(ApplicationDbContext dbContext)
+        {
+            try
+            {
+                var solutions = dbContext.Solutions.Include(x => x.Users).ToList();
+                return solutions.Any() ? solutions : null;
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine("(GetSolutions) caused an error: " + e);
+                return null;
+            }
+
+        }
     }
 }

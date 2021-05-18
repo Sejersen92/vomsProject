@@ -1,14 +1,30 @@
-﻿@model vomsProject.Data.Image
+﻿@model vomsProject.Models.HomePageViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
 
 <div class="text-center">
     <h1 class="display-4">VOMS, your one-stop destination for awesome things</h1>
-    <p>Learn more about our offers here! <a href="#">Mousefuck this button</a></p>
+    <p>Need inspiration for your site? See all of our solutions below!</p>
 
-    @if (!string.IsNullOrWhiteSpace(Model.ImageUrl))
+    @foreach (var solution in Model.Solutions)
     {
-        <img src="@Model.ImageUrl" alt="@Model.ImageUrl"/>
+        if (solution != null)
+        {
+            <a href="#@solution.Id" class="m-2">
+                <div class="card">
+                    <div class="card-header">
+                        <h3 class="card-title">@solution.Subdomain</h3>
+                    </div>
+                    <div class="card-body">
+                        @foreach (var user in solution.Users)
+                        {
+                            <p class="card-text">@user</p>
+                        }
+
+                    </div>
+                </div>
+            </a>
+        }
     }
 </div>

@@ -26,7 +26,7 @@ namespace vomsProject.Controllers
 
         public IActionResult Index()
         {
-            var model = new Image {ImageUrl = _storageHelper.GetImageUrl(1, _dbContext)};
+            var model = new HomePageViewModel { Solutions = _storageHelper.GetSolutions(_dbContext) };
 
             return View(model);
         }
