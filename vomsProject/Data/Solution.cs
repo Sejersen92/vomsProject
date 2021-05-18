@@ -13,5 +13,6 @@ namespace vomsProject.Data
         public ICollection<User> Users { get; set; }
         public ICollection<Page> Pages { get; set; }
         public ICollection<Permission> Permissions { get; set; }
+        public ICollection<Image> Images { get; set; }
     }
 }
