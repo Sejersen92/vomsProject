@@ -15,7 +15,7 @@
             {
                 if (page != null)
                 {
-                    <a class="nav-link">@(page.PageName)</a>
+                    <a asp-action="Page" asp-controller="Preview" asp-route-id="@(page.Id)" class="nav-link">@(page.PageName)</a>
                 }
             }
         </nav>

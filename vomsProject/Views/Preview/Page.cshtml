@@ -1,0 +1,13 @@
+﻿@model List<vomsProject.Data.Page>
+
+@{
+    ViewBag.Title = "title";
+}
+
+@if (Model != null)
+{
+    foreach (var page in Model)
+    {
+        <h2>@(page.PageName)</h2>
+    }
+}

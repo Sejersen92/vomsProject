@@ -36,13 +36,6 @@ namespace vomsProject.Controllers
             return View();
         }
 
-        public IActionResult Solution(int id)
-        {
-            var model = new SolutionViewModel{ Solution = _databaseHelper.GetSolutionById(id, _dbContext)};
-
-            return View(model);
-        }
-
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
         {
