@@ -14,19 +14,19 @@ namespace vomsProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly StorageHelper _storageHelper;
+        private readonly DatabaseHelper _databaseHelper;
         private readonly ApplicationDbContext _dbContext;
 
-        public HomeController(ILogger<HomeController> logger, StorageHelper storageHelper, ApplicationDbContext dbContext)
+        public HomeController(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext)
         {
             _logger = logger;
-            _storageHelper = storageHelper;
+            _databaseHelper = databaseHelper;
             _dbContext = dbContext;
         }
 
         public IActionResult Index()
         {
-            var model = new HomePageViewModel { Solutions = _storageHelper.GetSolutions(_dbContext) };
+            var model = new HomePageViewModel { Solutions = _databaseHelper.GetSolutions(_dbContext) };
 
             return View(model);
         }
@@ -34,6 +34,13 @@ namespace vomsProject.Controllers
         public IActionResult Privacy()
         {
             return View();
+        }
+
+        public IActionResult Solution(int id)
+        {
+            var model = new SolutionViewModel{ Solution = _databaseHelper.GetSolutionById(id, _dbContext)};
+
+            return View(model);
         }
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]

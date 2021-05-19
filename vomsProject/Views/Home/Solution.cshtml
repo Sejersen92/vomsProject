@@ -1,0 +1,23 @@
+﻿@model SolutionViewModel
+
+@{
+    ViewData["Title"] = Model.Solution?.Subdomain;
+}
+
+@if (Model.Solution != null)
+{
+    @if (Model.Solution.Pages != null && Model.Solution.Pages.Any())
+    {
+        <nav class="nav nav-pills nav-fill navbar-light bg-white border-bottom box-shadow mb-3">
+            <div class="alert alert-primary">@Model.Solution.Subdomain</div>
+
+            @foreach (var page in Model.Solution.Pages)
+            {
+                if (page != null)
+                {
+                    <a class="nav-link">@(page.PageName)</a>
+                }
+            }
+        </nav>
+    }
+}

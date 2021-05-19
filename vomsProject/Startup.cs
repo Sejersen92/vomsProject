@@ -39,6 +39,8 @@ namespace vomsProject
 
             services.Add(new ServiceDescriptor(typeof(StorageHelper), (provider) 
                 => new StorageHelper(Configuration.GetConnectionString("BlobStorageConnection"), Configuration["BlobStorageName"]), ServiceLifetime.Scoped));
+            services.Add(new ServiceDescriptor(typeof(DatabaseHelper), (provider)
+                => new DatabaseHelper(),ServiceLifetime.Scoped));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

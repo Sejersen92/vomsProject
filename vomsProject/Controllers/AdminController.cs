@@ -55,7 +55,7 @@ namespace vomsProject.Controllers
 
             try
             {
-                result.AddRange(StorageHelper.GetSolutions(userId, _dbContext));
+                result.AddRange(DatabaseHelper.GetSolutionsByUser(userId, _dbContext));
             }
             catch (Exception e)
             {

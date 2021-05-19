@@ -76,35 +76,5 @@ namespace vomsProject.Helpers
                 return null;
             }
         }
-
-        public static IEnumerable<Solution> GetSolutions(string userId, ApplicationDbContext dbContext)
-        {
-            try
-            {
-                var solutions = dbContext.Solutions.Include(x => x.Users).Where(x => x.Users.FirstOrDefault().Id == userId).ToList();
-                return solutions.Any() ? solutions : null;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("(GetSolutions) caused an error: " + e);
-                return null;
-            }
-
-        }
-
-        public IEnumerable<Solution> GetSolutions(ApplicationDbContext dbContext)
-        {
-            try
-            {
-                var solutions = dbContext.Solutions.Include(x => x.Users).ToList();
-                return solutions.Any() ? solutions : null;
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("(GetSolutions) caused an error: " + e);
-                return null;
-            }
-
-        }
     }
 }
