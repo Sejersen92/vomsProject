@@ -8,7 +8,7 @@
 {
     @if (Model.Solution.Pages != null && Model.Solution.Pages.Any())
     {
-        <nav class="nav nav-pills nav-fill navbar-light bg-white border-bottom box-shadow mb-3">
+        @*<nav class="nav nav-pills nav-fill navbar-light bg-white border-bottom box-shadow mb-3">
             <div class="alert alert-primary">@Model.Solution.Subdomain</div>
 
             @foreach (var page in Model.Solution.Pages)
@@ -18,6 +18,16 @@
                     <a asp-action="Page" asp-controller="Preview" asp-route-id="@(page.Id)" class="nav-link">@(page.PageName)</a>
                 }
             }
-        </nav>
+        </nav>*@
+
+        <div class="container">
+            @foreach (var page in Model.Solution.Pages)
+            {
+                if (page != null)
+                {
+                    <iframe style="min-height: 25em" src="@Url.Action("Page","Preview", new {id = page.Id})"></iframe>
+                }
+            }
+        </div>
     }
 }

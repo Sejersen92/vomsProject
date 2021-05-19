@@ -36,11 +36,14 @@ namespace vomsProject.Controllers
             return View(model);
         }
 
+        [HttpGet]
         public IActionResult Page(int id)
         {
-            var model = _dbContext.Pages.Where(x => x.Id == id).ToList();
+            var model = _dbContext.Pages.FirstOrDefault(x => x.Id == id);
+            if (model == null) return View((Page) null);
 
-            //Utilize the QUill editor to renderHtml in a non-editable way.
+            model.Content = model.HtmlRenderContent;
+
             return View(model);
         }
     }

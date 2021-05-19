@@ -1,13 +1,11 @@
-﻿@model List<vomsProject.Data.Page>
-
+﻿@model vomsProject.Data.Page
 @{
     ViewBag.Title = "title";
 }
 
 @if (Model != null)
 {
-    foreach (var page in Model)
-    {
-        <h2>@(page.PageName)</h2>
-    }
+
+    <h2>@(Model.PageName)</h2>
+    <p>@Html.Raw(Model.Content)</p>
 }
