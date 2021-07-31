@@ -13,13 +13,12 @@ namespace vomsProject.Helpers
         {
             try
             {
-                var solutions = dbContext.Solutions.Include(x => x.Users).ToList();
-                return solutions.Any() ? solutions : null;
+                return dbContext.Solutions.Include(x => x.Users).ToList();
             }
             catch (Exception e)
             {
                 Console.WriteLine("(GetSolutionsByUser) caused an error: " + e);
-                return null;
+                return new List<Solution>();
             }
         }
         public static IEnumerable<Solution> GetSolutionsByUser(string userId, ApplicationDbContext dbContext)
