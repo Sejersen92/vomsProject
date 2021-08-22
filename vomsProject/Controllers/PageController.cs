@@ -55,6 +55,25 @@ namespace vomsProject.Controllers
             }
         }
 
+        // Get the page by name belonging to the solution. Returns null if the page dosen't exist or it is not published
+        private async Task<Page> GetPageIfPublished(IQueryable<Solution> solution, string pageName)
+        {
+            try
+            {
+                var page = await solution.SelectMany((solution) => solution.Pages)
+                    .SingleAsync((page) => page.PageName == pageName);
+                if (page.IsPublished)
+                {
+                    return page;
+                }
+                return null;
+            }
+            catch (InvalidOperationException ex)
+            {
+                return null;
+            }
+        }
+
         private async Task<bool> IsUserOnSoulution(Solution solution, User user)
         {
             return await Context.Permissions.AnyAsync((permission) =>
@@ -64,15 +83,19 @@ namespace vomsProject.Controllers
 
         public async Task<IActionResult> Index(string pageName)
         {
+            if (pageName == null)
+            {
+                pageName = "";
+            }
             var userTask = UserManager.GetUserAsync(HttpContext.User);
             var solution = GetSolution(Request.Host.Host);
-            var page = await GetPage(solution, pageName);
             var user = await userTask;
             if (user != null)
             {
                 var theSolution = await solution.SingleOrDefaultAsync();
                 if (theSolution != null && await IsUserOnSoulution(theSolution, user))
                 {
+                    var page = await GetPage(solution, pageName);
                     if (page == null)
                     {
                         // We will store the page if it gets saved
@@ -83,11 +106,11 @@ namespace vomsProject.Controllers
                     return View(page);
                 }
             }
-
-            if (page != null)
+            var publishedPage = await GetPageIfPublished(solution, pageName);
+            if (publishedPage != null)
             {
                 // TODO: we should return an non editable page
-                return View(page);
+                return View(publishedPage);
             }
             return NotFound();
         }
