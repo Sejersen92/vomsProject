@@ -42,8 +42,6 @@ namespace vomsProject.Controllers
             var model = _dbContext.Pages.FirstOrDefault(x => x.Id == id);
             if (model == null) return View((Page) null);
 
-            model.Content = model.HtmlRenderContent;
-
             return View(model);
         }
     }
