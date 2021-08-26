@@ -10,14 +10,14 @@ using vomsProject.Data;
 
 namespace vomsProject.Helpers
 {
-    public class HtmlHelper
+    public class DomainHelper
     {
         private readonly ILogger<HomeController> _logger;
         private readonly DatabaseHelper _databaseHelper;
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
-        public HtmlHelper(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext, IConfiguration configuration)
+        public DomainHelper(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _logger = logger;
             _databaseHelper = databaseHelper;
@@ -28,7 +28,7 @@ namespace vomsProject.Helpers
         public string GetDestinationUrl(Page page)
         {
             var solution = page.Solution;
-            var destinationUrl = $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}/{page.PageName}";
+            var destinationUrl = $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}:5001/{page.PageName}";
 
             return destinationUrl;
         }
@@ -37,7 +37,7 @@ namespace vomsProject.Helpers
         {
             if (solution != null)
             {
-                return $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}/";
+                return $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}:5001/";
             }
             else
             {

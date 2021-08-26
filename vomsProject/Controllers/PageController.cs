@@ -20,8 +20,10 @@ namespace vomsProject.Controllers
         private readonly UserManager<User> UserManager;
         private readonly string RootDomain;
         private readonly SolutionHelper _solutionHelper;
+        private readonly DomainHelper _domainHelper;
+
         public PageController(ILogger<PageController> logger, IConfiguration configuration, 
-            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper)
+            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper, DomainHelper domainHelper)
         {
             _logger = logger;
             Configuration = configuration;
@@ -29,6 +31,7 @@ namespace vomsProject.Controllers
             UserManager = userManager;
             RootDomain = Configuration["RootDomain"];
             _solutionHelper = solutionHelper;
+            _domainHelper = domainHelper;
         }
 
         // Get the solution from a domain. This function returns a set of one or zero solutions.
