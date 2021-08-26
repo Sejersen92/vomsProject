@@ -68,5 +68,18 @@ namespace vomsProject.Helpers
                 solution == permission.Solution
                 && user == permission.User);
         }
+        // Get the solution from a domain. This function returns a set of one or zero solutions.
+        public IQueryable<Solution> GetSolutionByDomainName(string domain)
+        {
+            if (domain.EndsWith(RootDomain))
+            {
+                var subdomain = domain.Substring(0, domain.Length - (RootDomain.Length + 1)); // + 1 for extra dot
+                return Context.Solutions.Where((solution) => solution.Subdomain == subdomain);
+            }
+            else
+            {
+                return Context.Solutions.Where((solution) => solution.Domain == domain);
+            }
+        }
     }
 }

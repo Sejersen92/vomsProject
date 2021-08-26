@@ -31,11 +31,12 @@ namespace vomsProject
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
 
-            services.Add(new ServiceDescriptor(typeof(StorageHelper), (provider) 
+            services.Add(new ServiceDescriptor(typeof(StorageHelper), (provider)
                 => new StorageHelper(Configuration.GetConnectionString("BlobStorageConnection"), Configuration["BlobStorageName"]), ServiceLifetime.Scoped));
             services.AddScoped(typeof(DatabaseHelper));
             services.AddScoped(typeof(SolutionHelper));
             services.AddScoped(typeof(DomainHelper));
+            services.AddSingleton<JwtService>();
         }
         private bool isHostRootDomain(HttpContext context)
         {
@@ -74,14 +75,22 @@ namespace vomsProject
                 });
             });
 
+            // Here we specify the middleware that are used for solutions.
             app.UseWhen((context) => !isHostRootDomain(context), (app) =>
             {
                 app.UseRouting();
 
-                app.UseEndpoints(endpoints=>
+                app.UseAuthentication();
+                app.UseAuthorization();
+
+                app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllerRoute(
-                        name: "Page", 
+                        name: "Login",
+                        pattern: "/Login",
+                        defaults: new { controller = "Page", action = "Login" });
+                    endpoints.MapControllerRoute(
+                        name: "Page",
                         pattern: "/{*pageName}",
                         defaults: new { controller = "Page", action = "Index" });
                 });

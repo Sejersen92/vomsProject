@@ -10,6 +10,9 @@ using Microsoft.EntityFrameworkCore.Query;
 using vomsProject.Data;
 using vomsProject.Helpers;
 using vomsProject.Models;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Configuration;
+using System.IdentityModel.Tokens.Jwt;
 
 namespace vomsProject.Controllers
 {
@@ -17,11 +20,17 @@ namespace vomsProject.Controllers
     {
         private readonly ApplicationDbContext _dbContext;
         private readonly StorageHelper _storageHelper;
+        private readonly UserManager<User> UserManager;
+        private readonly IConfiguration Configuration;
+        private readonly JwtService JwtService;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext)
+        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService)
         {
             _storageHelper = storageHelper;
             _dbContext = dbContext;
+            UserManager = userManager;
+            Configuration = configuration;
+            JwtService = jwtService;
         }
 
         [Authorize]
@@ -231,7 +240,7 @@ namespace vomsProject.Controllers
         }
 
         /// <summary>
-        /// Edits a selected solution. 
+        /// Edits a selected solution.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -257,6 +266,23 @@ namespace vomsProject.Controllers
                 Console.WriteLine(e);
                 return RedirectToAction("index", e);
             }
+        }
+
+        /// <summary>
+        /// This handler redirects to the login handler on the solution.
+        /// </summary>
+        /// <param name="id">The id for the solution to be logged in on.</param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> LoginToSolution(int id)
+        {
+            // It is important that we use the user that is logged in.
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = _dbContext.Solutions.Find(id);
+            var token = new JwtSecurityTokenHandler().WriteToken(JwtService.CreateOneTimeToken(user));
+            // TODO: use solution helper
+            return Redirect($"https://{solution.Subdomain}.{Configuration["RootDomain"]}:5001/Login/?token={token}");
         }
     }
 }

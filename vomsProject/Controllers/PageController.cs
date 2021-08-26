@@ -3,9 +3,12 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
@@ -18,36 +21,31 @@ namespace vomsProject.Controllers
         private readonly IConfiguration Configuration;
         private readonly ApplicationDbContext Context;
         private readonly UserManager<User> UserManager;
+        private readonly SignInManager<User> SignInManager;
         private readonly string RootDomain;
         private readonly SolutionHelper _solutionHelper;
         private readonly DomainHelper _domainHelper;
+        private readonly JwtService JwtService;
 
-        public PageController(ILogger<PageController> logger, IConfiguration configuration, 
-            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper, DomainHelper domainHelper)
+        public PageController(ILogger<PageController> logger, IConfiguration configuration,
+            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper, DomainHelper domainHelper, SignInManager<User> signInManager, JwtService jwtService)
         {
             _logger = logger;
             Configuration = configuration;
             Context = context;
             UserManager = userManager;
+            SignInManager = signInManager;
             RootDomain = Configuration["RootDomain"];
             _solutionHelper = solutionHelper;
             _domainHelper = domainHelper;
+            JwtService = jwtService;
         }
 
-        // Get the solution from a domain. This function returns a set of one or zero solutions.
-        private IQueryable<Solution> GetSolution(string domain)
-        {
-            if (domain.EndsWith(RootDomain))
-            {
-                var subdomain = domain.Substring(0, domain.Length - (RootDomain.Length + 1)); // + 1 for extra dot
-                return Context.Solutions.Where((solution) => solution.Subdomain == subdomain);
-            }
-            else
-            {
-                return Context.Solutions.Where((solution) => solution.Domain == domain);
-            }
-        }
-
+        /// <summary>
+        /// This is the page dispatcher. Each request for a page on a soultion is looked up by this handler.
+        /// </summary>
+        /// <param name="pageName">The name of the page</param>
+        /// <returns></returns>
         public async Task<IActionResult> Index(string pageName)
         {
             if (pageName == null)
@@ -55,7 +53,7 @@ namespace vomsProject.Controllers
                 pageName = "";
             }
             var userTask = UserManager.GetUserAsync(HttpContext.User);
-            var solution = GetSolution(Request.Host.Host);
+            var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             var user = await userTask;
             if (user != null)
             {
@@ -80,6 +78,31 @@ namespace vomsProject.Controllers
                 return View(publishedPage);
             }
             return NotFound();
+        }
+        /// <summary>
+        /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
+        /// </summary>
+        /// <param name="token">Jwt token used to authenticate. The subject is the id for the user.</param>
+        /// <returns></returns>
+        [HttpGet]
+        public async Task<IActionResult> Login(string token)
+        {
+            try
+            {
+                SecurityToken loginToken;
+                new JwtSecurityTokenHandler().ValidateToken(token, JwtService.TokenValidationParamters, out loginToken);
+                var jwtToken = (JwtSecurityToken)loginToken;
+                var userId = jwtToken.Subject;
+                var user = await UserManager.FindByIdAsync(userId);
+                await SignInManager.SignInAsync(user, true);
+                // TODO: use solution helper
+                return Redirect("https://" + Request.Host.Value);
+            }
+            catch
+            {
+                // Faild to authenticate
+                return RedirectToAction("Index", "Home");
+            }
         }
     }
 }

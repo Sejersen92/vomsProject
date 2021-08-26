@@ -47,6 +47,7 @@
                                 </div>
                                 <div class="card-footer">
                                     <div class="btn-group">
+                                        @Html.ActionLink("Login", "LoginToSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
                                         @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
                                         @Html.ActionLink("Delete", "DeleteSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
                                     </div>
