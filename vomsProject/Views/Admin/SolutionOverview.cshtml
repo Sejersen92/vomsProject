@@ -14,7 +14,7 @@
                 <h5 class="card-title">@thePage.PageName</h5>
             </div>
             <div class="card-body">
-                @Html.ActionLink("See content", "index", "Page", new { pageName = thePage.PageName }, new { @class = "card-link" })
+                <a href="https://@(Model.Solution.Subdomain).localhost:5001/@thePage.PageName" class="card-link">Edit page</a>
                 @Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = thePage.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
             </div>
         </div>
