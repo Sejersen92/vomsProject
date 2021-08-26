@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
 using System.Collections.Generic;
@@ -16,17 +17,23 @@ namespace vomsProject.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly DatabaseHelper _databaseHelper;
         private readonly ApplicationDbContext _dbContext;
+        private readonly IConfiguration _configuration;
 
-        public HomeController(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext)
+        public HomeController(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _logger = logger;
             _databaseHelper = databaseHelper;
             _dbContext = dbContext;
+            _configuration = configuration;
         }
 
         public IActionResult Index()
         {
-            var model = new HomePageViewModel { Solutions = _databaseHelper.GetSolutions(_dbContext) };
+            var model = new HomePageViewModel 
+            { 
+                Solutions = _databaseHelper.GetSolutions(_dbContext), 
+                DestinationUrl = $".{_configuration.GetValue<string>("RootDomain")}:5001/" 
+            };
 
             return View(model);
         }

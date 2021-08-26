@@ -11,20 +11,33 @@
     {
         if (solution != null)
         {
-            <a asp-action="Solution" asp-controller="Preview" asp-route-id="@solution.Id" class="m-2">
-                <div class="card">
-                    <div class="card-header">
-                        <h3 class="card-title">@solution.Subdomain</h3>
-                    </div>
-                    <div class="card-body">
-                        @foreach (var user in solution.Users)
-                        {
-                            <p class="card-text">@user</p>
-                        }
+            if (User.Identity.IsAuthenticated)
+            {
+                <a asp-action="Solution" asp-controller="Preview" asp-route-id="@solution.Id" class="m-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">@solution.Subdomain</h3>
+                        </div>
+                        <div class="card-body">
+                            @foreach (var user in solution.Users)
+                            {
+                                <p class="card-text">@user</p>
+                            }
 
+                        </div>
                     </div>
-                </div>
-            </a>
+                </a>
+            }
+            else
+            {
+                <a href="https://@(solution.Subdomain + Model.DestinationUrl)" class="m-2">
+                    <div class="card">
+                        <div class="card-header">
+                            <h3 class="card-title">@solution.Subdomain</h3>
+                        </div>
+                    </div>
+                </a>
+            }
         }
     }
 </div>

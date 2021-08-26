@@ -9,5 +9,6 @@ namespace vomsProject.Models
     public class HomePageViewModel
     {
         public IEnumerable<Solution> Solutions { get; set; }
+        public string DestinationUrl { get; set; }
     }
 }

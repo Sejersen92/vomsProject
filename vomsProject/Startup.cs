@@ -33,8 +33,8 @@ namespace vomsProject
 
             services.Add(new ServiceDescriptor(typeof(StorageHelper), (provider) 
                 => new StorageHelper(Configuration.GetConnectionString("BlobStorageConnection"), Configuration["BlobStorageName"]), ServiceLifetime.Scoped));
-            services.Add(new ServiceDescriptor(typeof(DatabaseHelper), (provider)
-                => new DatabaseHelper(),ServiceLifetime.Scoped));
+            services.AddScoped(typeof(DatabaseHelper));
+            services.AddScoped(typeof(SolutionHelper));
         }
         private bool isHostRootDomain(HttpContext context)
         {

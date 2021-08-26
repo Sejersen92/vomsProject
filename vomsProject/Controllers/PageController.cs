@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vomsProject.Data;
+using vomsProject.Helpers;
 
 namespace vomsProject.Controllers
 {
@@ -18,13 +19,16 @@ namespace vomsProject.Controllers
         private readonly ApplicationDbContext Context;
         private readonly UserManager<User> UserManager;
         private readonly string RootDomain;
-        public PageController(ILogger<PageController> logger, IConfiguration configuration, ApplicationDbContext context, UserManager<User> userManager)
+        private readonly SolutionHelper _solutionHelper;
+        public PageController(ILogger<PageController> logger, IConfiguration configuration, 
+            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper)
         {
             _logger = logger;
             Configuration = configuration;
             Context = context;
             UserManager = userManager;
             RootDomain = Configuration["RootDomain"];
+            _solutionHelper = solutionHelper;
         }
 
         // Get the solution from a domain. This function returns a set of one or zero solutions.
@@ -41,46 +45,6 @@ namespace vomsProject.Controllers
             }
         }
 
-        // Get the page by name belonging to the solution. Returns null if the page dosen't exist
-        private async Task<Page> GetPage(IQueryable<Solution> solution, string pageName)
-        {
-            try
-            {
-                return await solution.SelectMany((solution) => solution.Pages)
-                    .SingleAsync((page) => page.PageName == pageName);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return null;
-            }
-        }
-
-        // Get the page by name belonging to the solution. Returns null if the page dosen't exist or it is not published
-        private async Task<Page> GetPageIfPublished(IQueryable<Solution> solution, string pageName)
-        {
-            try
-            {
-                var page = await solution.SelectMany((solution) => solution.Pages)
-                    .SingleAsync((page) => page.PageName == pageName);
-                if (page.IsPublished)
-                {
-                    return page;
-                }
-                return null;
-            }
-            catch (InvalidOperationException ex)
-            {
-                return null;
-            }
-        }
-
-        private async Task<bool> IsUserOnSoulution(Solution solution, User user)
-        {
-            return await Context.Permissions.AnyAsync((permission) =>
-                solution == permission.Solution
-                && user == permission.User);
-        }
-
         public async Task<IActionResult> Index(string pageName)
         {
             if (pageName == null)
@@ -93,9 +57,9 @@ namespace vomsProject.Controllers
             if (user != null)
             {
                 var theSolution = await solution.SingleOrDefaultAsync();
-                if (theSolution != null && await IsUserOnSoulution(theSolution, user))
+                if (theSolution != null && await _solutionHelper.IsUserOnSolution(theSolution, user))
                 {
-                    var page = await GetPage(solution, pageName);
+                    var page = await _solutionHelper.GetPage(solution, pageName);
                     if (page == null)
                     {
                         // We will store the page if it gets saved
@@ -106,7 +70,7 @@ namespace vomsProject.Controllers
                     return View(page);
                 }
             }
-            var publishedPage = await GetPageIfPublished(solution, pageName);
+            var publishedPage = await _solutionHelper.GetPageIfPublished(solution, pageName);
             if (publishedPage != null)
             {
                 // TODO: we should return an non editable page

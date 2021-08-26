@@ -94,6 +94,10 @@ namespace vomsProject.Controllers
         {
             try
             {
+                if (title == null)
+                {
+                    title = "";
+                }
                 var page = new Page()
                 {
                     PageName = title,
@@ -170,12 +174,13 @@ namespace vomsProject.Controllers
         {
             try
             {
-                var solution = await _dbContext.Solutions.FirstOrDefaultAsync(x => x.Id == solutionId);
+                var solution = await _dbContext.Solutions.Include(solution => solution.Users).FirstOrDefaultAsync(x => x.Id == solutionId);
                 var user = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
 
                 if (user == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
 
                 solution.Users.Add(user);
+
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
@@ -214,6 +219,35 @@ namespace vomsProject.Controllers
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index");
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                return RedirectToAction("index", e);
+            }
+        }
+
+        /// <summary>
+        /// Edits a selected solution. 
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> EditSolution(int id)
+        {
+            try
+            {
+                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == id);
+
+                if (currentSolution == null) return BadRequest("Something went wrong.");
+                if (currentSolution.Users == null) return BadRequest("Something went wrong. (NUF)");
+                if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
+
+                currentSolution.Domain = "";
+
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("index");
             }
             catch (Exception e)
             {
