@@ -34,9 +34,13 @@ namespace vomsProject.Controllers
         {
             var model = new HomePageViewModel 
             { 
-                Solutions = _databaseHelper.GetSolutions(_dbContext), 
-                DestinationUrl = _domainHelper.GetIndexPageUrl(_databaseHelper.GetSolutions(_dbContext).FirstOrDefault()) 
+                Solutions = _databaseHelper.GetSolutions(_dbContext)
             };
+
+            foreach (var solution in model.Solutions)
+            {
+                solution.DestinationUrl = _domainHelper.GetIndexPageUrl(solution);
+            }
 
             return View(model);
         }
