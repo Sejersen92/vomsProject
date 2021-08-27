@@ -35,11 +35,14 @@ namespace vomsProject.Controllers
         [Authorize]
         public IActionResult SolutionOverview([FromRoute] int id)
         {
+            var solution = _dbContext.Solutions
+                .Include(x => x.Users)
+                .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
             var model = new PageOverview
             {
-                Pages = _dbContext.Pages.Where(x => x.Solution.Id == id).ToList(),
+                Pages = solution?.Pages,
                 SolutionId = id,
-                Solution = _dbContext.Solutions.Include(x => x.Users).FirstOrDefault(x => x.Id == id)
+                Solution = solution
             };
 
             return View(model);
