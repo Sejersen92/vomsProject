@@ -82,7 +82,7 @@ namespace vomsProject.Controllers
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
         /// </summary>
-        /// <param name="token">Jwt token used to authenticate. The subject is the id for the user.</param>
+        /// <param name="token">Jwt token used to authenticate. The token subject is the id for the user.</param>
         /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Login(string token)
