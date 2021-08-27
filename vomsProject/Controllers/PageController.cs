@@ -95,14 +95,26 @@ namespace vomsProject.Controllers
                 var userId = jwtToken.Subject;
                 var user = await UserManager.FindByIdAsync(userId);
                 await SignInManager.SignInAsync(user, true);
-                // TODO: use solution helper
-                return Redirect("https://" + Request.Host.Value);
+                var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host).FirstOrDefault();
+                return Redirect(_domainHelper.GetIndexPageUrl(solution));
             }
             catch
             {
                 // Faild to authenticate
                 return RedirectToAction("Index", "Home");
             }
+        }
+
+        /// <summary>
+        /// Log out a user from the solution. Then redirect to index page.
+        /// </summary>
+        /// <returns></returns>
+        [HttpPost]
+        public async Task<IActionResult> Logout()
+        {
+            await SignInManager.SignOutAsync();
+            var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host).FirstOrDefault();
+            return Redirect(_domainHelper.GetIndexPageUrl(solution));
         }
     }
 }

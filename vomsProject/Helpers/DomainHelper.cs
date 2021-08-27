@@ -28,7 +28,7 @@ namespace vomsProject.Helpers
         public string GetDestinationUrl(Page page)
         {
             var solution = page.Solution;
-            var destinationUrl = $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}:5001/{page.PageName}";
+            var destinationUrl = $"https://{solution.Subdomain}.{_configuration.GetValue<string>("RootDomain")}:5001/{page.PageName}";
 
             return destinationUrl;
         }
@@ -37,11 +37,11 @@ namespace vomsProject.Helpers
         {
             if (solution != null)
             {
-                return $"{solution.Domain}.{_configuration.GetValue<string>("RootDomain")}:5001/";
+                return $"https://{solution.Subdomain}.{_configuration.GetValue<string>("RootDomain")}:5001/";
             }
             else
             {
-                return null;
+                throw new ArgumentException("Solution cannot be null");
             }
         }
     }

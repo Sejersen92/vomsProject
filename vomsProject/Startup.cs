@@ -86,6 +86,10 @@ namespace vomsProject
                 app.UseEndpoints(endpoints =>
                 {
                     endpoints.MapControllerRoute(
+                        name: "Logout",
+                        pattern: "/Logout",
+                        defaults: new { controller = "Page", action = "Logout" });
+                    endpoints.MapControllerRoute(
                         name: "Login",
                         pattern: "/Login",
                         defaults: new { controller = "Page", action = "Login" });
