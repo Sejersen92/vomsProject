@@ -82,7 +82,8 @@ namespace vomsProject.Controllers
                         // TODO: a better title could be generated, this is just the path
                         title = page.PageName,
                         header = "<header><nav></nav></header>",
-                        footer = "<footer></footer>"
+                        footer = "<footer></footer>",
+                        isPublished = page.IsPublished
                     });
                 }
             }

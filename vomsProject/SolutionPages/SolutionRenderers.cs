@@ -15,6 +15,7 @@ namespace vomsProject.SolutionPages
         public string title;
         public string header;
         public string footer;
+        public bool isPublished;
     }
     public class PageModel
     {

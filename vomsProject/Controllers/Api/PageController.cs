@@ -96,7 +96,28 @@ namespace vomsProject.Controllers.Api
             await _context.SaveChangesAsync();
             return Ok();
         }
+
+        [Authorize]
+        [Route("{id}/unpublish")]
+        [HttpPost]
+        public async Task<IActionResult> UnPublish(int id)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await _context.Pages.FirstOrDefaultAsync(page => page.Id == id);
+
+            page.PublishedVersion = null;
+            page.HtmlRenderContent = "";
+            page.IsPublished = false;
+
             await _context.SaveChangesAsync();
+            return Ok();
         }
     }
 }

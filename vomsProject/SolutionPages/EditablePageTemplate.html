@@ -55,6 +55,12 @@
             #editor-menu.show {
                 display: block;
             }
+        #unpublish {
+            display: none;
+        }
+        #unpublish.show{
+            display: block;
+        }
     </style>
 </head>
 <body>
@@ -67,7 +73,11 @@
         <li>
             <button onclick="publish()">Publish</button>
         </li>
+        <li id="unpublish">
+            <button onclick="unpublish()">Unpublish</button>
+        </li>
         <li>
+            <!-- Use a form for logout, so that you can logout without javascript -->
             <form action="/Logout" method="post">
                 <button>Logout</button>
             </form>
@@ -112,6 +122,10 @@
                 data: JSON.stringify(quill.getContents())
             });
         }
+        var unpublishButton = $("#unpublish");
+        {{#isPublished}};
+        unpublishButton.addClass("show");
+        {{/isPublished}}
         function publish() {
             $.ajax({
                 type: "POST",
@@ -120,7 +134,19 @@
                 data: JSON.stringify({
                     content: quill.getContents(),
                     html: quill.root.innerHTML
-                })
+                }),
+                success: function () {
+                    unpublishButton.addClass("show");
+                }
+            });
+        }
+        function unpublish() {
+            $.ajax({
+                type: "POST",
+                url: "/api/page/{{{ id }}}/unpublish",
+                success: function () {
+                    unpublishButton.removeClass("show");
+                }
             });
         }
     </script>
