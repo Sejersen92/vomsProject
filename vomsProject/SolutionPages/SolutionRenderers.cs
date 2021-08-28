@@ -24,18 +24,17 @@ namespace vomsProject.SolutionPages
         public string header;
         public string footer;
     }
+    public class Page404Model
+    {
+        public string solutionName;
+    }
 
     public class SolutionRenderers
     {
         public static readonly SolutionRenderers Instance = new SolutionRenderers();
         public readonly Func<EditablePageModel, string> EditablePageRenderer;
         public readonly Func<PageModel, string> PageRenderer;
-
-        private readonly string Page404;
-        public string Status404Renderer()
-        {
-            return Page404;
-        }
+        public readonly Func<Page404Model, string> Status404Renderer;
 
         private SolutionRenderers()
         {
@@ -49,7 +48,7 @@ namespace vomsProject.SolutionPages
             {
                 EditablePageRenderer = Stubble.Compile<EditablePageModel>(editablePage.ReadToEnd());
                 PageRenderer = Stubble.Compile<PageModel>(page.ReadToEnd());
-                Page404 = page404.ReadToEnd();
+                Status404Renderer = Stubble.Compile<Page404Model>(page404.ReadToEnd());
             }
         }
     }

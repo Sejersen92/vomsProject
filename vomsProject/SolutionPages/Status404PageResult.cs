@@ -12,6 +12,11 @@ namespace vomsProject.SolutionPages
 {
     public class Status404PageResult : IActionResult
     {
+        private Page404Model Page404Model;
+        public Status404PageResult(Page404Model page404Model)
+        {
+            Page404Model = page404Model;
+        }
         public async Task ExecuteResultAsync(ActionContext context)
         {
             context.HttpContext.Response.StatusCode = StatusCodes.Status404NotFound;
@@ -20,7 +25,7 @@ namespace vomsProject.SolutionPages
             var body = new StreamWriter(context.HttpContext.Response.Body, Encoding.UTF8);
             try
             {
-                await body.WriteAsync(SolutionRenderers.Instance.Status404Renderer());
+                await body.WriteAsync(SolutionRenderers.Instance.Status404Renderer(Page404Model));
             }
             finally
             {

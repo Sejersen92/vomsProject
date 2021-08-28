@@ -99,7 +99,12 @@ namespace vomsProject.Controllers
                     footer = "<footer></footer>"
                 });
             }
-            return new Status404PageResult();
+            var theSolution1 = await solution.SingleOrDefaultAsync();
+            return new Status404PageResult(new Page404Model()
+            {
+                // TODO: Could we get a better name?
+                solutionName = theSolution1.Subdomain
+            });
         }
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
