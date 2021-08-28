@@ -19,9 +19,9 @@
                             <h3 class="card-title">@solution.Subdomain</h3>
                         </div>
                         <div class="card-body">
-                            @foreach (var user in solution.Users)
+                            @foreach (var permission in solution.Permissions)
                             {
-                                <p class="card-text">@user</p>
+                                <p class="card-text">@permission.User</p>
                             }
 
                         </div>

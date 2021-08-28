@@ -8,6 +8,6 @@ namespace vomsProject.Data
 {
     public class User : IdentityUser
     {
-        public ICollection<Solution> Solutions { get; set; }
+        public ICollection<Permission> Permissions { get; set; }
     }
 }

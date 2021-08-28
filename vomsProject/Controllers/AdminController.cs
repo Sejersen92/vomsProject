@@ -45,7 +45,7 @@ namespace vomsProject.Controllers
         public IActionResult SolutionOverview([FromRoute] int id)
         {
             var solution = _dbContext.Solutions
-                .Include(x => x.Users)
+                .Include(x => x.Permissions).ThenInclude(x => x.User)
                 .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
             var model = new PageOverview
             {
@@ -86,8 +86,7 @@ namespace vomsProject.Controllers
             var databaseUsers = _dbContext.Users.Where(user => userList.Contains(user.UserName) || user.Id == userid);
             var project = new Solution()
             {
-                Subdomain = title,
-                Users = databaseUsers.ToList(),
+                Subdomain = title
             };
             _dbContext.Solutions.Add(project);
             _dbContext.Permissions.AddRange(databaseUsers.Select(user => new Permission()
@@ -163,12 +162,9 @@ namespace vomsProject.Controllers
         {
             try
             {
-                var solution = await _dbContext.Solutions.Include(s => s.Users).FirstOrDefaultAsync(x => x.Id == solutionId);
-                var user = await _dbContext.Users.Include(y => y.Solutions).FirstOrDefaultAsync(x => x.Id == id);
+                var permission = _dbContext.Permissions.Include(perm => perm.User).Include(perm => perm.Solution).Where(perm => perm.User.Id == id && perm.Solution.Id == solutionId);
+                _dbContext.Permissions.RemoveRange(permission);
 
-                if (user == null || !user.Solutions.Contains(solution)) return BadRequest("Something went wrong. (SDE/UDE)");
-
-                solution.Users.Remove(user);
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
@@ -186,12 +182,16 @@ namespace vomsProject.Controllers
         {
             try
             {
-                var solution = await _dbContext.Solutions.Include(solution => solution.Users).FirstOrDefaultAsync(x => x.Id == solutionId);
+                var solution = await _dbContext.Solutions.Include(solution => solution.Permissions).FirstOrDefaultAsync(x => x.Id == solutionId);
                 var user = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
 
                 if (user == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
 
-                solution.Users.Add(user);
+                solution.Permissions.Add(new Permission() 
+                {
+                    PermissionLevel = PermissionLevel.Editor,
+                    User = user
+                });
 
                 await _dbContext.SaveChangesAsync();
 
@@ -219,14 +219,13 @@ namespace vomsProject.Controllers
         {
             try
             {
-                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == id);
+                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).FirstOrDefaultAsync(x => x.Id == id);
 
                 if (currentSolution == null) return BadRequest("Something went wrong.");
-                if (currentSolution.Users == null) return BadRequest("Something went wrong. (NUF)");
                 if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
 
                 currentSolution.Permissions.Clear();
-                currentSolution.Users.Clear();
+                currentSolution.Pages.Clear();
                 _dbContext.Solutions.Remove(currentSolution);
 
                 await _dbContext.SaveChangesAsync();
@@ -250,10 +249,9 @@ namespace vomsProject.Controllers
         {
             try
             {
-                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).Include(x => x.Users).FirstOrDefaultAsync(x => x.Id == id);
+                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).FirstOrDefaultAsync(x => x.Id == id);
 
                 if (currentSolution == null) return BadRequest("Something went wrong.");
-                if (currentSolution.Users == null) return BadRequest("Something went wrong. (NUF)");
                 if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
 
                 currentSolution.Domain = "";

@@ -40,9 +40,9 @@
                                 </div>
                                 <div class="card-body">
                                     <p>Assigned users: </p>
-                                    @foreach (var user in solution.Users)
+                                    @foreach (var permission in solution.Permissions)
                                     {
-                                        <p>@user.UserName</p>
+                                        <p>@permission.User.UserName</p>
                                     }
                                 </div>
                                 <div class="card-footer">
