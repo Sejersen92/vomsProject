@@ -12,6 +12,7 @@ using System.Text;
 using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
+using vomsProject.SolutionPages;
 
 namespace vomsProject.Controllers
 {
@@ -63,21 +64,42 @@ namespace vomsProject.Controllers
                     var page = await _solutionHelper.GetPage(solution, pageName);
                     if (page == null)
                     {
-                        // We will store the page if it gets saved
-                        page = new Page { Solution = theSolution };
+                        page = new Page()
+                        {
+                            PageName = pageName,
+                            Content = "",
+                            HtmlRenderContent = "",
+                            IsPublished = false,
+                            Solution = theSolution
+                        };
+                        Context.Add(page);
+                        Context.SaveChanges();
                     }
 
-                    // return editable page
-                    return View(page);
+                    return new EditablePageResult(new EditablePageModel()
+                    {
+                        id = page.Id,
+                        content = page.Content != "" ? page.Content : "{ops:[]}",
+                        // TODO: a better title could be generated, this is just the path
+                        title = page.PageName,
+                        header = "<header><nav></nav></header>",
+                        footer = "<footer></footer>"
+                    });
                 }
             }
             var publishedPage = await _solutionHelper.GetPageIfPublished(solution, pageName);
             if (publishedPage != null)
             {
-                // TODO: we should return an non editable page
-                return View(publishedPage);
+                return new PageResult(new PageModel()
+                {
+                    content = publishedPage.HtmlRenderContent,
+                    // TODO: a better title could be generated, this is just the path
+                    title = publishedPage.PageName,
+                    header = "<header><nav></nav></header>",
+                    footer = "<footer></footer>"
+                });
             }
-            return NotFound();
+            return new Status404PageResult();
         }
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
