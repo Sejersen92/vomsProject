@@ -1,10 +1,14 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using vomsProject.Data;
+using vomsProject.Helpers;
 
 namespace vomsProject.Controllers.Api
 {
@@ -25,26 +29,73 @@ namespace vomsProject.Controllers.Api
     public class PageController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        public PageController(ApplicationDbContext context)
+        private readonly SolutionHelper SolutionHelper;
+        private readonly UserManager<User> UserManager;
+        public PageController(ApplicationDbContext context, SolutionHelper solutionHelper, UserManager<User> userManager)
         {
             _context = context;
+            SolutionHelper = solutionHelper;
+            UserManager = userManager;
         }
+
+        [Authorize]
         [Route("{id}/update")]
         [HttpPost]
-        public async Task Update(int id, [FromBody] object body)
+        public async Task<IActionResult> Update(int id, [FromBody] object body)
         {
-            var page = _context.Pages.Find(id);
-            page.Content = body.ToString();
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await _context.Pages.Include(page => page.Versions).FirstOrDefaultAsync(page => page.Id == id);
+            var content = new PageContent()
+            {
+                Content = body.ToString(),
+                SavedBy = user,
+                SaveDate = DateTime.UtcNow,
+                Page = page
+            };
+            page.Versions.Add(content);
+            page.LastSavedVersion = content;
+
             await _context.SaveChangesAsync();
+            return Ok();
         }
+
+        [Authorize]
         [Route("{id}/publish")]
         [HttpPost]
-        public async Task Publish(int id, [FromBody] PublishDto body)
+        public async Task<IActionResult> Publish(int id, [FromBody] PublishDto body)
         {
-            var page = _context.Pages.Find(id);
-            page.IsPublished = true;
-            page.Content = body.Content.ToString();
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await _context.Pages.Include(page => page.Versions).FirstOrDefaultAsync(page => page.Id == id);
+            var content = new PageContent()
+            {
+                Content = body.Content.ToString(),
+                SavedBy = user,
+                SaveDate = DateTime.UtcNow,
+                Page = page
+            };
+            page.Versions.Add(content);
+            page.LastSavedVersion = content;
+            page.PublishedVersion = content;
             page.HtmlRenderContent = body.Html;
+            page.IsPublished = true;
+
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
             await _context.SaveChangesAsync();
         }
     }

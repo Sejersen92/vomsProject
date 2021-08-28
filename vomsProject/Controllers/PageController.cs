@@ -67,7 +67,6 @@ namespace vomsProject.Controllers
                         page = new Page()
                         {
                             PageName = pageName,
-                            Content = "",
                             HtmlRenderContent = "",
                             IsPublished = false,
                             Solution = theSolution
@@ -79,7 +78,7 @@ namespace vomsProject.Controllers
                     return new EditablePageResult(new EditablePageModel()
                     {
                         id = page.Id,
-                        content = page.Content != "" ? page.Content : "{ops:[]}",
+                        content = page.LastSavedVersion != null ? page.LastSavedVersion.Content : "{ops:[]}",
                         // TODO: a better title could be generated, this is just the path
                         title = page.PageName,
                         header = "<header><nav></nav></header>",

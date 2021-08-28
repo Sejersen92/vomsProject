@@ -35,6 +35,7 @@ namespace vomsProject.Helpers
             try
             {
                 return await solution.SelectMany((solution) => solution.Pages)
+                    .Include((page) => page.LastSavedVersion)
                     .SingleAsync((page) => page.PageName == pageName);
             }
             catch (InvalidOperationException ex)

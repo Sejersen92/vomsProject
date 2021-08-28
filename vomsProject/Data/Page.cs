@@ -13,14 +13,16 @@ namespace vomsProject.Data
         public string PageName { get; set; }
 
         // This is the content that we load into the editor. (Editable content)
-        public string Content { get; set; }
+        public PageContent LastSavedVersion { get; set; }
 
         // This is the content to be displayed when the page is published.  (Renderable content)
         public string HtmlRenderContent { get; set; }
+        public PageContent PublishedVersion { get; set; }
 
         public bool IsPublished { get; set; }
 
         public Solution Solution { get; set; }
+        public ICollection<PageContent> Versions { get; set; }
 
         [NotMapped]
         public string DestinationUrl { get; set; }
