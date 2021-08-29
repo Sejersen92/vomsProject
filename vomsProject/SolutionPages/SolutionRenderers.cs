@@ -8,27 +8,6 @@ using System.Threading.Tasks;
 
 namespace vomsProject.SolutionPages
 {
-    public class EditablePageModel
-    {
-        public int id;
-        public string content;
-        public string title;
-        public string header;
-        public string footer;
-        public bool isPublished;
-    }
-    public class PageModel
-    {
-        public string content;
-        public string title;
-        public string header;
-        public string footer;
-    }
-    public class Page404Model
-    {
-        public string solutionName;
-    }
-
     public class SolutionRenderers
     {
         public static readonly SolutionRenderers Instance = new SolutionRenderers();
