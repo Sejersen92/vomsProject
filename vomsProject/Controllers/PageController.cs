@@ -110,9 +110,10 @@ namespace vomsProject.Controllers
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
         /// </summary>
         /// <param name="token">Jwt token used to authenticate. The token subject is the id for the user.</param>
+        /// <param name="pageName">Page to redirect to after login. This paramter is optional and defaults to the index page.</param>
         /// <returns></returns>
         [HttpGet]
-        public async Task<IActionResult> Login(string token)
+        public async Task<IActionResult> Login(string token, string pageName)
         {
             try
             {
@@ -122,8 +123,18 @@ namespace vomsProject.Controllers
                 var userId = jwtToken.Subject;
                 var user = await UserManager.FindByIdAsync(userId);
                 await SignInManager.SignInAsync(user, true);
-                var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host).FirstOrDefault();
-                return Redirect(_domainHelper.GetIndexPageUrl(solution));
+
+                var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
+                var page = await _solutionHelper.GetPage(solution, pageName);
+                if (page == null)
+                {
+                    var theSolutoin = await solution.SingleOrDefaultAsync();
+                    return Redirect(_domainHelper.GetIndexPageUrl(theSolutoin));
+                }
+                else
+                {
+                    return Redirect(_domainHelper.GetDestinationUrl(page));
+                }
             }
             catch
             {

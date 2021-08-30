@@ -23,14 +23,16 @@ namespace vomsProject.Controllers
         private readonly UserManager<User> UserManager;
         private readonly IConfiguration Configuration;
         private readonly JwtService JwtService;
+        private readonly DomainHelper DomainHelper;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService)
+        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper)
         {
             _storageHelper = storageHelper;
             _dbContext = dbContext;
             UserManager = userManager;
             Configuration = configuration;
             JwtService = jwtService;
+            DomainHelper = domainHelper;
         }
 
         [Authorize]
@@ -270,17 +272,24 @@ namespace vomsProject.Controllers
         /// This handler redirects to the login handler on the solution.
         /// </summary>
         /// <param name="id">The id for the solution to be logged in on.</param>
+        /// <param name="pageName">Page to redirect to after login. This paramter is optional and defaults to the index page.</param>
         /// <returns></returns>
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> LoginToSolution(int id)
+        public async Task<IActionResult> LoginToSolution(int id, string pageName)
         {
             // It is important that we use the user that is logged in.
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = _dbContext.Solutions.Find(id);
             var token = new JwtSecurityTokenHandler().WriteToken(JwtService.CreateOneTimeToken(user));
-            // TODO: use solution helper
-            return Redirect($"https://{solution.Subdomain}.{Configuration["RootDomain"]}:5001/Login/?token={token}");
+            if (pageName == null)
+            {
+                return Redirect($"{DomainHelper.GetIndexPageUrl(solution)}Login?token={token}");
+            }
+            else
+            {
+                return Redirect($"{DomainHelper.GetIndexPageUrl(solution)}Login?token={token}&pageName={pageName}");
+            }
         }
     }
 }
