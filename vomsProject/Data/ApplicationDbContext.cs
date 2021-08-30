@@ -14,6 +14,7 @@ namespace vomsProject.Data
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Solution> Solutions { get; set; }
         public DbSet<Image> Images { get; set; }
+        public DbSet<Style> Styles { get; set; }
         public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options)
             : base(options)
         {
@@ -29,6 +30,16 @@ namespace vomsProject.Data
             modelBuilder.Entity<Page>()
                 .HasMany(p => p.Versions)
                 .WithOne(c => c.Page);
+
+            using (var style1 = new System.IO.StreamReader("Data/SeedData/Styles/style1.css"))
+            {
+                modelBuilder.Entity<Style>().HasData(new Style
+                {
+                    Id = 1,
+                    Name = "Style 1",
+                    Css = style1.ReadToEnd()
+                });
+            }
         }
     }
 }

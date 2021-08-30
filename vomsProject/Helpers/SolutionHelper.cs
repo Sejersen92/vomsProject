@@ -29,7 +29,12 @@ namespace vomsProject.Helpers
             RootDomain = Configuration["RootDomain"];
         }
 
-        // Get the page by name belonging to the solution. Returns null if the page dosen't exist
+        /// <summary>
+        /// Get the page by name belonging to the solution.
+        /// </summary>
+        /// <param name="solution">A query for a single solution</param>
+        /// <param name="pageName">The url path for the page</param>
+        /// <returns>Returns null if the page dosen't exist.</returns>
         public async Task<Page> GetPage(IQueryable<Solution> solution, string pageName)
         {
             try
@@ -45,7 +50,12 @@ namespace vomsProject.Helpers
             }
         }
 
-        // Get the page by name belonging to the solution. Returns null if the page dosen't exist or it is not published
+        /// <summary>
+        /// Get the page by name belonging to the solution.
+        /// </summary>
+        /// <param name="solution">A query for a single solution</param>
+        /// <param name="pageName">The url path for the page</param>
+        /// <returns>Returns null if the page dosen't exist or it is not published.</returns>
         public async Task<Page> GetPageIfPublished(IQueryable<Solution> solution, string pageName)
         {
             try
@@ -63,13 +73,39 @@ namespace vomsProject.Helpers
             }
         }
 
+        /// <summary>
+        /// Check if a User has access to a Solution. This funcion will make a lookup in the permissions table.
+        /// </summary>
+        /// <param name="solution">The Solution</param>
+        /// <param name="user">The User</param>
+        /// <returns>Returns true if a user has access.</returns>
         public async Task<bool> IsUserOnSolution(Solution solution, User user)
         {
             return await Context.Permissions.AnyAsync((permission) =>
                 solution == permission.Solution
                 && user == permission.User);
         }
-        // Get the solution from a domain. This function returns a set of one or zero solutions.
+
+        /// <summary>
+        /// Check if a User has the specified permission level on a Solution. This funcion will make a lookup in the permissions table.
+        /// </summary>
+        /// <param name="user">The User</param>
+        /// <param name="solution">The Solution</param>
+        /// <param name="permissionLevel">The required permission level</param>
+        /// <returns>Returns true if a user has access.</returns>
+        public async Task<bool> DoUserHavePermissionOnSolution(User user, Solution solution, PermissionLevel permissionLevel)
+        {
+            return await Context.Permissions.AnyAsync((permission) =>
+                solution == permission.Solution
+                && user == permission.User
+                && permission.PermissionLevel == permissionLevel);
+        }
+
+        /// <summary>
+        /// Get the solution from a domain.
+        /// </summary>
+        /// <param name="domain">The domain name a solution was requested for.</param>
+        /// <returns>Returns a set of one or zero solutions.</returns>
         public IQueryable<Solution> GetSolutionByDomainName(string domain)
         {
             if (domain.EndsWith(RootDomain))

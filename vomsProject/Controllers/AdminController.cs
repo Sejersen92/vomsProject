@@ -24,8 +24,9 @@ namespace vomsProject.Controllers
         private readonly IConfiguration Configuration;
         private readonly JwtService JwtService;
         private readonly DomainHelper DomainHelper;
+        private readonly SolutionHelper SolutionHelper;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper)
+        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, SolutionHelper solutionHelper)
         {
             _storageHelper = storageHelper;
             _dbContext = dbContext;
@@ -33,6 +34,7 @@ namespace vomsProject.Controllers
             Configuration = configuration;
             JwtService = jwtService;
             DomainHelper = domainHelper;
+            SolutionHelper = solutionHelper;
         }
 
         [Authorize]
@@ -47,16 +49,25 @@ namespace vomsProject.Controllers
         public IActionResult SolutionOverview([FromRoute] int id)
         {
             var solution = _dbContext.Solutions
+                .AsSplitQuery()
                 .Include(x => x.Permissions).ThenInclude(x => x.User)
                 .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
-            var model = new PageOverview
-            {
-                Pages = solution?.Pages,
-                SolutionId = id,
-                Solution = solution
-            };
 
-            return View(model);
+            var stylesheets = _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToList();
+            if (solution != null)
+            {
+                var model = new PageOverview
+                {
+                    Pages = solution.Pages,
+                    SolutionId = id,
+                    Solution = solution,
+                    StyleSheets = stylesheets,
+                    SelectedStyleId = solution.StyleId.HasValue ? solution.StyleId.Value : null
+                };
+
+                return View(model);
+            }
+            return NotFound();
         }
 
         [Authorize]
@@ -86,9 +97,11 @@ namespace vomsProject.Controllers
             var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
             var userList = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
             var databaseUsers = _dbContext.Users.Where(user => userList.Contains(user.UserName) || user.Id == userid);
+            var style = await _dbContext.Styles.FirstOrDefaultAsync();
             var project = new Solution()
             {
-                Subdomain = title
+                Subdomain = title,
+                Style = style
             };
             _dbContext.Solutions.Add(project);
             _dbContext.Permissions.AddRange(databaseUsers.Select(user => new Permission()
@@ -99,6 +112,23 @@ namespace vomsProject.Controllers
             }));
             await _dbContext.SaveChangesAsync();
             return Index();
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = _dbContext.Solutions.Find(solutionId);
+            if (solution == null || !await SolutionHelper.DoUserHavePermissionOnSolution(user, solution, PermissionLevel.Admin))
+            {
+                return Forbid();
+            }
+
+            solution.StyleId = stylesheet;
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("Index");
         }
 
         [Authorize]

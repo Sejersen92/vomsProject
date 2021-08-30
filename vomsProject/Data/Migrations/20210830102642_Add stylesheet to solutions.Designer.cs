@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vomsProject.Data;
 
 namespace vomsProject.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210830102642_Add stylesheet to solutions")]
+    partial class Addstylesheettosolutions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -318,7 +320,7 @@ namespace vomsProject.Data.Migrations
                     b.Property<string>("Domain")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("StyleId")
+                    b.Property<int?>("StyleId")
                         .HasColumnType("int");
 
                     b.Property<string>("Subdomain")
@@ -341,20 +343,9 @@ namespace vomsProject.Data.Migrations
                     b.Property<string>("Css")
                         .HasColumnType("nvarchar(max)");
 
-                    b.Property<string>("Name")
-                        .HasColumnType("nvarchar(max)");
-
                     b.HasKey("Id");
 
                     b.ToTable("Styles");
-
-                    b.HasData(
-                        new
-                        {
-                            Id = 1,
-                            Css = "* {\r\n    box-sizing: border-box;\r\n}\r\n\r\nbody {\r\n    font-family: sans-serif;\r\n}\r\n",
-                            Name = "Style 1"
-                        });
                 });
 
             modelBuilder.Entity("vomsProject.Data.User", b =>
@@ -558,9 +549,7 @@ namespace vomsProject.Data.Migrations
                 {
                     b.HasOne("vomsProject.Data.Style", "Style")
                         .WithMany()
-                        .HasForeignKey("StyleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .HasForeignKey("StyleId");
 
                     b.Navigation("Style");
                 });

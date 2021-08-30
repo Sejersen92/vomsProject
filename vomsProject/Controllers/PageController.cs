@@ -106,6 +106,14 @@ namespace vomsProject.Controllers
                 solutionName = theSolution1.Subdomain
             });
         }
+
+        public async Task<IActionResult> Style()
+        {
+            var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var style = await solution.Include(solution => solution.Style).Select(solution => solution.Style).SingleOrDefaultAsync();
+
+            return new FileContentResult(Encoding.UTF8.GetBytes(style.Css), "text/css");
+        }
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
         /// </summary>

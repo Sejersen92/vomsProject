@@ -5,6 +5,7 @@
 
 @model PageOverview
 
+
 <div class="Solutions mb-3">
     <h3>Here are you pages:</h3>
     @foreach (var thePage in Model.Pages)
@@ -43,6 +44,28 @@
     <h5 class="card-title">Solution-options</h5>
     <h6 class="card-subtitle mb-2">In this section you can add or remove user-access to this solution, and, if needed, delete this solution as well.</h6>
     <div class="card-body">
+        <form asp-action="UpdateSolution" asp-controller="Admin" method="post">
+            <div class="input-group mb-2 mt-2">
+                <label class="input-group-text">Select a stylesheet:</label>
+                <select name="stylesheet">
+                    @foreach (var style in Model.StyleSheets)
+                    {
+                        if (Model.SelectedStyleId == style.Id)
+                        {
+                            <option value="@style.Id" selected>@style.Text</option>
+                        }
+                        else
+                        {
+                            <option value="@style.Id">@style.Text</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div style="display: none">
+                <input type="text" name="solutionId" value="@Model.SolutionId" />
+            </div>
+            <input type="submit" value="submit" class="btn btn-primary mb-3" />
+        </form>
         @if (Model.Solution != null)
         {
             <h5 class="card-title">Users</h5>
