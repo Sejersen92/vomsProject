@@ -81,8 +81,8 @@ namespace vomsProject.Controllers
                         content = page.LastSavedVersion != null ? page.LastSavedVersion.Content : "{ops:[]}",
                         // TODO: a better title could be generated, this is just the path
                         title = page.PageName,
-                        header = "<header><nav></nav></header>",
-                        footer = "<footer></footer>",
+                        header = page.Layout != null ? page.Layout.HeaderContent : "",
+                        footer = page.Layout != null ? page.Layout.FooterContent : "",
                         isPublished = page.IsPublished
                     });
                 }
@@ -95,8 +95,8 @@ namespace vomsProject.Controllers
                     content = publishedPage.HtmlRenderContent,
                     // TODO: a better title could be generated, this is just the path
                     title = publishedPage.PageName,
-                    header = "<header><nav></nav></header>",
-                    footer = "<footer></footer>"
+                    header = publishedPage.Layout != null ? publishedPage.Layout.HeaderContent : "",
+                    footer = publishedPage.Layout != null ? publishedPage.Layout.FooterContent : ""
                 });
             }
             var theSolution1 = await solution.SingleOrDefaultAsync();

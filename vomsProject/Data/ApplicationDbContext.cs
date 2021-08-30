@@ -10,6 +10,7 @@ namespace vomsProject.Data
     {
         public DbSet<Page> Pages { get; set; }
         public DbSet<PageContent> PageContents { get; set; }
+        public DbSet<Layout> Layouts { get; set; }
         public DbSet<Permission> Permissions { get; set; }
         public DbSet<Solution> Solutions { get; set; }
         public DbSet<Image> Images { get; set; }

@@ -23,6 +23,7 @@ namespace vomsProject.Data
 
         public Solution Solution { get; set; }
         public ICollection<PageContent> Versions { get; set; }
+        public Layout Layout { get; set; }
 
         [NotMapped]
         public string DestinationUrl { get; set; }

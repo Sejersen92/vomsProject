@@ -36,6 +36,7 @@ namespace vomsProject.Helpers
             {
                 return await solution.SelectMany((solution) => solution.Pages)
                     .Include((page) => page.LastSavedVersion)
+                    .Include((page) => page.Layout)
                     .SingleAsync((page) => page.PageName == pageName);
             }
             catch (InvalidOperationException ex)
@@ -49,8 +50,7 @@ namespace vomsProject.Helpers
         {
             try
             {
-                var page = await solution.SelectMany((solution) => solution.Pages)
-                    .SingleAsync((page) => page.PageName == pageName);
+                var page = await GetPage(solution, pageName);
                 if (page.IsPublished)
                 {
                     return page;
