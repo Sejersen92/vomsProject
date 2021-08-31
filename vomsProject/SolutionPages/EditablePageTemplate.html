@@ -11,9 +11,19 @@
 
     <!-- Core build with no theme, formatting, non-essential modules -->
     <link href="//cdn.quilljs.com/1.3.6/quill.core.css" rel="stylesheet">
+    <!-- important default styles -->
+    <style>
+        /* We would like to be able to shrink the body, so that we can put ui outside the content area. */
+        body {
+            margin: 0;
+            box-sizing: border-box;
+            position: relative;
+        }
+    </style>
     <style>
         #menu-button {
-            position: fixed;
+            box-sizing: border-box;
+            position: absolute;
             right: 5rem;
             top: 5rem;
             width: 3.5em;
@@ -26,53 +36,107 @@
                 background: rgba(0,0,0,0.2)
             }
         #editor-menu {
+            box-sizing: border-box;
             display: none;
-            position: fixed;
+            position: absolute;
             top: 9rem;
             right: 5rem;
             width: 10em;
+        }
+            #editor-menu * {
+                box-sizing: border-box;
+            }
+        .voms-menu {
+            box-sizing: border-box;
             list-style: none;
             border: 3px solid black;
             padding: 0;
             background: white;
             margin: 0;
         }
-            #editor-menu button {
+            .voms-menu * {
+                box-sizing: border-box;
+            }
+            .voms-menu button {
                 border: none;
                 display: block;
                 background: none;
                 padding: 0.2em 0;
                 width: 100%;
             }
-                #editor-menu button:active {
+                .voms-menu button:active {
                     background: rgba(0,0,0,0.2)
                 }
 
-                #editor-menu li + li {
+                .voms-menu li + li {
                     border-top: 1px solid black;
                 }
-            #editor-menu.show {
-                display: block;
-            }
-        #unpublish {
+        #editor-menu.show {
+            display: block;
+        }
+        .hideable {
             display: none;
         }
-        #unpublish.show{
+            .hideable.show {
+                display: block;
+            }
+        body.showVersionHistory {
+            width: calc(100% - 10rem);
+        }
+        .showVersionHistory #versionHistory {
             display: block;
+        }
+        #versionHistory {
+            box-sizing: border-box;
+            position: fixed;
+            display: none;
+            width: 10rem;
+            right: 0;
+            top: 0;
+        }
+        #versionHistory {
+            box-sizing: border-box;
         }
     </style>
 </head>
-<body>
-    <button id="menu-button">Menu</button>
-    <ul id="editor-menu">
+<body data-bind="css: { showVersionHistory: showVersionHistory() }">
+    <ul id="versionHistory" class="voms-menu">
+        {{#versions}}
         <li>
-            <button onclick="save()">Save</button>
+            <button onclick="getVersion({{ id }})"
+                    data-bind="disable: currentVersion() === {{ id }},
+                                attr: { title: getTitle({{ id }}) }">{{saveDate}}</button>
+        </li>
+        {{/versions}}
+    </ul>
+    <button id="menu-button" onclick="toggleMenu()">Menu</button>
+    <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu() }">
+        <li>
+            <button onclick="save()" data-bind="disable: isSaved() && isLatesVersion(),
+                                                attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">Save</button>
         </li>
         <li>
-            <button onclick="publish()">Publish</button>
+            <button onclick="publish()"
+                    data-bind="disable: isSaved() && isPublishedVersion(),
+                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">Publish</button>
         </li>
-        <li id="unpublish">
+        <li class="hideable" data-bind="css: { show: isPublished() }">
             <button onclick="unpublish()">Unpublish</button>
+        </li>
+        <li class="hideable" data-bind="css: { show: isPublished() }">
+            <button onclick="getPublishedVersion()"
+                    data-bind="disable: isSaved() && isPublishedVersion(),
+                        attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : publishedDate() }">
+            Select published version
+            </button>
+        </li>
+        <li>
+            <button onclick="getSavedVersion()"
+                    data-bind="disable: isSaved() && isLatesVersion()
+                               attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : savedDate() }">Select last saved version</button>
+        </li>
+        <li>
+            <button onclick="toggleVersionHistory()">More Versions</button>
         </li>
         <li>
             <!-- Use a form for logout, so that you can logout without javascript -->
@@ -91,20 +155,47 @@
     </footer>
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="/lib/jquery/dist/jquery.min.js"></script>
+    <script src="/lib/knockout/knockout-3.5.1.js"></script>
     <!-- Initialize Quill editor -->
     <script>
-        var menuButton = $("#menu-button");
-        var editorMenu = $("#editor-menu");
-        var showMenu = false;
-        menuButton.on("click", function () {
-            if (showMenu) {
-                editorMenu.removeClass("show");
-                showMenu = false;
-            } else {
-                editorMenu.addClass("show");
-                showMenu = true;
-            }
+        ko.options.deferUpdates = true;
+        var viewModel = {
+            isSaved: ko.observable(true),
+            savedVersion: ko.observable({{ savedVersion }}),
+            savedDate: ko.observable("{{ savedDate }}"),
+            currentVersion: ko.observable({{ savedVersion }}),
+            isPublished: ko.observable({{ isPublished }}),
+            publishedVersion: ko.observable({{ publishedVersion }}),
+            publishedDate: ko.observable("{{ publishedDate }}"),
+            showMenu: ko.observable(false),
+            showVersionHistory: ko.observable(false)
+        };
+
+        // {{#isPublished}}
+        viewModel.isPublished(true);
+        // {{/isPublished}}
+        viewModel.isLatesVersion = ko.pureComputed(function () {
+            return viewModel.savedVersion() === viewModel.currentVersion();
         });
+        viewModel.isPublishedVersion = ko.pureComputed(function () {
+            return viewModel.publishedVersion() === viewModel.currentVersion();
+        });
+        function getTitle(id) {
+            switch (id) {
+                // A page can be both published and saved. If so the publish text takes priority.
+                case viewModel.publishedVersion():
+                    return "Published version";
+                case viewModel.savedVersion():
+                    return "Saved version";
+            }
+            return "";
+        }
+        function toggleMenu() {
+            viewModel.showMenu(!viewModel.showMenu());
+        }
+        function toggleVersionHistory() {
+            viewModel.showVersionHistory(!viewModel.showVersionHistory());
+        }
         var quill = new Quill('#page', {
             modules: {
                 toolbar: [
@@ -117,18 +208,43 @@
             theme: 'bubble'
         });
         quill.setContents({{{ content }}});
-        function save() {
-            $.ajax({
-                type: "POST",
-                url: "/api/page/{{{ id }}}/update",
-                contentType: "application/json",
-                data: JSON.stringify(quill.getContents())
-            });
+        function onChange() {
+            viewModel.isSaved(false);
         }
-        var unpublishButton = $("#unpublish");
-        {{#isPublished}}
-        unpublishButton.addClass("show");
-        {{/isPublished}}
+        ko.computed(function () {
+            if (viewModel.isSaved()) {
+                quill.once("text-change", onChange);
+            }
+        });
+        function whenSaved(saveResult) {
+            viewModel.savedVersion(saveResult.latestVersion);
+            viewModel.savedDate(saveResult.saveDate);
+            viewModel.isSaved(true);
+            viewModel.currentVersion(saveResult.latestVersion);
+        }
+        function save() {
+            if (!viewModel.isSaved()) {
+                if (!viewModel.isLatesVersion()) {
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/page/{{{ id }}}/SetAsLastVersion",
+                        contentType: "application/json",
+                        data: JSON.stringify({
+                            versionId: viewModel.savedVersion()
+                        }),
+                        success: whenSaved
+                    });
+                } else {
+                    $.ajax({
+                        type: "POST",
+                        url: "/api/page/{{{ id }}}/update",
+                        contentType: "application/json",
+                        data: JSON.stringify(quill.getContents()),
+                        success: whenSaved
+                    });
+                }
+            }
+        }
         function publish() {
             $.ajax({
                 type: "POST",
@@ -138,8 +254,11 @@
                     content: quill.getContents(),
                     html: quill.root.innerHTML
                 }),
-                success: function () {
-                    unpublishButton.addClass("show");
+                success: function (saveResult) {
+                    whenSaved(saveResult);
+                    viewModel.publishedVersion(saveResult.latestVersion);
+                    viewModel.publishedDate(saveResult.saveDate);
+                    viewModel.isPublished(true);
                 }
             });
         }
@@ -148,10 +267,37 @@
                 type: "POST",
                 url: "/api/page/{{{ id }}}/unpublish",
                 success: function () {
-                    unpublishButton.removeClass("show");
+                    viewModel.publishedVersion(null);
+                    viewModel.isPublished(false);
                 }
             });
         }
+
+        function getVersion(id) {
+            if (viewModel.isSaved() && viewModel.currentVersion() !== id) {
+                $.ajax({
+                    type: "GET",
+                    url: "/api/page/{{{ id }}}/Version/" + id,
+                    contentType: "application/json",
+                    success: function (content) {
+                        viewModel.isSaved(true);
+                        viewModel.currentVersion(content.id);
+                        quill.off("text-change", onChange);
+                        quill.setContents(JSON.parse(content.content));
+                        quill.once("text-change", onChange);
+                    }
+                });
+            } else {
+                console.log("Version '" + id + "' already selected.");
+            }
+        }
+        function getPublishedVersion() {
+            getVersion(viewModel.publishedVersion());
+        }
+        function getSavedVersion() {
+            getVersion(viewModel.savedVersion())
+        }
+        ko.applyBindings(viewModel);
     </script>
 </body>
 </html>

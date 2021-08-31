@@ -7,11 +7,21 @@ namespace vomsProject.SolutionPages
 {
     public class EditablePageModel
     {
+        public class Version
+        {
+            public int id;
+            public string saveDate;
+        }
         public int id;
         public string content;
         public string title;
         public string header;
         public string footer;
-        public bool isPublished;
+        public string isPublished;
+        public string publishedVersion;
+        public string publishedDate;
+        public string savedVersion;
+        public string savedDate;
+        public IEnumerable<Version> versions;
     }
 }

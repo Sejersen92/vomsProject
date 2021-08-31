@@ -61,7 +61,11 @@ namespace vomsProject.Controllers
                 var theSolution = await solution.SingleOrDefaultAsync();
                 if (theSolution != null && await _solutionHelper.IsUserOnSolution(theSolution, user))
                 {
-                    var page = await _solutionHelper.GetPage(solution, pageName);
+                    var page = await _solutionHelper.PageQuery(solution, pageName)
+                        .Include((page) => page.LastSavedVersion)
+                        .Include((page) => page.PublishedVersion)
+                        .Include((page) => page.Layout)
+                        .SingleAsync((page) => page.PageName == pageName);
                     if (page == null)
                     {
                         page = new Page()
@@ -74,7 +78,11 @@ namespace vomsProject.Controllers
                         Context.Add(page);
                         Context.SaveChanges();
                     }
-
+                    var versions = await Context.PageContents.Where(content => content.Page == page).Select(content => new EditablePageModel.Version()
+                    {
+                        id = content.Id,
+                        saveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                    }).ToListAsync();
                     return new EditablePageResult(new EditablePageModel()
                     {
                         id = page.Id,
@@ -83,11 +91,19 @@ namespace vomsProject.Controllers
                         title = page.PageName,
                         header = page.Layout != null ? page.Layout.HeaderContent : "",
                         footer = page.Layout != null ? page.Layout.FooterContent : "",
-                        isPublished = page.IsPublished
+                        isPublished = page.IsPublished ? "true" : "false",
+                        publishedVersion = page.PublishedVersion != null ? page.PublishedVersion.Id.ToString() : "null",
+                        publishedDate = page.PublishedVersion != null ? page.PublishedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
+                        savedVersion = page.LastSavedVersion != null ? page.LastSavedVersion.Id.ToString() : "null",
+                        savedDate = page.LastSavedVersion != null ? page.LastSavedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
+                        versions = versions
                     });
                 }
             }
-            var publishedPage = await _solutionHelper.GetPageIfPublished(solution, pageName);
+            var publishedPage = await _solutionHelper.PageQuery(solution, pageName)
+                .Where((page) => page.IsPublished)
+                .Include((page) => page.Layout)
+                .SingleOrDefaultAsync();
             if (publishedPage != null)
             {
                 return new PageResult(new PageModel()
@@ -135,7 +151,7 @@ namespace vomsProject.Controllers
 
                 if (pageName != null)
                 {
-                    var page = await _solutionHelper.GetPage(solution, pageName);
+                    var page = await _solutionHelper.PageQuery(solution, pageName).SingleOrDefaultAsync();
                     if (page != null)
                     {
                         return Redirect(_domainHelper.GetDestinationUrl(page));

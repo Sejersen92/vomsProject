@@ -34,43 +34,11 @@ namespace vomsProject.Helpers
         /// </summary>
         /// <param name="solution">A query for a single solution</param>
         /// <param name="pageName">The url path for the page</param>
-        /// <returns>Returns null if the page dosen't exist.</returns>
-        public async Task<Page> GetPage(IQueryable<Solution> solution, string pageName)
+        /// <returns>Returns a set of one or zero pages.</returns>
+        public IQueryable<Page> PageQuery(IQueryable<Solution> solution, string pageName)
         {
-            try
-            {
-                return await solution.SelectMany((solution) => solution.Pages)
-                    .Include((page) => page.LastSavedVersion)
-                    .Include((page) => page.Layout)
-                    .SingleAsync((page) => page.PageName == pageName);
-            }
-            catch (InvalidOperationException ex)
-            {
-                return null;
-            }
-        }
-
-        /// <summary>
-        /// Get the page by name belonging to the solution.
-        /// </summary>
-        /// <param name="solution">A query for a single solution</param>
-        /// <param name="pageName">The url path for the page</param>
-        /// <returns>Returns null if the page dosen't exist or it is not published.</returns>
-        public async Task<Page> GetPageIfPublished(IQueryable<Solution> solution, string pageName)
-        {
-            try
-            {
-                var page = await GetPage(solution, pageName);
-                if (page.IsPublished)
-                {
-                    return page;
-                }
-                return null;
-            }
-            catch (InvalidOperationException ex)
-            {
-                return null;
-            }
+            return solution.SelectMany((solution) => solution.Pages)
+                .Where((page) => page.PageName == pageName);
         }
 
         /// <summary>
