@@ -9,5 +9,7 @@ namespace vomsProject.Data
     public class User : IdentityUser
     {
         public ICollection<Permission> Permissions { get; set; }
+
+        public ProductType ProductVersion { get; set; }
     }
 }
