@@ -112,7 +112,7 @@ namespace vomsProject.Controllers
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             var style = await solution.Include(solution => solution.Style).Select(solution => solution.Style).SingleOrDefaultAsync();
 
-            return new FileContentResult(Encoding.UTF8.GetBytes(style.Css), "text/css");
+            return new FileContentResult(Encoding.UTF8.GetBytes(style != null ? style.Css : ""), "text/css");
         }
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
@@ -123,6 +123,7 @@ namespace vomsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> Login(string token, string pageName)
         {
+            var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             try
             {
                 SecurityToken loginToken;
@@ -132,22 +133,38 @@ namespace vomsProject.Controllers
                 var user = await UserManager.FindByIdAsync(userId);
                 await SignInManager.SignInAsync(user, true);
 
-                var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
-                var page = await _solutionHelper.GetPage(solution, pageName);
-                if (page == null)
+                if (pageName != null)
                 {
-                    var theSolutoin = await solution.SingleOrDefaultAsync();
-                    return Redirect(_domainHelper.GetIndexPageUrl(theSolutoin));
+                    var page = await _solutionHelper.GetPage(solution, pageName);
+                    if (page != null)
+                    {
+                        return Redirect(_domainHelper.GetDestinationUrl(page));
+                    }
                 }
-                else
-                {
-                    return Redirect(_domainHelper.GetDestinationUrl(page));
-                }
+                var theSolutoin = await solution.SingleOrDefaultAsync();
+                return Redirect(_domainHelper.GetIndexPageUrl(theSolutoin));
             }
             catch
             {
+                // TODO: The redirects below might benefit from some abstraction. Like we have with DomainHelper.
+
                 // Faild to authenticate
-                return RedirectToAction("Index", "Home");
+                var theSolutoin = await solution.SingleOrDefaultAsync();
+                if (theSolutoin == null)
+                {
+                    // For normal users this would be if a solution has been deleted, or the domain has been changed.
+                    // In that case they might like to see the over view of sloutions they have access to.
+                    return Redirect($"https://{RootDomain}:5001/Admin/Index");
+                }
+                // If it is just an old token that got resend somehow. The user might like to get back to where they can generate a new token.
+                if (pageName != null)
+                {
+                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolutoin.Id}?pageName={pageName}");
+                }
+                else
+                {
+                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolutoin.Id}");
+                }
             }
         }
 
