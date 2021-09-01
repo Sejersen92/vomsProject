@@ -12,10 +12,14 @@ namespace vomsProject.Data
 
         public string PageName { get; set; }
 
-        // This is the content that we load into the editor. (Editable content)
+        /// <summary>
+        /// The version loaded by default.
+        /// </summary>
         public PageContent LastSavedVersion { get; set; }
 
-        // This is the content to be displayed when the page is published.  (Renderable content)
+        /// <summary>
+        /// The Rendered published version. Used when displayed as a normal page.
+        /// </summary>
         public string HtmlRenderContent { get; set; }
         public PageContent PublishedVersion { get; set; }
 

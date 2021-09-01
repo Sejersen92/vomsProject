@@ -10,8 +10,14 @@ using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
 
+/*
+ This controller is the api used to manage pages.
+ */
 namespace vomsProject.Controllers.Api
 {
+    /// <summary>
+    /// Dto used to publish a page.
+    /// </summary>
     public class PublishDto
     {
         public PublishDto(string html, object content)
@@ -24,10 +30,16 @@ namespace vomsProject.Controllers.Api
         public string Html { get; private set; }
     }
 
+    /// <summary>
+    /// Dto used to change the which version is the latest.
+    /// </summary>
     public class SetLastVersionDto
     {
         public int VersionId { get; set; }
     }
+    /// <summary>
+    /// Result of saveing a page. This is used as the result for both save and publish.
+    /// </summary>
     public class SaveResult
     {
         public int LatestVersion { get; set; }
@@ -47,6 +59,12 @@ namespace vomsProject.Controllers.Api
             UserManager = userManager;
         }
 
+        /// <summary>
+        /// Save a new version and set it as the latest version.
+        /// </summary>
+        /// <param name="id">The id of the page</param>
+        /// <param name="body">The quill delta</param>
+        /// <returns></returns>
         [Authorize]
         [Route("{id}/update")]
         [HttpPost]
@@ -79,6 +97,12 @@ namespace vomsProject.Controllers.Api
             });
         }
 
+        /// <summary>
+        /// Publish and Save a new version. Also set this version as the the latest version.
+        /// </summary>
+        /// <param name="id">The id of the page</param>
+        /// <param name="body">The published version including The quill delta and, the rendered html</param>
+        /// <returns></returns>
         [Authorize]
         [Route("{id}/publish")]
         [HttpPost]
@@ -114,6 +138,11 @@ namespace vomsProject.Controllers.Api
             });
         }
 
+        /// <summary>
+        /// Set the publish status as false.
+        /// </summary>
+        /// <param name="id">The id of the page</param>
+        /// <returns></returns>
         [Authorize]
         [Route("{id}/unpublish")]
         [HttpPost]
@@ -137,6 +166,12 @@ namespace vomsProject.Controllers.Api
             return Ok();
         }
 
+        /// <summary>
+        /// Get the quill delta for a specified version.
+        /// </summary>
+        /// <param name="id">The id of the page</param>
+        /// <param name="versionId">The id of the version</param>
+        /// <returns></returns>
         [Authorize]
         [Route("{id}/Version/{versionId}")]
         [HttpGet]
@@ -162,6 +197,12 @@ namespace vomsProject.Controllers.Api
             return NotFound();
         }
 
+        /// <summary>
+        /// Used to change wich version is the latest version.
+        /// </summary>
+        /// <param name="id">The id of the page</param>
+        /// <param name="body">Contains the version id to set as the latest</param>
+        /// <returns></returns>
         [Authorize]
         [Route("{id}/SetAsLastVersion")]
         [HttpPost]

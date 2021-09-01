@@ -32,6 +32,10 @@
             border-radius: 50%;
             background: white;
         }
+        #menu-button.left {
+            left: 5rem;
+
+        }
             #menu-button:active {
                 background: rgba(0,0,0,0.2)
             }
@@ -41,8 +45,14 @@
             position: absolute;
             top: 9rem;
             right: 5rem;
-            width: 10em;
+            width: 13em;
         }
+        #editor-menu.left{
+            left: 5rem;
+        }
+            #editor-menu.left #menu-side-arrow {
+                transform: scale(-1,1);
+            }
             #editor-menu * {
                 box-sizing: border-box;
             }
@@ -63,7 +73,12 @@
                 background: none;
                 padding: 0.2em 0;
                 width: 100%;
+                padding: 0.5em;
             }
+                .voms-menu button svg {
+                    width: 5em;
+                    height: auto;
+                }
                 .voms-menu button:active {
                     background: rgba(0,0,0,0.2)
                 }
@@ -81,7 +96,7 @@
                 display: block;
             }
         body.showVersionHistory {
-            width: calc(100% - 10rem);
+            width: calc(100% - 15rem);
         }
         .showVersionHistory #versionHistory {
             display: block;
@@ -90,7 +105,7 @@
             box-sizing: border-box;
             position: fixed;
             display: none;
-            width: 10rem;
+            width: 15rem;
             right: 0;
             top: 0;
         }
@@ -100,25 +115,29 @@
     </style>
 </head>
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
-    <ul id="versionHistory" class="voms-menu">
-        {{#versions}}
+    <ul id="versionHistory" class="voms-menu" data-bind="foreach: versions">
         <li>
-            <button onclick="getVersion({{ id }})"
-                    data-bind="disable: currentVersion() === {{ id }},
-                                attr: { title: getTitle({{ id }}) }">{{saveDate}}</button>
+            <button data-bind="disable: $root.currentVersion() === id,
+                               click: getVersionFunction(id)">
+                <div data-bind="text: saveDate"></div>
+                <strong data-bind="text: getTitle(id)"></strong>
+            </button>
         </li>
-        {{/versions}}
     </ul>
-    <button id="menu-button" onclick="toggleMenu()">Menu</button>
-    <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu() }">
+    <button id="menu-button" onclick="toggleMenu()" data-bind="css: { left: isMenuLeft() }">Menu</button>
+    <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu(), left: isMenuLeft() }">
         <li>
             <button onclick="save()" data-bind="disable: isSaved() && isLatesVersion(),
-                                                attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">Save</button>
+                                                attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">
+                Save
+            </button>
         </li>
         <li>
             <button onclick="publish()"
                     data-bind="disable: isSaved() && isPublishedVersion(),
-                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">Publish</button>
+                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
+                Publish
+            </button>
         </li>
         <li class="hideable" data-bind="css: { show: isPublished() }">
             <button onclick="unpublish()">Unpublish</button>
@@ -126,23 +145,39 @@
         <li class="hideable" data-bind="css: { show: isPublished() }">
             <button onclick="getPublishedVersion()"
                     data-bind="disable: isSaved() && isPublishedVersion(),
-                        attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : publishedDate() }">
-            Select published version
+                        attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
+                <div>
+                    Select published version
+                </div>
+                <small data-bind="text: publishedDate"></small>
             </button>
         </li>
         <li>
             <button onclick="getSavedVersion()"
                     data-bind="disable: isSaved() && isLatesVersion()
-                               attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : savedDate() }">Select last saved version</button>
+                               attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : '' }">
+                <div>
+                    Select last saved version
+                </div>
+                <small data-bind="text: savedDate"></small>
+            </button>
         </li>
         <li>
-            <button onclick="toggleVersionHistory()">More Versions</button>
+            <button onclick="toggleVersionHistory()" data-bind="text: showVersionHistory() ? 'Less Versions' : 'More Versions'">More Versions</button>
         </li>
         <li>
             <!-- Use a form for logout, so that you can logout without javascript -->
             <form action="/Logout" method="post">
                 <button>Logout</button>
             </form>
+        </li>
+        <li>
+            <button onclick="toggleMenuSide()">
+                <svg id="menu-side-arrow" viewBox="0 0 150 20" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M 0 10 L 17 0 V 8 H 150 v 4 H 17 V 20 Z" fill="black" />
+                </svg>
+                <span data-bind="text: isMenuLeft() ? 'Move Right' : 'Move Left' ">Move Left</span>
+            </button>
         </li>
     </ul>
     <header>
@@ -156,7 +191,6 @@
     <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/lib/knockout/knockout-3.5.1.js"></script>
-    <!-- Initialize Quill editor -->
     <script>
         ko.options.deferUpdates = true;
         var viewModel = {
@@ -168,7 +202,16 @@
             publishedVersion: ko.observable({{ publishedVersion }}),
             publishedDate: ko.observable("{{ publishedDate }}"),
             showMenu: ko.observable(false),
-            showVersionHistory: ko.observable(false)
+            showVersionHistory: ko.observable(false),
+            isMenuLeft: ko.observable(false),
+            versions: ko.observableArray([
+                // {{#versions}}
+                {
+                    id: {{ id }},
+                    saveDate: "{{ saveDate }}"
+                },
+                // {{/versions}}
+            ])
         };
 
         // {{#isPublished}}
@@ -190,12 +233,22 @@
             }
             return "";
         }
+
+        // Toggle the main menu
         function toggleMenu() {
             viewModel.showMenu(!viewModel.showMenu());
         }
+
+        // Toggle the version history menu
         function toggleVersionHistory() {
             viewModel.showVersionHistory(!viewModel.showVersionHistory());
         }
+
+        // Toggle wich side the menu is on.
+        function toggleMenuSide() {
+            viewModel.isMenuLeft(!viewModel.isMenuLeft());
+        }
+
         var quill = new Quill('#page', {
             modules: {
                 toolbar: [
@@ -208,43 +261,59 @@
             theme: 'bubble'
         });
         quill.setContents({{{ content }}});
+
+        // Function bound to quill's text-change event. Set status to not saved.
         function onChange() {
             viewModel.isSaved(false);
         }
+
+        // When entering a saved state add an event listener to changes.
         ko.computed(function () {
             if (viewModel.isSaved()) {
                 quill.once("text-change", onChange);
             }
         });
+
+        // Stuff we need to do when the content is saved.
+        // This is called after save (update, SetAsLastVersion and publish api calls)
         function whenSaved(saveResult) {
             viewModel.savedVersion(saveResult.latestVersion);
             viewModel.savedDate(saveResult.saveDate);
             viewModel.isSaved(true);
             viewModel.currentVersion(saveResult.latestVersion);
+            viewModel.versions.push({
+                id: saveResult.latestVersion,
+                saveDate: saveResult.saveDate
+            });
         }
+
+        // Save the content.
+        // If a different version has been picked but not changed, set it as the latest saved verison.
         function save() {
-            if (!viewModel.isSaved()) {
-                if (!viewModel.isLatesVersion()) {
-                    $.ajax({
-                        type: "POST",
-                        url: "/api/page/{{{ id }}}/SetAsLastVersion",
-                        contentType: "application/json",
-                        data: JSON.stringify({
-                            versionId: viewModel.savedVersion()
-                        }),
-                        success: whenSaved
-                    });
-                } else {
-                    $.ajax({
-                        type: "POST",
-                        url: "/api/page/{{{ id }}}/update",
-                        contentType: "application/json",
-                        data: JSON.stringify(quill.getContents()),
-                        success: whenSaved
-                    });
-                }
+            if (!viewModel.isLatesVersion() && viewModel.isSaved()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/page/{{{ id }}}/SetAsLastVersion",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        versionId: viewModel.savedVersion()
+                    }),
+                    success: whenSaved
+                });
+            } else if (!viewModel.isSaved()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/page/{{{ id }}}/update",
+                    contentType: "application/json",
+                    data: JSON.stringify(quill.getContents()),
+                    success: whenSaved
+                });
+            } else {
+                console.log("Content has not changed.")
             }
         }
+
+        // Publish and save the content.
         function publish() {
             $.ajax({
                 type: "POST",
@@ -262,6 +331,8 @@
                 }
             });
         }
+
+        // Set the published status to false.
         function unpublish() {
             $.ajax({
                 type: "POST",
@@ -273,6 +344,7 @@
             });
         }
 
+        // Load the version belonging by id.
         function getVersion(id) {
             if (viewModel.isSaved() && viewModel.currentVersion() !== id) {
                 $.ajax({
@@ -282,6 +354,8 @@
                     success: function (content) {
                         viewModel.isSaved(true);
                         viewModel.currentVersion(content.id);
+
+                        // Do not react to the change event while setting the content.
                         quill.off("text-change", onChange);
                         quill.setContents(JSON.parse(content.content));
                         quill.once("text-change", onChange);
@@ -291,12 +365,25 @@
                 console.log("Version '" + id + "' already selected.");
             }
         }
+
+        // Return a function that will load a specific version.
+        // id is the id of the version to load.
+        function getVersionFunction(id) {
+            return function () {
+                getVersion(id);
+            };
+        }
+
+        // Load the published version.
         function getPublishedVersion() {
             getVersion(viewModel.publishedVersion());
         }
+
+        // Load the last saved version.
         function getSavedVersion() {
             getVersion(viewModel.savedVersion())
         }
+
         ko.applyBindings(viewModel);
     </script>
 </body>
