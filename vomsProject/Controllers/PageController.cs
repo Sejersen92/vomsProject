@@ -117,12 +117,23 @@ namespace vomsProject.Controllers
                 });
             }
             var theSolution1 = await solution.SingleOrDefaultAsync();
-            return new Status404PageResult(new Page404Model()
+            if (theSolution1 != null)
             {
-                // TODO: Could we get a better name?
-                solutionName = theSolution1 != null ? theSolution1.Subdomain : "Non existing website",
-                message = theSolution1 != null ? "Make sure you typed the url correctly." : $"There is no website on the requested domain: {Request.Host.Host}."
-            });
+                return new Status404PageResult(new Page404Model()
+                {
+                    // TODO: Could we get a better name?
+                    solutionName = theSolution1.Subdomain,
+                    message = "Make sure you typed the url correctly."
+                });
+            }
+            else
+            {
+                return new Status404PageResult(new Page404Model()
+                {
+                    solutionName = "Non existing website",
+                    message = $"There is no website on the requested domain: {Request.Host.Host}."
+                });
+            }
         }
 
         /// <summary>
