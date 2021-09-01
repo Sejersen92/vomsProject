@@ -8,5 +8,6 @@ namespace vomsProject.SolutionPages
     public class Page404Model
     {
         public string solutionName;
+        public string message;
     }
 }
