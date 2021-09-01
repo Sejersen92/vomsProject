@@ -24,6 +24,15 @@ namespace vomsProject.Controllers.Api
         public string Html { get; private set; }
     }
 
+    public class SetLastVersionDto
+    {
+        public int VersionId { get; set; }
+    }
+    public class SaveResult
+    {
+        public int LatestVersion { get; set; }
+        public string SaveDate { get; set; }
+    }
     [Route("api/[controller]")]
     [ApiController]
     public class PageController : ControllerBase
@@ -63,7 +72,11 @@ namespace vomsProject.Controllers.Api
             page.LastSavedVersion = content;
 
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(new SaveResult 
+            { 
+                LatestVersion = content.Id,
+                SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+            });
         }
 
         [Authorize]
@@ -94,7 +107,11 @@ namespace vomsProject.Controllers.Api
             page.IsPublished = true;
 
             await _context.SaveChangesAsync();
-            return Ok();
+            return Ok(new SaveResult 
+            { 
+                LatestVersion = content.Id,
+                SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+            });
         }
 
         [Authorize]
@@ -118,6 +135,65 @@ namespace vomsProject.Controllers.Api
 
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        [Authorize]
+        [Route("{id}/Version/{versionId}")]
+        [HttpGet]
+        public async Task<IActionResult> GetVersion(int id, int versionId)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var content = await _context.Pages.Where(page => page.Id == id)
+                .SelectMany(page => page.Versions)
+                .Where(version => version.Id == versionId)
+                .FirstOrDefaultAsync();
+
+            if (content != null)
+            {
+                return Ok(content);
+            }
+            return NotFound();
+        }
+
+        [Authorize]
+        [Route("{id}/SetAsLastVersion")]
+        [HttpPost]
+        public async Task<IActionResult> SetAsLastVersion(int id, [FromBody] SetLastVersionDto body)
+        {
+
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page =  _context.Pages
+                .Where(page => page.Id == id);
+
+            var content = await page.SelectMany(page => page.Versions)
+                .Where(version => version.Id == body.VersionId)
+                .FirstOrDefaultAsync();
+            var thePage = await page.FirstOrDefaultAsync();
+            if (thePage != null && content != null)
+            {
+                thePage.LastSavedVersion = content;
+                await _context.SaveChangesAsync();
+                return Ok(new SaveResult 
+                { 
+                    LatestVersion = content.Id,
+                    SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                });
+            }
+            return NotFound();
         }
     }
 }
