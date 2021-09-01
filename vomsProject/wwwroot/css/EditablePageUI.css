@@ -1,0 +1,162 @@
+﻿
+#menu-button {
+    box-sizing: border-box;
+    position: absolute;
+    right: 5rem;
+    top: 5rem;
+    width: 3.5em;
+    height: 3.5em;
+    border: 3px solid black;
+    border-radius: 50%;
+    background: white;
+    z-index: 1;
+}
+
+    #menu-button.voms-left {
+        left: 5rem;
+    }
+
+    #menu-button:active {
+        background: rgba(0,0,0,0.2)
+    }
+
+#editor-menu {
+    box-sizing: border-box;
+    display: none;
+    position: absolute;
+    top: 9rem;
+    right: 5rem;
+    width: 13em;
+}
+
+    #editor-menu.voms-left {
+        left: 5rem;
+    }
+
+        #editor-menu.voms-left #menu-side-arrow {
+            transform: scale(-1,1);
+        }
+
+    #editor-menu * {
+        box-sizing: border-box;
+    }
+
+.voms-menu {
+    font-family: sans-serif;
+    box-sizing: border-box;
+    list-style: none;
+    border: 3px solid black;
+    padding: 0;
+    background: white;
+    margin: 0;
+    z-index: 1;
+}
+
+    .voms-menu * {
+        box-sizing: border-box;
+    }
+
+    .voms-menu button {
+        border: none;
+        display: block;
+        background: none;
+        padding: 0.2em 0;
+        width: 100%;
+        padding: 0.5em;
+    }
+
+        .voms-menu button svg {
+            width: 5em;
+            height: auto;
+        }
+
+        .voms-menu button:active {
+            background: rgba(0,0,0,0.2)
+        }
+
+    .voms-menu input {
+        width: 100%;
+        border: 1px solid black;
+    }
+
+    .voms-menu li.voms-input {
+        padding: 0.2em;
+    }
+
+        .voms-menu li.voms-input input {
+            margin-top: 0.1em;
+            padding: 0.2em;
+        }
+
+    .voms-menu li + li {
+        border-top: 1px solid black;
+    }
+
+#editor-menu.show {
+    display: block;
+}
+
+.voms-hideable {
+    display: none;
+}
+
+    .voms-hideable.show {
+        display: block;
+    }
+
+body.showVersionHistory {
+    width: calc(100% - 15rem);
+}
+
+.showVersionHistory #versionHistory {
+    display: block;
+}
+
+#versionHistory {
+    box-sizing: border-box;
+    position: fixed;
+    display: none;
+    width: 15rem;
+    right: 0;
+    top: 0;
+    max-height: 100vh;
+    overflow: auto;
+}
+
+    #versionHistory * {
+        box-sizing: border-box;
+    }
+
+@media (max-width: 720px) {
+    #menu-button {
+        top: 1rem;
+        right: 1rem;
+    }
+
+        #menu-button.voms-left {
+            left: 1rem;
+        }
+
+    #editor-menu {
+        box-sizing: border-box;
+        top: 5rem;
+        right: 0;
+        max-width: 400px;
+        width: 100vw;
+    }
+
+        #editor-menu.voms-left {
+            left: 0;
+        }
+
+    body.showVersionHistory {
+        width: 100%;
+    }
+
+    #versionHistory {
+        top: 5rem;
+        max-height: calc(100vh - 5rem);
+        max-width: 400px;
+        width: 100vw;
+    }
+}
