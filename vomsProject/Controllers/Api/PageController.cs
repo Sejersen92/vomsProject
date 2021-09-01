@@ -38,6 +38,13 @@ namespace vomsProject.Controllers.Api
         public int VersionId { get; set; }
     }
     /// <summary>
+    /// Dto used when saveing the properties.
+    /// </summary>
+    public class PropertiesDto
+    {
+        public string Title { get; set; }
+    }
+    /// <summary>
     /// Result of saveing a page. This is used as the result for both save and publish.
     /// </summary>
     public class SaveResult
@@ -208,7 +215,6 @@ namespace vomsProject.Controllers.Api
         [HttpPost]
         public async Task<IActionResult> SetAsLastVersion(int id, [FromBody] SetLastVersionDto body)
         {
-
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
@@ -233,6 +239,30 @@ namespace vomsProject.Controllers.Api
                     LatestVersion = content.Id,
                     SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
                 });
+            }
+            return NotFound();
+        }
+
+        [Authorize]
+        [Route("{id}/properties/update")]
+        [HttpPost]
+        public async Task<IActionResult> UpdateProperties(int id, [FromBody] PropertiesDto body)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await _context.Pages
+                .Where(page => page.Id == id).FirstOrDefaultAsync();
+            if (page != null)
+            {
+                page.Title = body.Title;
+                await _context.SaveChangesAsync();
+                return Ok();
             }
             return NotFound();
         }

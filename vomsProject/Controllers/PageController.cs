@@ -90,8 +90,7 @@ namespace vomsProject.Controllers
                     {
                         id = page.Id,
                         content = page.LastSavedVersion != null ? page.LastSavedVersion.Content : "{ops:[]}",
-                        // TODO: a better title could be generated, this is just the path
-                        title = page.PageName,
+                        title = page.Title,
                         header = page.Layout != null ? page.Layout.HeaderContent : "",
                         footer = page.Layout != null ? page.Layout.FooterContent : "",
                         isPublished = page.IsPublished ? "true" : "false",
@@ -112,8 +111,7 @@ namespace vomsProject.Controllers
                 return new PageResult(new PageModel()
                 {
                     content = publishedPage.HtmlRenderContent,
-                    // TODO: a better title could be generated, this is just the path
-                    title = publishedPage.PageName,
+                    title = publishedPage.Title,
                     header = publishedPage.Layout != null ? publishedPage.Layout.HeaderContent : "",
                     footer = publishedPage.Layout != null ? publishedPage.Layout.FooterContent : ""
                 });

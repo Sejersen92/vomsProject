@@ -3,7 +3,7 @@
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>{{ title }}</title>
+    <title></title>
     <link rel="stylesheet" href="/style.css" />
 
     <!-- <link href="//cdn.quilljs.com/1.3.6/quill.snow.css" rel="stylesheet"> snow theme is more intrusive -->
@@ -31,8 +31,9 @@
             border: 3px solid black;
             border-radius: 50%;
             background: white;
+            z-index: 1;
         }
-        #menu-button.left {
+        #menu-button.voms-left {
             left: 5rem;
 
         }
@@ -47,22 +48,24 @@
             right: 5rem;
             width: 13em;
         }
-        #editor-menu.left{
+        #editor-menu.voms-left{
             left: 5rem;
         }
-            #editor-menu.left #menu-side-arrow {
+            #editor-menu.voms-left #menu-side-arrow {
                 transform: scale(-1,1);
             }
             #editor-menu * {
                 box-sizing: border-box;
             }
         .voms-menu {
+            font-family: sans-serif;
             box-sizing: border-box;
             list-style: none;
             border: 3px solid black;
             padding: 0;
             background: white;
             margin: 0;
+            z-index: 1;
         }
             .voms-menu * {
                 box-sizing: border-box;
@@ -82,6 +85,17 @@
                 .voms-menu button:active {
                     background: rgba(0,0,0,0.2)
                 }
+                .voms-menu input {
+                    width: 100%;
+                    border: 1px solid black;
+                }
+                .voms-menu li.voms-input {
+                    padding: 0.2em;
+                }
+                .voms-menu li.voms-input input {
+                    margin-top: 0.1em;
+                    padding: 0.2em;
+                }
 
                 .voms-menu li + li {
                     border-top: 1px solid black;
@@ -89,10 +103,10 @@
         #editor-menu.show {
             display: block;
         }
-        .hideable {
+        .voms-hideable {
             display: none;
         }
-            .hideable.show {
+            .voms-hideable.show {
                 display: block;
             }
         body.showVersionHistory {
@@ -108,9 +122,45 @@
             width: 15rem;
             right: 0;
             top: 0;
+            max-height: 100vh;
+            overflow: auto;
         }
-        #versionHistory {
+        #versionHistory * {
             box-sizing: border-box;
+        }
+
+        @media (max-width: 720px) {
+            #menu-button {
+                top: 1rem;
+                right: 1rem;
+            }
+
+                #menu-button.voms-left {
+                    left: 1rem;
+                }
+
+            #editor-menu {
+                box-sizing: border-box;
+                top: 5rem;
+                right: 0;
+                max-width: 400px;
+                width: 100vw;
+            }
+
+                #editor-menu.voms-left {
+                    left: 0;
+                }
+
+            body.showVersionHistory {
+                width: 100%;
+            }
+
+            #versionHistory {
+                top: 5rem;
+                max-height: calc(100vh - 5rem);
+                max-width: 400px;
+                width: 100vw;
+            }
         }
     </style>
 </head>
@@ -124,10 +174,14 @@
             </button>
         </li>
     </ul>
-    <button id="menu-button" onclick="toggleMenu()" data-bind="css: { left: isMenuLeft() }">Menu</button>
-    <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu(), left: isMenuLeft() }">
+    <button id="menu-button" onclick="toggleMenu()" data-bind="css: { 'voms-left': isMenuLeft() }">Menu</button>
+    <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu(), 'voms-left': isMenuLeft() }">
+        <li class="voms-input">
+            <label for="page-title">Page title</label>
+            <input id="page-title" type="text" placeholder="Give your page a title" data-bind="textInput: title"/>
+        </li>
         <li>
-            <button onclick="save()" data-bind="disable: isSaved() && isLatesVersion(),
+            <button onclick="save()" data-bind="disable: arePropertiesSaved() && isSaved() && isLatesVersion(),
                                                 attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">
                 Save
             </button>
@@ -139,10 +193,10 @@
                 Publish
             </button>
         </li>
-        <li class="hideable" data-bind="css: { show: isPublished() }">
+        <li class="voms-hideable" data-bind="css: { show: isPublished() }">
             <button onclick="unpublish()">Unpublish</button>
         </li>
-        <li class="hideable" data-bind="css: { show: isPublished() }">
+        <li class="voms-hideable" data-bind="css: { show: isPublished() }">
             <button onclick="getPublishedVersion()"
                     data-bind="disable: isSaved() && isPublishedVersion(),
                         attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
@@ -195,6 +249,8 @@
         ko.options.deferUpdates = true;
         var viewModel = {
             isSaved: ko.observable(true),
+            arePropertiesSaved: ko.observable(true),
+            title: ko.observable("{{ title }}"),
             savedVersion: ko.observable({{ savedVersion }}),
             savedDate: ko.observable("{{ savedDate }}"),
             currentVersion: ko.observable({{ savedVersion }}),
@@ -213,6 +269,9 @@
                 // {{/versions}}
             ])
         };
+        viewModel.title.subscribe(function () {
+            viewModel.arePropertiesSaved(false);
+        });
 
         // {{#isPublished}}
         viewModel.isPublished(true);
@@ -274,6 +333,11 @@
             }
         });
 
+        // When title changes update page title.
+        ko.computed(function () {
+            document.title = viewModel.title();
+        });
+
         // Stuff we need to do when the content is saved.
         // This is called after save (update, SetAsLastVersion and publish api calls)
         function whenSaved(saveResult) {
@@ -308,8 +372,19 @@
                     data: JSON.stringify(quill.getContents()),
                     success: whenSaved
                 });
-            } else {
-                console.log("Content has not changed.")
+            }
+            if (!viewModel.arePropertiesSaved()) {
+                $.ajax({
+                    type: "POST",
+                    url: "/api/page/{{{ id }}}/properties/update",
+                    contentType: "application/json",
+                    data: JSON.stringify({
+                        title: viewModel.title()
+                    }),
+                    success: function () {
+                        viewModel.arePropertiesSaved(true);
+                    }
+                });
             }
         }
 

@@ -9,8 +9,14 @@ namespace vomsProject.Data
     public class Page
     {
         public int Id { get; set; }
-
+        /// <summary>
+        /// The url path used to look up a page.
+        /// </summary>
         public string PageName { get; set; }
+        /// <summary>
+        /// The title of the page.
+        /// </summary>
+        public string Title { get; set; }
 
         /// <summary>
         /// The version loaded by default.
