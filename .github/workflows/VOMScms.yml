@@ -2,7 +2,7 @@ name: Build and deploy .NET Core app to Windows WebApp VOMScms
 on:
   push:
     branches:
-    - master
+    - release
 env:
   AZURE_WEBAPP_NAME: VOMScms
   AZURE_WEBAPP_PACKAGE_PATH: vomsProject/publish
