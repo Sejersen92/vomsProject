@@ -14,6 +14,9 @@ using vomsProject.Data;
 using vomsProject.Helpers;
 using vomsProject.SolutionPages;
 
+/*
+ This controller is the main handler for request to a solution.
+ */
 namespace vomsProject.Controllers
 {
     public class PageController : Controller
@@ -119,10 +122,15 @@ namespace vomsProject.Controllers
             return new Status404PageResult(new Page404Model()
             {
                 // TODO: Could we get a better name?
-                solutionName = theSolution1.Subdomain
+                solutionName = theSolution1 != null ? theSolution1.Subdomain : "Non existing website",
+                message = theSolution1 != null ? "Make sure you typed the url correctly." : $"There is no website on the requested domain: {Request.Host.Host}."
             });
         }
 
+        /// <summary>
+        /// Return the stylesheet for a solution.
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Style()
         {
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
