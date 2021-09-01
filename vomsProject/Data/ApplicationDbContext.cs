@@ -31,23 +31,17 @@ namespace vomsProject.Data
                 .HasMany(p => p.Versions)
                 .WithOne(c => c.Page);
 
-            try
+            using (var style1 = new System.IO.StreamReader("Data/SeedData/Styles/style1.css"))
             {
-                using (var style1 = new System.IO.StreamReader("Data/SeedData/Styles/style1.css"))
+                modelBuilder.Entity<Style>().HasData(new Style
                 {
-                    modelBuilder.Entity<Style>().HasData(new Style
-                    {
-                        Id = 1,
-                        Name = "Style 1",
-                        Css = style1.ReadToEnd()
-                    });
-                }
+                    Id = 1,
+                    Name = "Style 1",
+                    Css = @"* 
+                        {box-sizing: border-box;} 
+                            body {font-family: sans-serif;}"
+                });
             }
-            catch (Exception e)
-            {
-                throw;
-            }
-            
         }
     }
 }
