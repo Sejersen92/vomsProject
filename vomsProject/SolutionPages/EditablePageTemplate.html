@@ -345,10 +345,6 @@
             viewModel.savedDate(saveResult.saveDate);
             viewModel.isSaved(true);
             viewModel.currentVersion(saveResult.latestVersion);
-            viewModel.versions.push({
-                id: saveResult.latestVersion,
-                saveDate: saveResult.saveDate
-            });
         }
 
         // Save the content.
@@ -370,7 +366,13 @@
                     url: "/api/page/{{{ id }}}/update",
                     contentType: "application/json",
                     data: JSON.stringify(quill.getContents()),
-                    success: whenSaved
+                    success: function (saveResult) {
+                        whenSaved(saveResult);
+                        viewModel.versions.push({
+                            id: saveResult.latestVersion,
+                            saveDate: saveResult.saveDate
+                        });
+                    }
                 });
             }
             if (!viewModel.arePropertiesSaved()) {
