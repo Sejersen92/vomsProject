@@ -40,10 +40,82 @@ namespace vomsProject.Controllers
         [Authorize]
         public IActionResult Index()
         {
-            var model = Solutions();
+            var model = new AdminViewModel()
+            {
+                Solutions = Solutions()
+            };
 
             return View(model);
         }
+
+        /// <summary>
+        /// Creates a solution based on the logged in user. If a users productVersions solution-limitation is exceeded, a user is not permitted to create a new solution.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Index(string title)
+        {
+            var maxSolutions = 0;
+            var solutionOwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var databaseUser = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == solutionOwnerId);
+            var productVersion = databaseUser.ProductVersion;
+            var style = await _dbContext.Styles.FirstOrDefaultAsync();
+
+            switch (productVersion)
+            {
+                case ProductType.Community:
+                    maxSolutions = 1;
+                    break;
+                case ProductType.Professional:
+                    maxSolutions = 5;
+                    break;
+                case ProductType.Enterprise:
+                    maxSolutions = 20;
+                    break;
+                default:
+                    break;
+            }
+
+            using (var dbContextTransaction = _dbContext.Database.BeginTransaction())
+            {
+                var query = _dbContext.Permissions.Where(x => x.User.Id == databaseUser.Id && x.PermissionLevel == PermissionLevel.Admin);
+                var numberOfSolutions = query.Count();
+
+                if (numberOfSolutions < maxSolutions)
+                {
+                    var project = new Solution()
+                    {
+                        Subdomain = title,
+                        Style = style
+                    };
+
+                    _dbContext.Permissions.Add(new Permission
+                    {
+                        PermissionLevel = PermissionLevel.Admin,
+                        User = databaseUser,
+                        Solution = project
+                    });
+
+                    await _dbContext.SaveChangesAsync();
+                    await dbContextTransaction.CommitAsync();
+
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    var model = new AdminViewModel()
+                    {
+                        Solutions = Solutions(),
+                        HasReachedProductLimit = true
+                    };
+
+                    return View(model);
+                }
+            }
+        }
+
 
         [Authorize]
         public IActionResult SolutionOverview([FromRoute] int id)
@@ -89,69 +161,6 @@ namespace vomsProject.Controllers
             }
             return result;
         }
-
-        /// <summary>
-        /// Creates a solution based on the logged in user. If a users productVersions solution-limitation is exceeded, a user is not permitted to create a new solution.
-        /// </summary>
-        /// <param name="title"></param>
-        /// <returns></returns>
-        [Authorize]
-        [HttpPost]
-        public async Task<IActionResult> CreateSolution(string title)
-        {
-            var maxSolutions = 0;
-            var solutionOwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var databaseUser = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == solutionOwnerId);
-            var productVersion = databaseUser.ProductVersion;
-            var style = await _dbContext.Styles.FirstOrDefaultAsync();
-
-            switch (productVersion)
-            {
-                case ProductType.Community:
-                    maxSolutions = 4;
-                    break;
-                case ProductType.Professional:
-                    maxSolutions = 20;
-                    break;
-                case ProductType.Enterprise:
-                    maxSolutions = 1000;
-                    break;
-                default:
-                    break;
-            }
-
-            using (var dbContextTransaction = _dbContext.Database.BeginTransaction())
-            {
-                var query = _dbContext.Permissions.Where(x => x.User.Id == databaseUser.Id && x.PermissionLevel == PermissionLevel.Admin);
-                var numberOfSolutions = query.Count();
-
-                if (numberOfSolutions < maxSolutions)
-                {
-                    var project = new Solution()
-                    {
-                        Subdomain = title,
-                        Style = style
-                    };
-
-                    _dbContext.Permissions.Add(new Permission
-                    {
-                        PermissionLevel = PermissionLevel.Admin,
-                        User = databaseUser,
-                        Solution = project
-                    });
-
-                    await _dbContext.SaveChangesAsync();
-                    await dbContextTransaction.CommitAsync();
-
-                    return RedirectToAction("Index");
-                }
-                else
-                {
-                    return RedirectToAction("Index");
-                }
-            }
-        }
-
 
         [Authorize]
         [HttpPost]

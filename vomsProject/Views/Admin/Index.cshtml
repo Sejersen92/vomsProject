@@ -3,7 +3,7 @@
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
 
-@model IEnumerable<Solution>
+@model AdminViewModel
 @{
     var colClass = "";
 }
@@ -15,10 +15,10 @@
 
         if (Model != null)
         {
-            colClass = (Model.Count() == 1 ? "col-sm" :
-                (Model.Count() == 2 ? "col-sm-4" :
-                    (Model.Count() >= 3 ? "col-sm-3" : "col-sm")));
-            if (Model.Count() == 1)
+            colClass = (Model.Solutions.Count() == 1 ? "col-sm" :
+                (Model.Solutions.Count() == 2 ? "col-sm-4" :
+                    (Model.Solutions.Count() >= 3 ? "col-sm-3" : "col-sm")));
+            if (Model.Solutions.Count() == 1)
             {
                 <h4>Here is your solution:</h4>
             }
@@ -28,7 +28,7 @@
             }
 
             <div class="row mb-3">
-                @foreach (var solution in Model)
+                @foreach (var solution in Model.Solutions)
                 {
                     if (solution != null)
                     {
@@ -60,8 +60,14 @@
         }
         <h4>Create a solution here</h4>
         <div class="card">
-            @using (Html.BeginForm("CreateSolution", "Admin", FormMethod.Post))
+            @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
             {
+                @if (Model.HasReachedProductLimit.HasValue && Model.HasReachedProductLimit.Value)
+                {
+                    <div class="alert alert-danger" role="alert">
+                        <p>You have reached your solution-ownership limit for this plan. <a asp-area="Identity" asp-page="/Account/Manage/Index">Upgrade your plan here!</a></p>
+                    </div>
+                }
                 <div class="card-body">
                     <div class="input-group m-2">
                         <label class="input-group-text" for="title">Title</label>
