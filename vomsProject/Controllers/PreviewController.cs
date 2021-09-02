@@ -17,14 +17,14 @@ namespace vomsProject.Controllers
     public class PreviewController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly DatabaseHelper _databaseHelper;
+        private readonly RepositoryService _repository;
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
-        public PreviewController(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext, IConfiguration configuration)
+        public PreviewController(ILogger<HomeController> logger, RepositoryService repository, ApplicationDbContext dbContext, IConfiguration configuration)
         {
             _logger = logger;
-            _databaseHelper = databaseHelper;
+            _repository = repository;
             _dbContext = dbContext;
             _configuration = configuration;
         }
@@ -36,7 +36,7 @@ namespace vomsProject.Controllers
 
         public IActionResult Solution(int id)
         {
-            var model = new SolutionViewModel { Solution = _databaseHelper.GetSolutionById(id, _dbContext) };
+            var model = new SolutionViewModel { Solution = _repository.GetSolutionById(id) };
 
             return View(model);
         }

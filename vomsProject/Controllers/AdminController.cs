@@ -24,9 +24,9 @@ namespace vomsProject.Controllers
         private readonly IConfiguration Configuration;
         private readonly JwtService JwtService;
         private readonly DomainHelper DomainHelper;
-        private readonly SolutionHelper SolutionHelper;
+        private readonly RepositoryService Repository;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, SolutionHelper solutionHelper)
+        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, RepositoryService repository)
         {
             _storageHelper = storageHelper;
             _dbContext = dbContext;
@@ -34,7 +34,7 @@ namespace vomsProject.Controllers
             Configuration = configuration;
             JwtService = jwtService;
             DomainHelper = domainHelper;
-            SolutionHelper = solutionHelper;
+            Repository = repository;
         }
 
         [Authorize]
@@ -152,7 +152,7 @@ namespace vomsProject.Controllers
 
             try
             {
-                result.AddRange(DatabaseHelper.GetSolutionsByUser(userId, _dbContext));
+                result.AddRange(Repository.GetSolutionsByUser(userId));
             }
             catch (Exception e)
             {
@@ -168,7 +168,7 @@ namespace vomsProject.Controllers
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = _dbContext.Solutions.Find(solutionId);
-            if (solution == null || !await SolutionHelper.DoUserHavePermissionOnSolution(user, solution, PermissionLevel.Admin))
+            if (solution == null || !await Repository.DoUserHavePermissionOnSolution(user, solution, PermissionLevel.Admin))
             {
                 return Forbid();
             }

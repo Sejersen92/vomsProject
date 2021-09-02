@@ -57,9 +57,9 @@ namespace vomsProject.Controllers.Api
     public class PageController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly SolutionHelper SolutionHelper;
+        private readonly RepositoryService SolutionHelper;
         private readonly UserManager<User> UserManager;
-        public PageController(ApplicationDbContext context, SolutionHelper solutionHelper, UserManager<User> userManager)
+        public PageController(ApplicationDbContext context, RepositoryService solutionHelper, UserManager<User> userManager)
         {
             _context = context;
             SolutionHelper = solutionHelper;

@@ -27,12 +27,12 @@ namespace vomsProject.Controllers
         private readonly UserManager<User> UserManager;
         private readonly SignInManager<User> SignInManager;
         private readonly string RootDomain;
-        private readonly SolutionHelper _solutionHelper;
+        private readonly RepositoryService _solutionHelper;
         private readonly DomainHelper _domainHelper;
         private readonly JwtService JwtService;
 
         public PageController(ILogger<PageController> logger, IConfiguration configuration,
-            ApplicationDbContext context, UserManager<User> userManager, SolutionHelper solutionHelper, DomainHelper domainHelper, SignInManager<User> signInManager, JwtService jwtService)
+            ApplicationDbContext context, UserManager<User> userManager, RepositoryService solutionHelper, DomainHelper domainHelper, SignInManager<User> signInManager, JwtService jwtService)
         {
             _logger = logger;
             Configuration = configuration;

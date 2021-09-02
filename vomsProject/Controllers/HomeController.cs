@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using System;
@@ -15,16 +16,16 @@ namespace vomsProject.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly DatabaseHelper _databaseHelper;
+        private readonly RepositoryService _repository;
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly DomainHelper _domainHelper;
 
-        public HomeController(ILogger<HomeController> logger, DatabaseHelper databaseHelper, 
+        public HomeController(ILogger<HomeController> logger, RepositoryService repository, 
             ApplicationDbContext dbContext, IConfiguration configuration, DomainHelper domainHelper)
         {
             _logger = logger;
-            _databaseHelper = databaseHelper;
+            _repository = repository;
             _dbContext = dbContext;
             _configuration = configuration;
             _domainHelper = domainHelper;
@@ -34,7 +35,7 @@ namespace vomsProject.Controllers
         {
             var model = new HomePageViewModel 
             { 
-                Solutions = _databaseHelper.GetSolutions(_dbContext)
+                Solutions = _dbContext.Solutions.Include(x => x.Permissions).ThenInclude(x => x.User).ToList()
             };
 
             foreach (var solution in model.Solutions)

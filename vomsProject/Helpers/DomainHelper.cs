@@ -13,15 +13,11 @@ namespace vomsProject.Helpers
     public class DomainHelper
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly DatabaseHelper _databaseHelper;
-        private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
 
-        public DomainHelper(ILogger<HomeController> logger, DatabaseHelper databaseHelper, ApplicationDbContext dbContext, IConfiguration configuration)
+        public DomainHelper(ILogger<HomeController> logger, IConfiguration configuration)
         {
             _logger = logger;
-            _databaseHelper = databaseHelper;
-            _dbContext = dbContext;
             _configuration = configuration;
         }
 

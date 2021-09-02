@@ -11,7 +11,7 @@ using vomsProject.Data;
 
 namespace vomsProject.Helpers
 {
-    public class SolutionHelper
+    public class RepositoryService
     {
         private readonly ILogger<PageController> _logger;
         private readonly IConfiguration Configuration;
@@ -20,7 +20,7 @@ namespace vomsProject.Helpers
         private readonly string RootDomain;
 
 
-        public SolutionHelper(ILogger<PageController> logger, IConfiguration configuration, ApplicationDbContext context, UserManager<User> userManager)
+        public RepositoryService(ILogger<PageController> logger, IConfiguration configuration, ApplicationDbContext context, UserManager<User> userManager)
         {
             _logger = logger;
             Configuration = configuration;
@@ -85,6 +85,16 @@ namespace vomsProject.Helpers
             {
                 return Context.Solutions.Where((solution) => solution.Domain == domain);
             }
+        }
+
+
+        public IEnumerable<Solution> GetSolutionsByUser(string userId)
+        {
+            return Context.Solutions.Include(x => x.Permissions).ThenInclude(perm => perm.User).Where(x => x.Permissions.Any(perm => perm.User.Id == userId)).ToList();
+        }
+        public Solution GetSolutionById(int id)
+        {
+            return Context.Solutions.Include(x => x.Permissions).ThenInclude(perm => perm.User).Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
         }
     }
 }
