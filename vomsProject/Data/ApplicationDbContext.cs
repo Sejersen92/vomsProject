@@ -23,13 +23,39 @@ namespace vomsProject.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
+            modelBuilder.Entity<Solution>()
+                .HasMany(s => s.Pages)
+                .WithOne(p => p.Solution)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Solution>()
+                .HasMany(s => s.Permissions)
+                .WithOne(p => p.Solution)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Solution>()
+                .HasMany(s => s.Images)
+                .WithOne(i => i.Solution)
+                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Solution>()
+               .HasMany(s => s.Layouts)
+               .WithOne()
+               .OnDelete(DeleteBehavior.Cascade);
+
             modelBuilder.Entity<Page>()
-                .HasOne(p => p.LastSavedVersion);
+                .HasOne(p => p.LastSavedVersion)
+                .WithOne();
             modelBuilder.Entity<Page>()
-                .HasOne(p => p.PublishedVersion);
+                .HasOne(p => p.PublishedVersion)
+                .WithOne();
             modelBuilder.Entity<Page>()
                 .HasMany(p => p.Versions)
-                .WithOne(c => c.Page);
+                .WithOne(c => c.Page)
+                .OnDelete(DeleteBehavior.Cascade);
+
+            modelBuilder.Entity<User>()
+                .HasMany(u => u.Permissions)
+                .WithOne(p => p.User)
+                .OnDelete(DeleteBehavior.Cascade);
 
             modelBuilder.Entity<Style>().HasData(new Style
             {

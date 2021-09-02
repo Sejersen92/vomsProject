@@ -18,6 +18,7 @@ namespace vomsProject.Data
         /// </summary>
         public string Title { get; set; }
 
+        public int? LastSavedVersionId { get; set; }
         /// <summary>
         /// The version loaded by default.
         /// </summary>
@@ -27,6 +28,7 @@ namespace vomsProject.Data
         /// The Rendered published version. Used when displayed as a normal page.
         /// </summary>
         public string HtmlRenderContent { get; set; }
+        public int? PublishedVersionId { get; set; }
         public PageContent PublishedVersion { get; set; }
 
         public bool IsPublished { get; set; }

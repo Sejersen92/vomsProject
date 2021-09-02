@@ -19,6 +19,7 @@ namespace vomsProject.Data
         public ICollection<Page> Pages { get; set; }
         public ICollection<Permission> Permissions { get; set; }
         public ICollection<Image> Images { get; set; }
+        public ICollection<Layout> Layouts { get; set; }
         public int? StyleId { get; set; }
         public Style Style { get; set; }
 
