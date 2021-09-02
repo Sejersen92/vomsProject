@@ -168,7 +168,7 @@ namespace vomsProject.Controllers
 
                 if (pageName != null)
                 {
-                    var page = await _solutionHelper.PageQuery(solution, pageName).SingleOrDefaultAsync();
+                    var page = await _solutionHelper.PageQuery(solution, pageName).Include((page) => page.Solution).SingleOrDefaultAsync();
                     if (page != null)
                     {
                         return Redirect(_domainHelper.GetDestinationUrl(page));

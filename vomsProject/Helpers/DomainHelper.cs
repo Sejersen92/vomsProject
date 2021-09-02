@@ -25,19 +25,28 @@ namespace vomsProject.Helpers
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Get a Link to a page.
+        /// </summary>
+        /// <param name="page">The page to get a link to. The Solution property has to be included.</param>
+        /// <returns>Returns a url</returns>
         public string GetDestinationUrl(Page page)
         {
-            var solution = page.Solution;
-            var destinationUrl = $"https://{solution.Subdomain}.{_configuration.GetValue<string>("RootDomain")}:5001/{page.PageName}";
-
-            return destinationUrl;
+            return $"{GetIndexPageUrl(page.Solution)}{page.PageName}";
         }
 
+        /// <summary>
+        /// Get a Link to the index page of the solution.
+        /// </summary>
+        /// <param name="solution">The solution to get a link to.</param>
+        /// <returns>Returns a url, with a slash at the end</returns>
         public string GetIndexPageUrl(Solution solution)
         {
             if (solution != null)
             {
-                return $"https://{solution.Subdomain}.{_configuration.GetValue<string>("RootDomain")}:5001/";
+                var port = _configuration.GetValue<int?>("Port");
+                var domain = solution.Domain != null ? solution.Domain : $"{solution.Subdomain}.{_configuration.GetValue<string>("RootDomain")}";
+                return $"https://{domain}{(port.HasValue ? ":" + port.Value : "")}/";
             }
             else
             {
