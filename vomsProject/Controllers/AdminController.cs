@@ -51,7 +51,7 @@ namespace vomsProject.Controllers
             var solution = _dbContext.Solutions
                 .AsSplitQuery()
                 .Include(x => x.Permissions).ThenInclude(x => x.User)
-                .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
+                .Include(x => x.Pages).ThenInclude(x => x.Solution).FirstOrDefault(x => x.Id == id);
 
             var stylesheets = _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToList();
             if (solution != null)
@@ -90,29 +90,68 @@ namespace vomsProject.Controllers
             return result;
         }
 
+        /// <summary>
+        /// Creates a solution based on the logged in user. If a users productVersions solution-limitation is exceeded, a user is not permitted to create a new solution.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Index(string title, string users)
+        public async Task<IActionResult> CreateSolution(string title)
         {
-            var userid = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var userList = !string.IsNullOrEmpty(users) ? users.Split(",") : new string[0];
-            var databaseUsers = _dbContext.Users.Where(user => userList.Contains(user.UserName) || user.Id == userid);
+            var maxSolutions = 0;
+            var solutionOwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
+            var databaseUser = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == solutionOwnerId);
+            var productVersion = databaseUser.ProductVersion;
             var style = await _dbContext.Styles.FirstOrDefaultAsync();
-            var project = new Solution()
+
+            switch (productVersion)
             {
-                Subdomain = title,
-                Style = style
-            };
-            _dbContext.Solutions.Add(project);
-            _dbContext.Permissions.AddRange(databaseUsers.Select(user => new Permission()
+                case ProductType.Community:
+                    maxSolutions = 4;
+                    break;
+                case ProductType.Professional:
+                    maxSolutions = 20;
+                    break;
+                case ProductType.Enterprise:
+                    maxSolutions = 1000;
+                    break;
+                default:
+                    break;
+            }
+
+            using (var dbContextTransaction = _dbContext.Database.BeginTransaction())
             {
-                PermissionLevel = user.Id == userid ? PermissionLevel.Admin : PermissionLevel.Editor,
-                User = user,
-                Solution = project
-            }));
-            await _dbContext.SaveChangesAsync();
-            return Index();
+                var query = _dbContext.Permissions.Where(x => x.User.Id == databaseUser.Id && x.PermissionLevel == PermissionLevel.Admin);
+                var numberOfSolutions = query.Count();
+
+                if (numberOfSolutions < maxSolutions)
+                {
+                    var project = new Solution()
+                    {
+                        Subdomain = title,
+                        Style = style
+                    };
+
+                    _dbContext.Permissions.Add(new Permission
+                    {
+                        PermissionLevel = PermissionLevel.Admin,
+                        User = databaseUser,
+                        Solution = project
+                    });
+
+                    await _dbContext.SaveChangesAsync();
+                    await dbContextTransaction.CommitAsync();
+
+                    return RedirectToAction("Index");
+                }
+                else
+                {
+                    return RedirectToAction("Index");
+                }
+            }
         }
+
 
         [Authorize]
         [HttpPost]
@@ -219,7 +258,7 @@ namespace vomsProject.Controllers
 
                 if (user == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
 
-                solution.Permissions.Add(new Permission() 
+                solution.Permissions.Add(new Permission()
                 {
                     PermissionLevel = PermissionLevel.Editor,
                     User = user

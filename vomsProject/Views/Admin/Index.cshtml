@@ -15,8 +15,8 @@
 
         if (Model != null)
         {
-            colClass = (Model.Count() == 1 ? "col-sm" : 
-                (Model.Count() == 2 ? "col-sm-4" : 
+            colClass = (Model.Count() == 1 ? "col-sm" :
+                (Model.Count() == 2 ? "col-sm-4" :
                     (Model.Count() >= 3 ? "col-sm-3" : "col-sm")));
             if (Model.Count() == 1)
             {
@@ -60,18 +60,13 @@
         }
         <h4>Create a solution here</h4>
         <div class="card">
-            @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
+            @using (Html.BeginForm("CreateSolution", "Admin", FormMethod.Post))
             {
                 <div class="card-body">
                     <div class="input-group m-2">
                         <label class="input-group-text" for="title">Title</label>
                         <input type="text" id="title" name="title" class="form-control" />
                     </div>
-                    <div class="input-group m-2">
-                        <label class="input-group-text" for="users">Users</label>
-                        <input type="text" id="users" name="users" class="form-control" />
-                    </div>
-                    <h6 class="card-subtitle text-muted font-weight-lighter m-2">Separate users by comma, i.e. "email1@email.com,email2@email.com,email3@email.com".</h6>
                     <input id="Submit" type="submit" value="submit" class="btn btn-primary mb-3" />
                 </div>
             }

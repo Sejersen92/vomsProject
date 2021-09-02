@@ -2,24 +2,39 @@
 @using vomsProject.Data
 @inject SignInManager<User> SignInManager
 @inject UserManager<User> UserManager
+@inject vomsProject.Helpers.DomainHelper domainHelper
 
 @model PageOverview
 
+@{ 
+    var count = 1;
+}
 
 <div class="Solutions mb-3">
     <h3>Here are you pages:</h3>
-    @foreach (var thePage in Model.Pages)
-    {
-        <div class="card m-2" style="width: 18rem">
-            <div class="card-body">
-                <h5 class="card-title">@thePage.PageName</h5>
-            </div>
-            <div class="card-body">
-                <a href="https://@(Model.Solution.Subdomain).localhost:5001/@thePage.PageName" class="card-link">Edit page</a>
-                @Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = thePage.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
-            </div>
-        </div>
-    }
+    <div>
+        <table class="table table-responsive table-bordered">
+            <thead>
+                <tr>
+                    <th scope="col">#</th>
+                    <th scope="col">Page name & link to page</th>
+                    <th scope="col">Manage page</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var page in Model.Pages)
+                {
+                    var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)"; 
+
+                    <tr>
+                        <th scope="row">@(count++)</th>
+                        <td><a href="@domainHelper.GetDestinationUrl(page)" class="card-link">@(pagename)</a></td>
+                        <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
 </div>
 
 
