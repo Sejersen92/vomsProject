@@ -6,6 +6,7 @@
 @model AdminViewModel
 @{
     var colClass = "";
+    var accordianNumber = 0;
 }
 
 <div class="container-xxl">
@@ -39,29 +40,42 @@
                                     <p class="card-text">id: @solution.Id</p>
                                 </div>
                                 <div class="card-body">
-                                    <p>Assigned users: </p>
-                                    @foreach (var permission in solution.Permissions)
-                                    {
-                                        <p>@permission.User.UserName</p>
-                                    }
+                                    <div class="accordion" id="#@accordianNumber">
+                                        <div class="accordion-item">
+                                            <h2 class="accordion-header" id="headingOne">
+                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@accordianNumber" aria-expanded="true" aria-controls="collapse-@accordianNumber">
+                                                    Assigned users
+                                                </button>
+                                            </h2>
+                                            <div id="collapse-@accordianNumber" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#@accordianNumber">
+                                                <div class="accordion-body">
+                                                    @foreach (var permission in solution.Permissions)
+                                                    {
+                                                        <p>@permission.User.UserName</p>
+                                                    }
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
                                 </div>
-                                <div class="card-footer">
+                                <div class="card-footer text-center">
                                     <div class="btn-group">
                                         @Html.ActionLink("Login", "LoginToSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
-                                        @Html.ActionLink("Site", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
+                                        @Html.ActionLink("Manage", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
                                         @Html.ActionLink("Delete", "DeleteSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
                                     </div>
                                 </div>
                             </div>
                         </div>
                     }
+                    accordianNumber++;
                 }
             </div>
         }
 
-        <div class="p-5 mb-4 bg-light rounded-3">
-            <div class="container-fluid py-5">
-                <h1 class="display-4 fw-bold">Create page: </h1>
+        <div class="bg-light rounded-3">
+            <div class="container-fluid text-center" style="max-width: 50%">
+                <h1 class="fw-bold">Create Solution: </h1>
                 @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
                 {
                     @if (Model.HasReachedProductLimit.HasValue && Model.HasReachedProductLimit.Value)
@@ -71,7 +85,7 @@
                         </div>
                     }
                     <div class="card-body">
-                        <div class="input-group m-2">
+                        <div class="input-group mb-2">
                             <label class="input-group-text" for="title">Title</label>
                             <input type="text" id="title" name="title" class="form-control" />
                         </div>
