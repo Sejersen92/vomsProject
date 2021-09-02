@@ -38,7 +38,18 @@ namespace vomsProject.Helpers
         public IQueryable<Page> PageQuery(IQueryable<Solution> solution, string pageName)
         {
             return solution.SelectMany((solution) => solution.Pages)
-                .Where((page) => page.PageName == pageName);
+                .Where((page) => page.PageName == pageName && !page.IsDeleted);
+        }
+
+        /// <summary>
+        /// Get deleted pages belonging to solutions.
+        /// </summary>
+        /// <param name="solutions">A query for the solutions</param>
+        /// <returns>Returns a set of pages.</returns>
+        public IQueryable<Page> DeletedPages(IQueryable<Solution> solutions)
+        {
+            return solutions.SelectMany((solution) => solution.Pages).Where((page) => page.IsDeleted);
+        }
 
         /// <summary>
         /// Get pages belonging to solutions.
@@ -47,7 +58,7 @@ namespace vomsProject.Helpers
         /// <returns>Returns a set of pages.</returns>
         public IQueryable<Page> Pages(IQueryable<Solution> solutions)
         {
-            return solutions.SelectMany((solution) => solution.Pages);
+            return solutions.SelectMany((solution) => solution.Pages).Where((page) => !page.IsDeleted);
         }
 
         /// <summary>
@@ -99,7 +110,7 @@ namespace vomsProject.Helpers
         /// <summary>
         /// Get the solution by id.
         /// </summary>
-        /// <param name="id">The a solution id</param>
+        /// <param name="id">The solution id</param>
         /// <returns>Returns a set of one or zero solutions.</returns>
         public IQueryable<Solution> GetSolutionById(int id)
         {
