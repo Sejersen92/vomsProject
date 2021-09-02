@@ -171,11 +171,11 @@ namespace vomsProject.Controllers
                     var page = await _solutionHelper.PageQuery(solution, pageName).Include((page) => page.Solution).SingleOrDefaultAsync();
                     if (page != null)
                     {
-                        return Redirect(_domainHelper.GetDestinationUrl(page));
+                        return Redirect(_domainHelper.GetPageUrl(page));
                     }
                 }
                 var theSolutoin = await solution.SingleOrDefaultAsync();
-                return Redirect(_domainHelper.GetIndexPageUrl(theSolutoin));
+                return Redirect(_domainHelper.GetSolutionIndexPageUrl(theSolutoin));
             }
             catch
             {
@@ -210,7 +210,7 @@ namespace vomsProject.Controllers
         {
             await SignInManager.SignOutAsync();
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host).FirstOrDefault();
-            return Redirect(_domainHelper.GetIndexPageUrl(solution));
+            return Redirect(_domainHelper.GetSolutionIndexPageUrl(solution));
         }
     }
 }

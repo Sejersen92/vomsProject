@@ -362,11 +362,11 @@ namespace vomsProject.Controllers
             var token = new JwtSecurityTokenHandler().WriteToken(JwtService.CreateOneTimeToken(user));
             if (pageName == null)
             {
-                return Redirect($"{DomainHelper.GetIndexPageUrl(solution)}Login?token={token}");
+                return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}");
             }
             else
             {
-                return Redirect($"{DomainHelper.GetIndexPageUrl(solution)}Login?token={token}&pageName={pageName}");
+                return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}&pageName={pageName}");
             }
         }
     }

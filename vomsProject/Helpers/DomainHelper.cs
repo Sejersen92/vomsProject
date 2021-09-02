@@ -26,9 +26,9 @@ namespace vomsProject.Helpers
         /// </summary>
         /// <param name="page">The page to get a link to. The Solution property has to be included.</param>
         /// <returns>Returns a url</returns>
-        public string GetDestinationUrl(Page page)
+        public string GetPageUrl(Page page)
         {
-            return $"{GetIndexPageUrl(page.Solution)}{page.PageName}";
+            return $"{GetSolutionIndexPageUrl(page.Solution)}{page.PageName}";
         }
 
         /// <summary>
@@ -36,7 +36,7 @@ namespace vomsProject.Helpers
         /// </summary>
         /// <param name="solution">The solution to get a link to.</param>
         /// <returns>Returns a url, with a slash at the end</returns>
-        public string GetIndexPageUrl(Solution solution)
+        public string GetSolutionIndexPageUrl(Solution solution)
         {
             if (solution != null)
             {

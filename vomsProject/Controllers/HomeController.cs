@@ -40,7 +40,7 @@ namespace vomsProject.Controllers
 
             foreach (var solution in model.Solutions)
             {
-                solution.DestinationUrl = _domainHelper.GetIndexPageUrl(solution);
+                solution.DestinationUrl = _domainHelper.GetSolutionIndexPageUrl(solution);
             }
 
             return View(model);
