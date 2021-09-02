@@ -183,6 +183,14 @@ namespace vomsProject.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePage(string title, int id)
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(id);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
             try
             {
                 if (title == null)
@@ -192,10 +200,12 @@ namespace vomsProject.Controllers
                 var page = new Page()
                 {
                     PageName = title,
-                    Solution = await _dbContext.Solutions.FindAsync(id)
+                    HtmlRenderContent = "",
+                    IsPublished = false,
+                    Solution = await solution.FirstOrDefaultAsync()
                 };
 
-                _dbContext.Pages.Add(page);
+                _dbContext.Add(page);
                 await _dbContext.SaveChangesAsync();
 
                 return RedirectToAction("SolutionOverview", new { id = id });
@@ -211,12 +221,20 @@ namespace vomsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> RemovePage(int id, int solutionId)
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(solutionId);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
             try
             {
-                var page = await _dbContext.Pages.FindAsync(id);
+                var page = await Repository.Pages(solution).FirstOrDefaultAsync(page => page.Id == id);
                 if (page != null)
                 {
-                    _dbContext.Pages.Remove(page);
+                    page.IsDeleted = true;
                 }
 
                 await _dbContext.SaveChangesAsync();
