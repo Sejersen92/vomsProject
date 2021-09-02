@@ -73,53 +73,111 @@
             }
         }
     </div>
-    <div data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" class="scrollspy-example" tabindex="0">
-        <h3>Select the preferred product here!</h3>
-        <div class="row" id="list-item-1">
-            <div class="col-sm-4">
-                <div class="card mb-2">
-                    <div class="card-body" style="text-align: center">
-                        <h5 class="card-title">Community Edition</h5>
-                        <p class="card-text" style="min-height:8em">
-                            The Community Edition supports up to 4 active solutions-ownerships and no limitation on how many solutions you can be an editor in.
-                        </p>
-                        <img src="https://www.elegantthemes.com/blog/wp-content/uploads/2020/09/community-update-august-2020-scaled.jpg" style="max-height: 10em; max-width: 100%" />
-                    </div>
-                    <div class="card-footer">
-                        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Community">Register your Community Edition user here!</a>
-                    </div>
+    <div class="pricing-header p-3 pb-md-4 mx-auto text-center scrollspy-example" data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" tabindex="0">
+        <h1 class="display-4 fw-normal">Pricing</h1>
+        <p class="fs-5 text-muted">Get a overview over what you get right here!</p>
+    </div>
+    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center" id="list-item-1">
+        <div class="col">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Free</h4>
                 </div>
-            </div>
-            <div class="col-sm-4 mb-2">
-                <div class="card">
-                    <div class="card-body" style="text-align: center">
-                        <h5 class="card-title">Professional Edition</h5>
-                        <p class="card-text" style="min-height:8em">
-                            The Professional Edition supports up to 20 active solution-ownerships and no limitation on how many solutions you can be an editor in.
-                            It also adds the ability to create custom stylesheets for the Community to use.
-                        </p>
-                        <img src="https://www.careeraddict.com/uploads/article/59099/illustration-man-suit.jpg" style="max-height: 10em; max-width: 100%" />
-                    </div>
-                    <div class="card-footer">
-                        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Professional">Register your Professional Edition user here!</a>
-                    </div>
-                </div>
-            </div>
-            <div class="col-sm-4">
-                <div class="card mb-2">
-                    <div class="card-body" style="text-align: center">
-                        <h5 class="card-title">Enterprise Edition</h5>
-                        <p class="card-text" style="min-height:8em">
-                            The Enterprise Edition supports unlimited active solution-ownerships and no limitation on how many solutions you can be an editor in.
-                            It includes the previous abilities aswell as the ability to create custom domains etc...
-                        </p>
-                        <img src="https://www.macmillandictionaryblog.com/wp-content/uploads/2017/08/enterprise-810x494.jpg" style="max-height: 10em; max-width: 100%" />
-                    </div>
-                    <div class="card-footer">
-                        <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Enterprise" >Register your Enterprise Edition user here!</a>
-                    </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">0DKK<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>Access to our amazing community</li>
+                        <li>10 users included</li>
+                        <li>Email support</li>
+                    </ul>
+                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Community">Sign up for free</a>
                 </div>
             </div>
         </div>
+        <div class="col">
+            <div class="card mb-4 rounded-3 shadow-sm">
+                <div class="card-header py-3">
+                    <h4 class="my-0 fw-normal">Pro</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">99DKK<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>20 users included</li>
+                        <li>email support</li>
+                        <li>Help center access</li>
+                    </ul>
+                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Professional">Get started</a>
+                </div>
+            </div>
+        </div>
+        <div class="col">
+            <div class="card mb-4 rounded-3 shadow-sm border-primary">
+                <div class="card-header py-3 text-white bg-primary border-primary">
+                    <h4 class="my-0 fw-normal">Enterprise</h4>
+                </div>
+                <div class="card-body">
+                    <h1 class="card-title pricing-card-title">499DKK<small class="text-muted fw-light">/mo</small></h1>
+                    <ul class="list-unstyled mt-3 mb-4">
+                        <li>30 users included</li>
+                        <li>Priority phone and email support</li>
+                        <li>Help center access</li>
+                    </ul>
+                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Enterprise">Get started</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    <h2 class="display-6 text-center mb-4">Compare plans</h2>
+    <div class="table-responsive">
+        <table class="table text-center">
+            <thead>
+                <tr>
+                    <th style="width: 34%;"></th>
+                    <th style="width: 22%;">Free</th>
+                    <th style="width: 22%;">Pro</th>
+                    <th style="width: 22%;">Enterprise</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <th scope="row" class="text-start">Public solution</th>
+                    <td><i class="fas fa-check"></i></td>
+                    <td><i class="fas fa-check"></i></td>
+                    <td><i class="fas fa-check"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row" class="text-start">Private solution</th>
+                    <td></td>
+                    <td><i class="fas fa-check"></i></td>
+                    <td><i class="fas fa-check"></i></td>
+                </tr>
+            </tbody>
+            <tbody>
+                <tr>
+                    <th scope="row" class="text-start"># of ownerships</th>
+                    <td style="font-weight: bold">1</td>
+                    <td style="font-weight: bold">5</td>
+                    <td style="font-weight: bold">20</td>
+                </tr>
+                <tr>
+                    <th scope="row" class="text-start">Custom Domain support</th>
+                    <td></td>
+                    <td><i class="fas fa-check"></i></td>
+                    <td><i class="fas fa-check"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row" class="text-start">Unlimited members</th>
+                    <td></td>
+                    <td><i class="fas fa-check"></i></td>
+                    <td><i class="fas fa-check"></i></td>
+                </tr>
+                <tr>
+                    <th scope="row" class="text-start">Extra security</th>
+                    <td></td>
+                    <td></td>
+                    <td><i class="fas fa-check"></i></td>
+                </tr>
+            </tbody>
+        </table>
     </div>
 </div>
