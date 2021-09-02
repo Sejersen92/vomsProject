@@ -34,9 +34,17 @@ namespace vomsProject.Controllers
             return View();
         }
 
-        public IActionResult Solution(int id)
+        public async Task<IActionResult> Solution(int id)
         {
-            var model = new SolutionViewModel { Solution = _repository.GetSolutionById(id) };
+            var solution = await _repository.GetSolutionById(id)
+                .Include(x => x.Permissions).ThenInclude(perm => perm.User)
+                .Include(x => x.Pages)
+                .FirstOrDefaultAsync(x => x.Id == id);
+            if (solution == null)
+            {
+                return NotFound();
+            }
+            var model = new SolutionViewModel { Solution = solution };
 
             return View(model);
         }

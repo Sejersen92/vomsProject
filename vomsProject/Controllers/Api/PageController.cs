@@ -57,12 +57,12 @@ namespace vomsProject.Controllers.Api
     public class PageController : ControllerBase
     {
         private readonly ApplicationDbContext _context;
-        private readonly RepositoryService SolutionHelper;
+        private readonly RepositoryService Repository;
         private readonly UserManager<User> UserManager;
-        public PageController(ApplicationDbContext context, RepositoryService solutionHelper, UserManager<User> userManager)
+        public PageController(ApplicationDbContext context, RepositoryService repository, UserManager<User> userManager)
         {
             _context = context;
-            SolutionHelper = solutionHelper;
+            Repository = repository;
             UserManager = userManager;
         }
 
@@ -78,14 +78,20 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> Update(int id, [FromBody] object body)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var page = await _context.Pages.Include(page => page.Versions).FirstOrDefaultAsync(page => page.Id == id);
+            var page = await Repository.Pages(solution)
+                .Include(page => page.Versions)
+                .FirstOrDefaultAsync(page => page.Id == id);
+            if (page == null)
+            {
+                return NotFound();
+            }
             var content = new PageContent()
             {
                 Content = body.ToString(),
@@ -116,14 +122,20 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> Publish(int id, [FromBody] PublishDto body)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var page = await _context.Pages.Include(page => page.Versions).FirstOrDefaultAsync(page => page.Id == id);
+            var page = await Repository.Pages(solution)
+                .Include(page => page.Versions)
+                .FirstOrDefaultAsync(page => page.Id == id);
+            if (page == null)
+            {
+                return NotFound();
+            }
             var content = new PageContent()
             {
                 Content = body.Content.ToString(),
@@ -156,14 +168,19 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> UnPublish(int id)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var page = await _context.Pages.FirstOrDefaultAsync(page => page.Id == id);
+            var page = await Repository.Pages(solution)
+                .FirstOrDefaultAsync(page => page.Id == id);
+            if (page == null)
+            {
+                return NotFound();
+            }
 
             page.PublishedVersion = null;
             page.HtmlRenderContent = "";
@@ -185,14 +202,15 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> GetVersion(int id, int versionId)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var content = await _context.Pages.Where(page => page.Id == id)
+            var content = await Repository.Pages(solution)
+                .Where(page => page.Id == id)
                 .SelectMany(page => page.Versions)
                 .Where(version => version.Id == versionId)
                 .FirstOrDefaultAsync();
@@ -216,14 +234,14 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> SetAsLastVersion(int id, [FromBody] SetLastVersionDto body)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var page =  _context.Pages
+            var page = Repository.Pages(solution)
                 .Where(page => page.Id == id);
 
             var content = await page.SelectMany(page => page.Versions)
@@ -249,14 +267,14 @@ namespace vomsProject.Controllers.Api
         public async Task<IActionResult> UpdateProperties(int id, [FromBody] PropertiesDto body)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = SolutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await SolutionHelper.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
 
-            var page = await _context.Pages
+            var page = await Repository.Pages(solution)
                 .Where(page => page.Id == id).FirstOrDefaultAsync();
             if (page != null)
             {

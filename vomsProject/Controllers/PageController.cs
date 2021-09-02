@@ -79,7 +79,7 @@ namespace vomsProject.Controllers
                             Solution = theSolution
                         };
                         Context.Add(page);
-                        Context.SaveChanges();
+                        await Context.SaveChangesAsync();
                     }
                     var versions = await Context.PageContents.Where(content => content.Page == page).Select(content => new EditablePageModel.Version()
                     {
