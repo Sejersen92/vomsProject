@@ -6,7 +6,6 @@
 @model AdminViewModel
 @{
     var colClass = "";
-    var accordianNumber = 0;
 }
 
 <div class="container-xxl">
@@ -34,29 +33,16 @@
                     if (solution != null)
                     {
                         <div class="@colClass">
-                            <div class="card" style="width: 18rem;">
+                            <div class="card">
                                 <div class="card-header">
                                     <h5 class="card-title">Title: @solution.Subdomain</h5>
                                     <p class="card-text">id: @solution.Id</p>
                                 </div>
                                 <div class="card-body">
-                                    <div class="accordion" id="#@accordianNumber">
-                                        <div class="accordion-item">
-                                            <h2 class="accordion-header" id="headingOne">
-                                                <button class="accordion-button" type="button" data-bs-toggle="collapse" data-bs-target="#collapse-@accordianNumber" aria-expanded="true" aria-controls="collapse-@accordianNumber">
-                                                    Assigned users
-                                                </button>
-                                            </h2>
-                                            <div id="collapse-@accordianNumber" class="accordion-collapse collapse show" aria-labelledby="headingOne" data-bs-parent="#@accordianNumber">
-                                                <div class="accordion-body">
-                                                    @foreach (var permission in solution.Permissions)
-                                                    {
-                                                        <p>@permission.User.UserName</p>
-                                                    }
-                                                </div>
-                                            </div>
-                                        </div>
-                                    </div>
+                                    @foreach (var permission in solution.Permissions)
+                                    {
+                                        <p>@permission.User.UserName</p>
+                                    }
                                 </div>
                                 <div class="card-footer text-center">
                                     <div class="btn-group">
@@ -68,13 +54,12 @@
                             </div>
                         </div>
                     }
-                    accordianNumber++;
                 }
             </div>
         }
 
         <div class="bg-light rounded-3">
-            <div class="container-fluid text-center" style="max-width: 50%">
+            <div class="container-fluid text-center">
                 <h1 class="fw-bold">Create Solution: </h1>
                 @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
                 {

@@ -22,6 +22,8 @@ namespace vomsProject.Data
         public ICollection<Layout> Layouts { get; set; }
         public int? StyleId { get; set; }
         public Style Style { get; set; }
+        public string FriendlyName { get; set; }
+
 
         [NotMapped]
         public string DestinationUrl { get; set; }

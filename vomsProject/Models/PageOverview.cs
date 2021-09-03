@@ -13,5 +13,6 @@ namespace vomsProject.Models
         public IEnumerable<Page> Pages { get; set; }
         public IEnumerable<Option> StyleSheets { get; set; }
         public int? SelectedStyleId { get; set; }
+        public User User { get; set; }
     }
 }

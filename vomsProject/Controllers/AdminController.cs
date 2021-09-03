@@ -118,12 +118,14 @@ namespace vomsProject.Controllers
 
 
         [Authorize]
-        public IActionResult SolutionOverview([FromRoute] int id)
+        public async Task<IActionResult> SolutionOverview([FromRoute] int id)
         {
             var solution = _dbContext.Solutions
                 .AsSplitQuery()
                 .Include(x => x.Permissions).ThenInclude(x => x.User)
                 .Include(x => x.Pages).ThenInclude(x => x.Solution).FirstOrDefault(x => x.Id == id);
+
+            var user = await UserManager.GetUserAsync(HttpContext.User);
 
             var stylesheets = _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToList();
             if (solution != null)
@@ -134,6 +136,7 @@ namespace vomsProject.Controllers
                     SolutionId = id,
                     Solution = solution,
                     StyleSheets = stylesheets,
+                    User = user,
                     SelectedStyleId = solution.StyleId.HasValue ? solution.StyleId.Value : null
                 };
 
@@ -164,7 +167,7 @@ namespace vomsProject.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId)
+        public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = _dbContext.Solutions.Find(solutionId);
@@ -172,6 +175,9 @@ namespace vomsProject.Controllers
             {
                 return Forbid();
             }
+
+            solution.Domain = domainName;
+            solution.FriendlyName = friendlyName;
 
             solution.StyleId = stylesheet;
             await _dbContext.SaveChangesAsync();

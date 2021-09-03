@@ -6,14 +6,14 @@
 
 @model PageOverview
 
-@{ 
+@{
     var count = 1;
 }
 
 <div class="Solutions mb-3">
     <h3>Here are you pages:</h3>
     <div>
-        <table class="table table-responsive table-bordered">
+        <table class="table table-responsive table-bordered table-hover">
             <thead>
                 <tr>
                     <th scope="col">#</th>
@@ -24,12 +24,12 @@
             <tbody>
                 @foreach (var page in Model.Pages)
                 {
-                    var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)"; 
+                    var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
 
                     <tr>
                         <th scope="row">@(count++)</th>
                         <td><a href="@domainHelper.GetPageUrl(page)" class="card-link">@(pagename)</a></td>
-                        <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })</td>
+                        <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
                 }
             </tbody>
@@ -38,31 +38,31 @@
 </div>
 
 
-<div class="card m-2">
-    <h5 class="card-title">Page-creation</h5>
-    <h6 class="card-subtitle">In this section you can create new pages for your solution</h6>
-    <div class="mb-3 mt-3 row justify-content-center">
-        <form asp-action="CreatePage" asp-controller="Admin" method="post">
-            <div class="input-group mb-2 mt-2">
-                <label class="input-group-text">Enter the title of your page:</label>
-                <input class="form-control" type="text" id="title" name="title" />
-            </div>
-            <div style="display: none">
-                <input type="text" name="id" value="@Model.SolutionId" />
-            </div>
-            <input type="submit" value="Create page" class="btn btn-primary mb-3" />
-        </form>
+<div class="bg-light rounded-3">
+    <div class="container-fluid">
+        <h1 class="fw-bold">Create a new page:  </h1>
+        <div class="mb-3 mt-3 row justify-content-center">
+            <form asp-action="CreatePage" asp-controller="Admin" method="post">
+                <div class="input-group-lg mb-2 mt-2">
+                    <label class="form-label">Enter the title of your page:</label>
+                    <input class="form-control" type="text" id="title" name="title" />
+                </div>
+                <div style="display: none">
+                    <input type="text" name="id" value="@Model.SolutionId" />
+                </div>
+                <input type="submit" value="Create page" class="btn btn-primary mb-3" />
+            </form>
+        </div>
     </div>
 </div>
 
-<div class="card m-2">
-    <h5 class="card-title">Solution-options</h5>
-    <h6 class="card-subtitle mb-2">In this section you can add or remove user-access to this solution, and, if needed, delete this solution as well.</h6>
-    <div class="card-body">
+<div class="bg-light rounded-3">
+    <div class="container-fluid">
+        <h1 class="fw-bold">Update solution:  </h1>
         <form asp-action="UpdateSolution" asp-controller="Admin" method="post">
-            <div class="input-group mb-2 mt-2">
-                <label class="input-group-text">Select a stylesheet:</label>
-                <select name="stylesheet">
+            <div class="input-group-lg mb-3">
+                <label class="form-label">Select a stylesheet: </label>
+                <select class="form-select col-8" name="stylesheet">
                     @foreach (var style in Model.StyleSheets)
                     {
                         if (Model.SelectedStyleId == style.Id)
@@ -76,26 +76,52 @@
                     }
                 </select>
             </div>
+            <div class="input-group-lg mb-3">
+                <label class="form-label" for="friendlyName">Friendly name:</label>
+                <input type="text" class="form-control col-8" id="friendlyName">
+            </div>
+
+            @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+            {
+                <div class="input-group-lg mb-3">
+                    <label class="form-label" for="friendlyName">Custom Domain:</label>
+                    <input type="text" class="form-control col-8" id="domainName">
+                </div>
+            }
+
             <div style="display: none">
                 <input type="text" name="solutionId" value="@Model.SolutionId" />
             </div>
             <input type="submit" value="submit" class="btn btn-primary mb-3" />
         </form>
-        @if (Model.Solution != null)
+    </div>
+</div>
+<table class="table table-responsive table-bordered table-hover">
+    <thead>
+        <tr>
+            <th scope="col">UserId</th>
+            <th scope="col">Username</th>
+            <th scope="col">Delete user</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var permission in Model.Solution.Permissions)
         {
-            <h5 class="card-title">Users</h5>
-            @foreach (var permission in Model.Solution.Permissions)
-            {
-                <div class="m-2">
-                    <h5 class="card-title mb-2">@permission.User.UserName</h5>
-                    @Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "card-link" })
-                </div>
-            }
+            <tr>
+                <th scope="row">@permission.User.Id</th>
+                <td class="">@permission.User.UserName</td>
+                <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
+            </tr>
         }
-        <h5 class="card-title mt-5">Add new user</h5>
+    </tbody>
+</table>
+
+<div class="bg-light rounded-3">
+    <div class="container-fluid">
+        <h1 class="fw-bold">Add a new user:  </h1>
         <form asp-action="AddUser" asp-controller="Admin" method="post">
-            <div class="input-group mb-2 mt-2">
-                <label class="input-group-text">Enter an email-address for a specific user:</label>
+            <div class="input-group-lg mb-2 mt-2">
+                <label class="form-label">Assign through email</label>
                 <input class="form-control" type="email" id="userEmail" name="userEmail" />
             </div>
             <div style="display: none">
