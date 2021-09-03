@@ -38,11 +38,12 @@ namespace vomsProject.Controllers
         }
 
         [Authorize]
-        public IActionResult Index()
+        public async Task<IActionResult> IndexAsync()
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
             var model = new AdminViewModel()
             {
-                Solutions = Solutions()
+                Solutions = await Repository.GetSolutionsByUser(user)
             };
 
             return View(model);
@@ -58,9 +59,8 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> Index(string title)
         {
             var maxSolutions = 0;
-            var solutionOwnerId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-            var databaseUser = await _dbContext.Users.FirstOrDefaultAsync(user => user.Id == solutionOwnerId);
-            var productVersion = databaseUser.ProductVersion;
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var productVersion = user.ProductVersion;
             var style = await _dbContext.Styles.FirstOrDefaultAsync();
 
             switch (productVersion)
@@ -80,7 +80,7 @@ namespace vomsProject.Controllers
 
             using (var dbContextTransaction = _dbContext.Database.BeginTransaction())
             {
-                var query = _dbContext.Permissions.Where(x => x.User.Id == databaseUser.Id && x.PermissionLevel == PermissionLevel.Admin);
+                var query = _dbContext.Permissions.Where(x => x.User.Id == user.Id && x.PermissionLevel == PermissionLevel.Admin);
                 var numberOfSolutions = query.Count();
 
                 if (numberOfSolutions < maxSolutions)
@@ -94,7 +94,7 @@ namespace vomsProject.Controllers
                     _dbContext.Permissions.Add(new Permission
                     {
                         PermissionLevel = PermissionLevel.Admin,
-                        User = databaseUser,
+                        User = user,
                         Solution = project
                     });
 
@@ -107,7 +107,7 @@ namespace vomsProject.Controllers
                 {
                     var model = new AdminViewModel()
                     {
-                        Solutions = Solutions(),
+                        Solutions = await Repository.GetSolutionsByUser(user),
                         HasReachedProductLimit = true
                     };
 
@@ -116,53 +116,32 @@ namespace vomsProject.Controllers
             }
         }
 
-
         [Authorize]
         public async Task<IActionResult> SolutionOverview([FromRoute] int id)
         {
-            var solution = _dbContext.Solutions
-                .AsSplitQuery()
-                .Include(x => x.Permissions).ThenInclude(x => x.User)
-                .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
-
             var user = await UserManager.GetUserAsync(HttpContext.User);
-
-            var stylesheets = _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToList();
-            if (solution != null)
+            var solution = Repository.GetSolutionById(id);
+            var theSolution = await solution
+                .Include(x => x.Permissions).ThenInclude(x => x.User)
+                .SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
-                var model = new PageOverview
-                {
-                    Pages = solution.Pages,
-                    SolutionId = id,
-                    Solution = solution,
-                    StyleSheets = stylesheets,
-                    User = user,
-                    SelectedStyleId = solution.StyleId.HasValue ? solution.StyleId.Value : null
-                };
-
-                return View(model);
+                return Forbid();
             }
-            return NotFound();
-        }
+            var stylesheets = await _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToListAsync();
+            var pages = await Repository.Pages(solution).ToListAsync();
 
-        [Authorize]
-        private IEnumerable<Solution> Solutions()
-        {
-            var result = new List<Solution>();
-            var userId = User.FindFirstValue(ClaimTypes.NameIdentifier);
-
-            if (string.IsNullOrWhiteSpace(userId)) return result;
-
-            try
+            var model = new PageOverview
             {
-                result.AddRange(Repository.GetSolutionsByUser(userId));
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return result;
-            }
-            return result;
+                Pages = pages,
+                SolutionId = id,
+                Solution = theSolution,
+                StyleSheets = stylesheets,
+                User = user,
+                SelectedStyleId = theSolution.StyleId
+            };
+
+             return View(model);
         }
 
         [Authorize]
@@ -264,10 +243,17 @@ namespace vomsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> RemoveUser(string id, int solutionId)
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(solutionId);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                return Forbid();
+            }
+
             try
             {
-                var permission = _dbContext.Permissions.Include(perm => perm.User).Include(perm => perm.Solution).Where(perm => perm.User.Id == id && perm.Solution.Id == solutionId);
-                _dbContext.Permissions.RemoveRange(permission);
+                _dbContext.Permissions.RemoveRange(solution.SelectMany(solution => solution.Permissions).Where(perm => perm.User.Id == id));
 
                 await _dbContext.SaveChangesAsync();
 
@@ -284,17 +270,26 @@ namespace vomsProject.Controllers
         [HttpPost]
         public async Task<IActionResult> AddUser(string userEmail, int solutionId)
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(solutionId);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                return Forbid();
+            }
+
             try
             {
-                var solution = await _dbContext.Solutions.Include(solution => solution.Permissions).FirstOrDefaultAsync(x => x.Id == solutionId);
-                var user = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
+                var AddedUser = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
 
-                if (user == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
+                if (AddedUser == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
 
-                solution.Permissions.Add(new Permission()
+
+                _dbContext.Permissions.Add(new Permission()
                 {
                     PermissionLevel = PermissionLevel.Editor,
-                    User = user
+                    User = AddedUser,
+                    Solution = theSolution
                 });
 
                 await _dbContext.SaveChangesAsync();
@@ -309,8 +304,7 @@ namespace vomsProject.Controllers
         }
 
         /// <summary>
-        /// Deletes a selected solution. No Cascade-deletion --> Include Permissions, Page and users.
-        /// .Clear() removes all table-entities in the given context.
+        /// Deletes a selected solution and related entities.
         /// UPDE = UserPermission doesn't exist.
         /// NUF = No users found.
         /// NPF = No permissions found.
@@ -321,47 +315,20 @@ namespace vomsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> DeleteSolution(int id)
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(id);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                return Forbid();
+            }
+
             try
             {
-                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).FirstOrDefaultAsync(x => x.Id == id);
-
-                if (currentSolution == null) return BadRequest("Something went wrong.");
-                if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
-
-                currentSolution.Permissions.Clear();
-                currentSolution.Pages.Clear();
-                _dbContext.Solutions.Remove(currentSolution);
+                _dbContext.Solutions.Remove(theSolution);
 
                 await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index");
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return RedirectToAction("index", e);
-            }
-        }
-
-        /// <summary>
-        /// Edits a selected solution.
-        /// </summary>
-        /// <param name="id"></param>
-        /// <returns></returns>
-        [Authorize]
-        [HttpGet]
-        public async Task<IActionResult> EditSolution(int id)
-        {
-            try
-            {
-                var currentSolution = await _dbContext.Solutions.Include(x => x.Permissions).Include(y => y.Pages).FirstOrDefaultAsync(x => x.Id == id);
-
-                if (currentSolution == null) return BadRequest("Something went wrong.");
-                if (currentSolution.Permissions == null) return BadRequest("Something went wrong. (NPF)");
-
-                currentSolution.Domain = "";
-
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("index");
             }
             catch (Exception e)
             {
@@ -380,7 +347,6 @@ namespace vomsProject.Controllers
         [HttpGet]
         public async Task<IActionResult> LoginToSolution(int id, string pageName)
         {
-            // It is important that we use the user that is logged in.
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = _dbContext.Solutions.Find(id);
             var token = new JwtSecurityTokenHandler().WriteToken(JwtService.CreateOneTimeToken(user));

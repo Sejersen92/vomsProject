@@ -117,9 +117,9 @@ namespace vomsProject.Helpers
             return Context.Solutions.Where(solution => solution.Id == id);
         }
 
-        public IEnumerable<Solution> GetSolutionsByUser(string userId)
+        public async Task<IEnumerable<Solution>> GetSolutionsByUser(User user)
         {
-            return Context.Solutions.Include(x => x.Permissions).ThenInclude(perm => perm.User).Where(x => x.Permissions.Any(perm => perm.User.Id == userId)).ToList();
+            return await Context.Solutions.Include(x => x.Permissions).ThenInclude(perm => perm.User).Where(x => x.Permissions.Any(perm => perm.User == user)).ToListAsync();
         }
     }
 }
