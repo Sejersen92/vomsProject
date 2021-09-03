@@ -21,7 +21,7 @@
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
     <ul id="versionHistory" class="voms-menu" data-bind="foreach: versions">
         <li>
-            <button data-bind="disable: $root.currentVersion() === id,
+            <button data-bind="disable: $root.currentVersion() === id || $root.isDeleted(),
                                click: getVersionFunction(id)">
                 <div data-bind="text: saveDate"></div>
                 <strong data-bind="text: getTitle(id)"></strong>
@@ -30,29 +30,41 @@
     </ul>
     <button id="menu-button" onclick="toggleMenu()" data-bind="css: { 'voms-left': isMenuLeft() }">Menu</button>
     <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu(), 'voms-left': isMenuLeft() }">
+        <!-- ko if: isDeleted -->
+        <li class="voms-notice">
+            Current page is deleted
+        </li>
+        <!-- /ko -->
+        <!-- ko if: hasBeenReplaced -->
+        <li class="voms-notice">
+            <p>It seems the page has already been replaced. If you still want to recover
+            this page you have to delete the new one before you can. Otherwise you can just
+            refresh this page to get to the new one.</p>
+        </li>
+        <!-- /ko -->
         <li class="voms-input">
             <label for="page-title">Page title</label>
-            <input id="page-title" type="text" placeholder="Give your page a title" data-bind="textInput: title"/>
+            <input id="page-title" type="text" placeholder="Give your page a title" data-bind="textInput: title, disable: isDeleted" />
         </li>
         <li>
-            <button onclick="save()" data-bind="disable: arePropertiesSaved() && isSaved() && isLatesVersion(),
+            <button onclick="save()" data-bind="disable: (arePropertiesSaved() && isSaved() && isLatesVersion()) || isDeleted(),
                                                 attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">
                 Save
             </button>
         </li>
         <li>
             <button onclick="publish()"
-                    data-bind="disable: isSaved() && isPublishedVersion(),
+                    data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
                                attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
                 Publish
             </button>
         </li>
-        <li class="voms-hideable" data-bind="css: { show: isPublished() }">
+        <li class="voms-hideable" data-bind="css: { show: isPublished() }, disable: isDeleted">
             <button onclick="unpublish()">Unpublish</button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: isPublished() }">
             <button onclick="getPublishedVersion()"
-                    data-bind="disable: isSaved() && isPublishedVersion(),
+                    data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
                         attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
                 <div>
                     Select published version
@@ -62,7 +74,7 @@
         </li>
         <li>
             <button onclick="getSavedVersion()"
-                    data-bind="disable: isSaved() && isLatesVersion()
+                    data-bind="disable: (isSaved() && isLatesVersion()) || isDeleted(),
                                attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : '' }">
                 <div>
                     Select last saved version
@@ -73,7 +85,7 @@
         <li>
             <button onclick="toggleVersionHistory()" data-bind="text: showVersionHistory() ? 'Less Versions' : 'More Versions'">More Versions</button>
         </li>
-        <li>
+        <li class="voms-hideable" data-bind="css: { show: !isDeleted() }">
             <button onclick="deletePage()">
                 <svg viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
                     <rect x="15" y="65" width="80" height="100" />
@@ -84,6 +96,19 @@
                     <line x1="75" x2="75" y1="80" y2="150" />
                 </svg>
                 Delete
+            </button>
+        </li>
+        <li class="voms-hideable" data-bind="css: { show: isDeleted() }">
+            <button onclick="recoverPage()">
+                <svg style="transform: scale(1,-1)" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
+                    <rect x="15" y="65" width="80" height="100" />
+                    <rect x="05" y="25" width="100" height="20" />
+                    <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
+                    <line x1="35" x2="35" y1="80" y2="150" />
+                    <line x1="55" x2="55" y1="80" y2="150" />
+                    <line x1="75" x2="75" y1="80" y2="150" />
+                </svg>
+                Recover
             </button>
         </li>
         <li>
@@ -127,6 +152,8 @@
             showMenu: ko.observable(false),
             showVersionHistory: ko.observable(false),
             isMenuLeft: ko.observable(false),
+            isDeleted: ko.observable(false),
+            hasBeenReplaced: ko.observable(false),
             versions: ko.observableArray([
                 // {{#versions}}
                 {
@@ -310,10 +337,33 @@
             }
         }
 
+        // Mark the current page as deleted
         function deletePage() {
             $.ajax({
                 type: "POST",
-                url: "/api/page/{{{ id }}}/Delete"
+                url: "/api/page/{{{ id }}}/Delete",
+                success: function () {
+                    viewModel.isDeleted(true);
+                }
+            });
+        }
+
+        // Recover current page
+        // This is only here in case the user instanly regrest deleting the page, 
+        // as the otherwise would not be able to get to this page.
+        function recoverPage() {
+            $.ajax({
+                type: "POST",
+                url: "/api/page/{{{ id }}}/Recover",
+                success: function() {
+                    viewModel.isDeleted(false);
+                    viewModel.hasBeenReplaced(false);
+                },
+                error: function (xhr) {
+                    if (xhr.status == 409) {
+                        viewModel.hasBeenReplaced(true);
+                    }
+                }
             });
         }
 

@@ -309,5 +309,35 @@ namespace vomsProject.Controllers.Api
             }
             return NotFound();
         }
+
+        [Authorize]
+        [Route("{id}/Recover")]
+        [HttpPost]
+        public async Task<IActionResult> RecoverPage(int id)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await Repository.DeletedPages(solution)
+                .Where(page => page.Id == id).FirstOrDefaultAsync();
+
+            if (page == null)
+            {
+                return NotFound();
+            }
+            var replaceingPage = await Repository.PageQuery(solution, page.PageName).AnyAsync();
+            if (replaceingPage)
+            {
+                return Conflict();
+            }
+            page.IsDeleted = false;
+            await _context.SaveChangesAsync();
+            return Ok();
+        }
     }
 }

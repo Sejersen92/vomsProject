@@ -41,6 +41,11 @@
         box-sizing: border-box;
     }
 
+.voms-notice {
+    background: red;
+    padding: 0.2em;
+}
+
 .voms-menu {
     font-family: sans-serif;
     box-sizing: border-box;
