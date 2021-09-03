@@ -176,30 +176,11 @@ namespace vomsProject.Controllers
                 return Forbid();
             }
 
-            try
+            if (title == null)
             {
-                if (title == null)
-                {
-                    title = "";
-                }
-                var page = new Page()
-                {
-                    PageName = title,
-                    HtmlRenderContent = "",
-                    IsPublished = false,
-                    Solution = await solution.FirstOrDefaultAsync()
-                };
-
-                _dbContext.Add(page);
-                await _dbContext.SaveChangesAsync();
-
-                return RedirectToAction("SolutionOverview", new { id = id });
+                title = "";
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e);
-                return RedirectToAction("SolutionOverview", e);
-            }
+            return Redirect(DomainHelper.GetSolutionIndexPageUrl(theSolution) + title);
         }
 
         [Authorize]

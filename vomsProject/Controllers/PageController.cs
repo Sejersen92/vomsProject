@@ -68,7 +68,7 @@ namespace vomsProject.Controllers
                         .Include((page) => page.LastSavedVersion)
                         .Include((page) => page.PublishedVersion)
                         .Include((page) => page.Layout)
-                        .SingleAsync((page) => page.PageName == pageName);
+                        .SingleOrDefaultAsync();
                     if (page == null)
                     {
                         page = new Page()
