@@ -1,16 +1,24 @@
 ﻿
 @model DeletedPagesViewModel
 
-@if (Model.FaildToDeletePageId.HasValue)
+@if (Model.FaildToRecoverPageId.HasValue)
 {
-    <p>Faild to Delete page @Model.FaildToDeletePageId.Value</p>
+    <p>Faild to Recover page @Model.FaildToRecoverPageId.Value</p>
+    @if (Model.RecoverFailureReason == RecoverFailureReason.HasBeenReplaced)
+    {
+
+        <p>
+            It seems the page has already been replaced. If you still want to recover
+            this page you have to delete the new one before you can.
+        </p>
+    }
 }
 
 @foreach (var page in Model.Pages)
 {
-<form method="post">
-    <p>@(page.PageName) delted at: @(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</p>
-    <input style="display: none" name="pageId" value="@(page.Id)"/>
-    <button>Recover Page</button>
-</form>
+    <form method="post">
+        <p>@(page.PageName == "" ? "(index page)" : page.PageName) delted at: @(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</p>
+        <input style="display: none" name="pageId" value="@(page.Id)" />
+        <button>Recover Page</button>
+    </form>
 }

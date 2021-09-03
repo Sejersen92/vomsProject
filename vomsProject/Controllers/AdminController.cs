@@ -383,18 +383,30 @@ namespace vomsProject.Controllers
 
             var pages = await Repository.DeletedPages(solution).ToListAsync();
             var page = pages.FirstOrDefault(page => page.Id == pageId);
-            if (page != null)
+            if (page == null)
             {
-                page.IsDeleted = false;
-                await _dbContext.SaveChangesAsync();
-                return RedirectToAction("DeletedPages");
+                var model = new DeletedPagesViewModel()
+                {
+                    Pages = pages,
+                    RecoverFailureReason = RecoverFailureReason.IsNolongerInTrash,
+                    FaildToRecoverPageId = pageId
+                };
+                return View(model);
             }
-            var model = new DeletedPagesViewModel()
+            var replaceingPage = await Repository.PageQuery(solution, page.PageName).AnyAsync();
+            if (replaceingPage)
             {
-                Pages = pages,
-                FaildToDeletePageId = pageId
-            };
-            return View(model);
+                var model = new DeletedPagesViewModel()
+                {
+                    Pages = pages,
+                    RecoverFailureReason = RecoverFailureReason.HasBeenReplaced,
+                    FaildToRecoverPageId = pageId
+                };
+                return View(model);
+            }
+            page.IsDeleted = false;
+            await _dbContext.SaveChangesAsync();
+            return RedirectToAction("DeletedPages");
         }
     }
 }

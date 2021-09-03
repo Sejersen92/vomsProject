@@ -6,9 +6,16 @@ using vomsProject.Data;
 
 namespace vomsProject.Models
 {
+    public enum RecoverFailureReason
+    {
+        None,
+        IsNolongerInTrash,
+        HasBeenReplaced
+    }
     public class DeletedPagesViewModel
     {
         public IEnumerable<Page> Pages { get; set; }
-        public int? FaildToDeletePageId { get; set; }
+        public RecoverFailureReason RecoverFailureReason { get; set; }
+        public int? FaildToRecoverPageId { get; set; }
     }
 }
