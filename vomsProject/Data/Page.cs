@@ -36,6 +36,7 @@ namespace vomsProject.Data
         /// When this is true you should only be able to find the page when you query the trashcan
         /// </summary>
         public bool IsDeleted { get; set; }
+        public DateTime DeletedDate { get; set; }
 
         public Solution Solution { get; set; }
         public ICollection<PageContent> Versions { get; set; }

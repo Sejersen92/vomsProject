@@ -1,0 +1,16 @@
+﻿
+@model DeletedPagesViewModel
+
+@if (Model.FaildToDeletePageId.HasValue)
+{
+    <p>Faild to Delete page @Model.FaildToDeletePageId.Value</p>
+}
+
+@foreach (var page in Model.Pages)
+{
+<form method="post">
+    <p>@(page.PageName) delted at: @(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</p>
+    <input style="display: none" name="pageId" value="@(page.Id)"/>
+    <button>Recover Page</button>
+</form>
+}

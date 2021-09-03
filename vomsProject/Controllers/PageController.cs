@@ -76,7 +76,8 @@ namespace vomsProject.Controllers
                             PageName = pageName,
                             HtmlRenderContent = "",
                             IsPublished = false,
-                            Solution = theSolution
+                            Solution = theSolution,
+                            IsDeleted = false,
                         };
                         Context.Add(page);
                         await Context.SaveChangesAsync();

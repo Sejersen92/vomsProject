@@ -220,9 +220,10 @@ namespace vomsProject.Controllers
                 if (page != null)
                 {
                     page.IsDeleted = true;
+                    page.DeletedDate = DateTime.UtcNow;
+                    await _dbContext.SaveChangesAsync();
                 }
 
-                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
             catch (Exception e)
@@ -233,11 +234,10 @@ namespace vomsProject.Controllers
         }
 
         /// <summary>
-        /// SDE = Solution doesn't exist
-        /// UDE = User doesn't exist
+        /// Remove a user from a solution.
         /// </summary>
-        /// <param name="id"></param>
-        /// <param name="solutionId"></param>
+        /// <param name="id">The user id</param>
+        /// <param name="solutionId">The solution id</param>
         /// <returns></returns>
         [Authorize]
         [HttpGet]
@@ -305,9 +305,6 @@ namespace vomsProject.Controllers
 
         /// <summary>
         /// Deletes a selected solution and related entities.
-        /// UPDE = UserPermission doesn't exist.
-        /// NUF = No users found.
-        /// NPF = No permissions found.
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
@@ -358,6 +355,65 @@ namespace vomsProject.Controllers
             {
                 return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}&pageName={pageName}");
             }
+        }
+
+        /// <summary>
+        /// The Page Recycling Bin, where you can see the deleted pages on a solution.
+        /// </summary>
+        /// <param name="id">The id of the solution</param>
+        /// <returns></returns>
+        [Authorize]
+        public async Task<IActionResult> DeletedPages(int id)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(id);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var pages = await Repository.DeletedPages(solution).ToListAsync();
+            var model = new DeletedPagesViewModel()
+            {
+                Pages = pages
+            };
+
+            return View(model);
+        }
+
+        /// <summary>
+        /// Recover a deleted page to a solution.
+        /// </summary>
+        /// <param name="id">The id of the solution</param>
+        /// <param name="pageId">The id of the page</param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeletedPages(int id, int pageId)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionById(id);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var pages = await Repository.DeletedPages(solution).ToListAsync();
+            var page = pages.FirstOrDefault(page => page.Id == pageId);
+            if (page != null)
+            {
+                page.IsDeleted = false;
+                await _dbContext.SaveChangesAsync();
+                return RedirectToAction("DeletedPages");
+            }
+            var model = new DeletedPagesViewModel()
+            {
+                Pages = pages,
+                FaildToDeletePageId = pageId
+            };
+            return View(model);
         }
     }
 }

@@ -66,8 +66,10 @@
     }
 
         .voms-menu button svg {
-            width: 5em;
+            max-width: 5em;
+            max-height: 1.5em;
             height: auto;
+            vertical-align: middle;
         }
 
         .voms-menu button:active {

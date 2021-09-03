@@ -284,5 +284,30 @@ namespace vomsProject.Controllers.Api
             }
             return NotFound();
         }
+
+        [Authorize]
+        [Route("{id}/Delete")]
+        [HttpPost]
+        public async Task<IActionResult> DeletePage(int id)
+        {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                return Forbid();
+            }
+
+            var page = await Repository.Pages(solution)
+                .Where(page => page.Id == id).FirstOrDefaultAsync();
+            if (page != null)
+            {
+                page.IsDeleted = true;
+                page.DeletedDate = DateTime.UtcNow;
+                await _context.SaveChangesAsync();
+                return Ok();
+            }
+            return NotFound();
+        }
     }
 }
