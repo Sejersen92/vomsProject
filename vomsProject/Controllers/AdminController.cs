@@ -123,7 +123,7 @@ namespace vomsProject.Controllers
             var solution = _dbContext.Solutions
                 .AsSplitQuery()
                 .Include(x => x.Permissions).ThenInclude(x => x.User)
-                .Include(x => x.Pages).ThenInclude(x => x.Solution).FirstOrDefault(x => x.Id == id);
+                .Include(x => x.Pages).FirstOrDefault(x => x.Id == id);
 
             var user = await UserManager.GetUserAsync(HttpContext.User);
 
