@@ -8,6 +8,8 @@
 
 @{
     var count = 1;
+    var friendlyName = !string.IsNullOrWhiteSpace(Model.Solution.FriendlyName) ? Model.Solution.FriendlyName : "";
+    var domainName = !string.IsNullOrWhiteSpace(Model.Solution.Domain) ? Model.Solution.Domain : "";
 }
 
 <div class="Solutions mb-3">
@@ -92,14 +94,14 @@
             </div>
             <div class="input-group-lg mb-3">
                 <label class="form-label" for="friendlyName">Friendly name:</label>
-                <input type="text" class="form-control col-8" id="friendlyName">
+                <input type="text" class="form-control col-8" id="friendlyName" name="friendlyName" value="@friendlyName">
             </div>
 
             @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
             {
                 <div class="input-group-lg mb-3">
                     <label class="form-label" for="friendlyName">Custom Domain:</label>
-                    <input type="text" class="form-control col-8" id="domainName">
+                    <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
                 </div>
             }
 
