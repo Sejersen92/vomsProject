@@ -1,0 +1,52 @@
+<!DOC TYPE html>
+<html>
+  <head></head>
+  <body>
+    <button id="insert-block-button">Insert Block</button>
+    <button id="insert-container-button">container</button>
+    <button id="move-block-button">move down</button>
+    <button id="bold-button">bold</button>
+    <button id="delete-block-button">delete</button>
+    <aticle id="page">
+    </aticle>
+    <script src="voms-editor.js"></script>
+    <script type="module">
+      import { BlockType, moveBlock, subscribe, unsubscribe, makeBlock, deleteBlock, makeEditor, makeSelectionBlod } from "./voms-editor.js";
+      var page = document.getElementById("page");
+      var editor = makeEditor(page);
+
+      var insertBlockButton = document.getElementById("insert-block-button");
+      var insertContainerButton = document.getElementById("insert-container-button");
+      var moveBlockButton = document.getElementById("move-block-button");
+      var boldButton = document.getElementById("bold-button");
+      var deleteBlockButton = document.getElementById("delete-block-button");
+      insertBlockButton.onclick = function () {
+          var latest = makeBlock(editor.selectedBlock ? editor.selectedBlock.parent : editor, 0, BlockType.Text, "div");
+	  latest.element.focus();
+      };
+      moveBlockButton.onclick = function () {
+	  var move = editor.selectedBlock;
+          var index = move.parent.blocks.indexOf(move) + 1;
+          var parent;
+          if (move.parent.blocks.length === index) {
+              if (move.parent.parent != null) {
+                  parent = move.parent.parent;
+              } else {
+                  parent = move.parent;
+              }
+              index = 0;
+          } else {
+              parent = move.parent;
+          }
+          moveBlock(move, parent, index);
+      };
+      boldButton.onclick = makeSelectionBlod;
+      insertContainerButton.onclick = function () {
+          makeBlock(editor.selectedBlock.parent, 0, BlockType.Container, "div");
+      };
+      deleteBlockButton.onclick = function () {
+	  deleteBlock(editor.selectedBlock);
+      };
+    </script>
+  </body>
+</html>
