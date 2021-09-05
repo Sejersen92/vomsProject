@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+  <head></head>
+  <body>
+    <button onclick="insertBlock()">Insert Block</button>
+    <button onclick="moveDown()">move down</button>
+    <aticle id="page">
+    </aticle>
+    <script src="voms-editor.js"></script>
+    <script>
+      var page = document.getElementById("page");
+      var editor = makeEditor(page);
+      var containerBlock = editor;
+      var latest = null;
+      function insertBlock() {
+          latest = makeBlock(containerBlock, 0, BlockType.Text, "div");
+      }
+      function insertContainerBlock() {
+          containerBlock = makeBlock(contentBlock, 0, BlockType.Container);
+      }
+      function moveDown() {
+          var index = latest.parent.blocks.indexOf(latest) + 1;
+          var parent;
+          if (latest.parent.blocks.length === index) {
+              if (latest.parent.parent != null) {
+                  parent = latest.parent.parent;
+              } else {
+                  parent = latest.parent;
+              }
+              index = 0;
+          } else {
+              parent = latest.parent;
+          }
+          moveBlock(latest, parent, index);
+      }
+    </script>
+  </body>
+</html>
