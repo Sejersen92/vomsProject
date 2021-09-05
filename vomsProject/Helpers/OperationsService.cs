@@ -44,7 +44,7 @@ namespace vomsProject.Helpers
         {
 
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (solution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 throw new ForbittenException();
             }
@@ -83,6 +83,121 @@ namespace vomsProject.Helpers
         public async Task<PageContent> PublishPage(User user, IQueryable<Solution> solution, int id, string content, string publishedHtml)
         {
             return await UpdatePageContent(user, solution, id, content, true, publishedHtml);
+        }
+
+        public async Task RemovePage(User user, IQueryable<Solution> solution, int pageId)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                throw new ForbittenException();
+            }
+
+            try
+            {
+                var page = await Repository.Pages(solution).FirstOrDefaultAsync(page => page.Id == pageId);
+                if (page != null)
+                {
+                    page.IsDeleted = true;
+                    page.DeletedDate = DateTime.UtcNow;
+                    await _context.SaveChangesAsync();
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        public async Task UpdateSolution(User user, IQueryable<Solution> solution, string friendlyName, string domainName, int stylesheet)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                throw new ForbittenException();
+            }
+
+            theSolution.Domain = domainName;
+            theSolution.FriendlyName = friendlyName;
+
+            theSolution.StyleId = stylesheet;
+            await _context.SaveChangesAsync();
+        }
+
+        public async Task DeleteSolution(User user, IQueryable<Solution> solution, int id)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                throw new ForbittenException();
+            }
+
+            try
+            {
+                _context.Solutions.Remove(theSolution);
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        public async Task AddUser(User user, IQueryable<Solution> solution, string userEmail)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                throw new ForbittenException();
+            }
+
+            try
+            {
+                var AddedUser = _context.Users.FirstOrDefault(x => x.Email == userEmail);
+
+                _context.Permissions.Add(new Permission()
+                {
+                    PermissionLevel = PermissionLevel.Editor,
+                    User = AddedUser,
+                    Solution = theSolution
+                });
+
+                await _context.SaveChangesAsync();
+
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
+        }
+
+        /// <summary>
+        /// Remove a user from a specific solution.
+        /// </summary>
+        /// <param name="user">The user who is doing the task.</param>
+        /// <param name="solution"></param>
+        /// <param name="removeUserId">The user Id on the user whom is being removed.</param>
+        /// <returns></returns>
+        public async Task RemoveUser(User user, IQueryable<Solution> solution, string removeUserId)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
+            {
+                throw new ForbittenException();
+            }
+
+            try
+            {
+                _context.Permissions.RemoveRange(solution.SelectMany(solution => solution.Permissions).Where(perm => perm.User.Id == removeUserId));
+
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+            }
         }
     }
 }

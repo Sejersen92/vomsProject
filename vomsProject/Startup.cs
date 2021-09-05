@@ -35,6 +35,7 @@ namespace vomsProject
                 => new StorageHelper(Configuration.GetConnectionString("BlobStorageConnection"), Configuration["BlobStorageName"]), ServiceLifetime.Scoped));
             services.AddScoped<RepositoryService>();
             services.AddScoped(typeof(DomainHelper));
+            services.AddScoped<OperationsService>();
             services.AddSingleton<JwtService>();
         }
         private bool isHostRootDomain(HttpContext context)

@@ -25,8 +25,10 @@ namespace vomsProject.Controllers
         private readonly JwtService JwtService;
         private readonly DomainHelper DomainHelper;
         private readonly RepositoryService Repository;
+        private readonly OperationsService _operationsService;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager, IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, RepositoryService repository)
+        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager,
+            IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, RepositoryService repository, OperationsService operationsService)
         {
             _storageHelper = storageHelper;
             _dbContext = dbContext;
@@ -35,6 +37,7 @@ namespace vomsProject.Controllers
             JwtService = jwtService;
             DomainHelper = domainHelper;
             Repository = repository;
+            _operationsService = operationsService;
         }
 
         [Authorize]
@@ -141,7 +144,7 @@ namespace vomsProject.Controllers
                 SelectedStyleId = theSolution.StyleId
             };
 
-             return View(model);
+            return View(model);
         }
 
         [Authorize]
@@ -149,17 +152,9 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = _dbContext.Solutions.Find(solutionId);
-            if (solution == null || !await Repository.DoUserHavePermissionOnSolution(user, solution, PermissionLevel.Admin))
-            {
-                return Forbid();
-            }
+            var theSolution = Repository.GetSolutionById(solutionId);
 
-            solution.Domain = domainName;
-            solution.FriendlyName = friendlyName;
-
-            solution.StyleId = stylesheet;
-            await _dbContext.SaveChangesAsync();
+            await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet);
 
             return RedirectToAction("Index");
         }
@@ -168,13 +163,8 @@ namespace vomsProject.Controllers
         [HttpPost]
         public async Task<IActionResult> CreatePage(string title, int id)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = Repository.GetSolutionById(id);
             var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
-            {
-                return Forbid();
-            }
 
             if (title == null)
             {
@@ -188,29 +178,17 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> RemovePage(int id, int solutionId)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionById(solutionId);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
-            {
-                return Forbid();
-            }
-
+            var theSolution = Repository.GetSolutionById(solutionId);
             try
             {
-                var page = await Repository.Pages(solution).FirstOrDefaultAsync(page => page.Id == id);
-                if (page != null)
-                {
-                    page.IsDeleted = true;
-                    page.DeletedDate = DateTime.UtcNow;
-                    await _dbContext.SaveChangesAsync();
-                }
+                await _operationsService.RemovePage(user, theSolution, id);
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return RedirectToAction("SolutionOverview", e);
+                return RedirectToAction("SolutionOverview");
             }
         }
 
@@ -225,18 +203,11 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> RemoveUser(string id, int solutionId)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionById(solutionId);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
-            {
-                return Forbid();
-            }
+            var theSolution = Repository.GetSolutionById(solutionId);
 
             try
             {
-                _dbContext.Permissions.RemoveRange(solution.SelectMany(solution => solution.Permissions).Where(perm => perm.User.Id == id));
-
-                await _dbContext.SaveChangesAsync();
+                await _operationsService.RemoveUser(user, theSolution, id);
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
@@ -252,66 +223,43 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> AddUser(string userEmail, int solutionId)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionById(solutionId);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
-            {
-                return Forbid();
-            }
+            var theSolution = Repository.GetSolutionById(solutionId);
 
             try
             {
-                var AddedUser = _dbContext.Users.FirstOrDefault(x => x.Email == userEmail);
-
-                if (AddedUser == null) return RedirectToAction("SolutionOverview", new { id = solutionId });
-
-
-                _dbContext.Permissions.Add(new Permission()
-                {
-                    PermissionLevel = PermissionLevel.Editor,
-                    User = AddedUser,
-                    Solution = theSolution
-                });
-
-                await _dbContext.SaveChangesAsync();
+                await _operationsService.AddUser(user, theSolution, userEmail);
 
                 return RedirectToAction("SolutionOverview", new { id = solutionId });
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return RedirectToAction("SolutionOverview", e);
+                return RedirectToAction("SolutionOverview");
             }
         }
 
         /// <summary>
         /// Deletes a selected solution and related entities.
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="id">The solution Id</param>
         /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> DeleteSolution(int id)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionById(id);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.DoUserHavePermissionOnSolution(user, theSolution, PermissionLevel.Admin))
-            {
-                return Forbid();
-            }
+            var theSolution = Repository.GetSolutionById(id);
 
             try
             {
-                _dbContext.Solutions.Remove(theSolution);
+                await _operationsService.DeleteSolution(user, theSolution, id);
 
-                await _dbContext.SaveChangesAsync();
                 return RedirectToAction("Index");
             }
             catch (Exception e)
             {
                 Console.WriteLine(e);
-                return RedirectToAction("index", e);
+                return RedirectToAction("index");
             }
         }
 
