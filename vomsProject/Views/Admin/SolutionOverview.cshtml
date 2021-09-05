@@ -12,9 +12,21 @@
     var domainName = !string.IsNullOrWhiteSpace(Model.Solution.Domain) ? Model.Solution.Domain : "";
 }
 
-<div class="Solutions mb-3">
-    <h3>Here are you pages:</h3>
-    <div>
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">Admin panel</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">On this page you can configure your solution to your needs in a simple, easy and fast maner. Have fun!</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="#pagesManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Pages management</a>
+            <a href="#solutionManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Solution management</a>
+        </div>
+    </div>
+</div>
+
+<div class="bg-light rounded-3 mb-2" data-bs-spy="scroll" data-bs-target="#pagesManagement" data-bs-offset="0" tabindex="0">
+    <div class="container-fluid" id="pagesManagement">
+        <h2 class="fw-bold">Pages management:  </h2>
+        <h3>Pages overview</h3>
         <table class="table table-responsive table-bordered table-hover">
             <thead>
                 <tr>
@@ -36,17 +48,10 @@
                 }
             </tbody>
         </table>
-    </div>
-</div>
-
-
-<div class="bg-light rounded-3">
-    <div class="container-fluid">
-        <h1 class="fw-bold">Create a new page:  </h1>
-        <div class="mb-3 mt-3 row justify-content-center">
+        <div class="mb-3 mt-3 row">
             <form asp-action="CreatePage" asp-controller="Admin" method="post">
                 <div class="input-group-lg mb-2 mt-2">
-                    <label class="form-label">Enter the title of your page:</label>
+                    <label class="form-label">Page name:</label>
                     <input class="form-control" type="text" id="title" name="title" />
                 </div>
                 <div style="display: none">
@@ -55,30 +60,27 @@
                 <input type="submit" value="Create page" class="btn btn-primary mb-3" />
             </form>
         </div>
+        <a class="mb-1" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
+            <h3>
+                Recycle Bin
+                <svg style="height: 1em; vertical-align: bottom;" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
+                    <rect x="15" y="65" width="80" height="100" />
+                    <rect x="05" y="25" width="100" height="20" />
+                    <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
+                    <line x1="35" x2="35" y1="80" y2="150" />
+                    <line x1="55" x2="55" y1="80" y2="150" />
+                    <line x1="75" x2="75" y1="80" y2="150" />
+                </svg>
+            </h3>
+        </a>
     </div>
 </div>
 
-<div>
-    <a href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })">
-        <h1>
-            <svg style="height: 1em; vertical-align: bottom;" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
-                <rect x="15" y="65" width="80" height="100" />
-                <rect x="05" y="25" width="100" height="20" />
-                <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
-                <line x1="35" x2="35" y1="80" y2="150" />
-                <line x1="55" x2="55" y1="80" y2="150" />
-                <line x1="75" x2="75" y1="80" y2="150" />
-            </svg>
-            Page Recycling Bin
-        </h1>
-    </a>
-</div>
-
-<div class="bg-light rounded-3">
+<div class="bg-light rounded-3" data-bs-spy="scroll" data-bs-target="#solutionManagement" data-bs-offset="0" tabindex="0">
     <div class="container-fluid">
-        <h1 class="fw-bold">Update solution:  </h1>
+        <h2 class="fw-bold">Solution management:  </h2>
         <form asp-action="UpdateSolution" asp-controller="Admin" method="post">
-            <div class="input-group-lg mb-3">
+            <div class="input-group-lg mb-3" id="solutionManagement">
                 <label class="form-label">Select a stylesheet: </label>
                 <select class="form-select col-8" name="stylesheet">
                     @foreach (var style in Model.StyleSheets)
@@ -102,7 +104,7 @@
             @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
             {
                 <div class="input-group-lg mb-3">
-                    <label class="form-label" for="friendlyName">Custom Domain:</label>
+                    <label class="form-label" for="domainName">Custom Domain:</label>
                     <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
                 </div>
             }
@@ -112,30 +114,25 @@
             </div>
             <input type="submit" value="submit" class="btn btn-primary mb-3" />
         </form>
-    </div>
-</div>
-<table class="table table-responsive table-bordered table-hover">
-    <thead>
-        <tr>
-            <th scope="col">UserId</th>
-            <th scope="col">Username</th>
-            <th scope="col">Delete user</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var permission in Model.Solution.Permissions)
-        {
-            <tr>
-                <th scope="row">@permission.User.Id</th>
-                <td class="">@permission.User.UserName</td>
-                <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
-            </tr>
-        }
-    </tbody>
-</table>
-
-<div class="bg-light rounded-3">
-    <div class="container-fluid">
+        <table class="table table-responsive table-bordered table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">UserId</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Delete user</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var permission in Model.Solution.Permissions)
+                {
+                    <tr>
+                        <th scope="row">@permission.User.Id</th>
+                        <td class="">@permission.User.UserName</td>
+                        <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
         <h1 class="fw-bold">Add a new user:  </h1>
         <form asp-action="AddUser" asp-controller="Admin" method="post">
             <div class="input-group-lg mb-2 mt-2">
@@ -149,3 +146,4 @@
         </form>
     </div>
 </div>
+
