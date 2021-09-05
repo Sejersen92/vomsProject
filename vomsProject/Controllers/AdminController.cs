@@ -305,6 +305,7 @@ namespace vomsProject.Controllers
             var pages = await Repository.DeletedPages(solution).ToListAsync();
             var model = new DeletedPagesViewModel()
             {
+                Solution = theSolution,
                 Pages = pages
             };
 
@@ -337,7 +338,7 @@ namespace vomsProject.Controllers
                 {
                     Pages = pages,
                     RecoverFailureReason = RecoverFailureReason.IsNolongerInTrash,
-                    FaildToRecoverPageId = pageId
+                    FailedToRecoverPageId = pageId
                 };
                 return View(model);
             }
@@ -348,7 +349,7 @@ namespace vomsProject.Controllers
                 {
                     Pages = pages,
                     RecoverFailureReason = RecoverFailureReason.HasBeenReplaced,
-                    FaildToRecoverPageId = pageId
+                    FailedToRecoverPageId = pageId
                 };
                 return View(model);
             }

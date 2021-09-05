@@ -14,8 +14,9 @@ namespace vomsProject.Models
     }
     public class DeletedPagesViewModel
     {
+        public Solution Solution { get; set; }
         public IEnumerable<Page> Pages { get; set; }
         public RecoverFailureReason RecoverFailureReason { get; set; }
-        public int? FaildToRecoverPageId { get; set; }
+        public int? FailedToRecoverPageId { get; set; }
     }
 }
