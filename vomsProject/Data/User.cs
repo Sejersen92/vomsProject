@@ -11,5 +11,8 @@ namespace vomsProject.Data
         public ICollection<Permission> Permissions { get; set; }
 
         public ProductType ProductVersion { get; set; }
+
+        public string Nickname { get; set; }
+
     }
 }

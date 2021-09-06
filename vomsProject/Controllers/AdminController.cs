@@ -81,7 +81,7 @@ namespace vomsProject.Controllers
                     break;
             }
 
-            using (var dbContextTransaction = _dbContext.Database.BeginTransaction())
+            await using (var dbContextTransaction = await _dbContext.Database.BeginTransactionAsync())
             {
                 var query = _dbContext.Permissions.Where(x => x.User.Id == user.Id && x.PermissionLevel == PermissionLevel.Admin);
                 var numberOfSolutions = query.Count();
@@ -166,10 +166,7 @@ namespace vomsProject.Controllers
             var solution = Repository.GetSolutionById(id);
             var theSolution = await solution.SingleOrDefaultAsync();
 
-            if (title == null)
-            {
-                title = "";
-            }
+            title ??= "";
             return Redirect(DomainHelper.GetSolutionIndexPageUrl(theSolution) + title);
         }
 
@@ -267,14 +264,14 @@ namespace vomsProject.Controllers
         /// This handler redirects to the login handler on the solution.
         /// </summary>
         /// <param name="id">The id for the solution to be logged in on.</param>
-        /// <param name="pageName">Page to redirect to after login. This paramter is optional and defaults to the index page.</param>
+        /// <param name="pageName">Page to redirect to after login. This parameter is optional and defaults to the index page.</param>
         /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> LoginToSolution(int id, string pageName)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = _dbContext.Solutions.Find(id);
+            var solution = await _dbContext.Solutions.FindAsync(id);
             var token = new JwtSecurityTokenHandler().WriteToken(JwtService.CreateOneTimeToken(user));
             if (pageName == null)
             {
@@ -342,8 +339,8 @@ namespace vomsProject.Controllers
                 };
                 return View(model);
             }
-            var replaceingPage = await Repository.PageQuery(solution, page.PageName).AnyAsync();
-            if (replaceingPage)
+            var replacingPage = await Repository.PageQuery(solution, page.PageName).AnyAsync();
+            if (replacingPage)
             {
                 var model = new DeletedPagesViewModel()
                 {

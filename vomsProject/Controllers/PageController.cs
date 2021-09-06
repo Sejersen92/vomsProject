@@ -46,16 +46,13 @@ namespace vomsProject.Controllers
         }
 
         /// <summary>
-        /// This is the page dispatcher. Each request for a page on a soultion is looked up by this handler.
+        /// This is the page dispatcher. Each request for a page on a solution is looked up by this handler.
         /// </summary>
         /// <param name="pageName">The name of the page</param>
         /// <returns></returns>
         public async Task<IActionResult> Index(string pageName)
         {
-            if (pageName == null)
-            {
-                pageName = "";
-            }
+            pageName ??= "";
             var userTask = UserManager.GetUserAsync(HttpContext.User);
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             var user = await userTask;
@@ -152,7 +149,7 @@ namespace vomsProject.Controllers
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
         /// </summary>
         /// <param name="token">Jwt token used to authenticate. The token subject is the id for the user.</param>
-        /// <param name="pageName">Page to redirect to after login. This paramter is optional and defaults to the index page.</param>
+        /// <param name="pageName">Page to redirect to after login. This parameter is optional and defaults to the index page.</param>
         /// <returns></returns>
         [HttpGet]
         public async Task<IActionResult> Login(string token, string pageName)
@@ -160,8 +157,7 @@ namespace vomsProject.Controllers
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             try
             {
-                SecurityToken loginToken;
-                new JwtSecurityTokenHandler().ValidateToken(token, JwtService.TokenValidationParamters, out loginToken);
+                new JwtSecurityTokenHandler().ValidateToken(token, JwtService.TokenValidationParamters, out var loginToken);
                 var jwtToken = (JwtSecurityToken)loginToken;
                 var userId = jwtToken.Subject;
                 var user = await UserManager.FindByIdAsync(userId);
@@ -175,29 +171,29 @@ namespace vomsProject.Controllers
                         return Redirect(_domainHelper.GetPageUrl(page));
                     }
                 }
-                var theSolutoin = await solution.SingleOrDefaultAsync();
-                return Redirect(_domainHelper.GetSolutionIndexPageUrl(theSolutoin));
+                var theSolution = await solution.SingleOrDefaultAsync();
+                return Redirect(_domainHelper.GetSolutionIndexPageUrl(theSolution));
             }
             catch
             {
                 // TODO: The redirects below might benefit from some abstraction. Like we have with DomainHelper.
 
-                // Faild to authenticate
-                var theSolutoin = await solution.SingleOrDefaultAsync();
-                if (theSolutoin == null)
+                // Failed to authenticate
+                var theSolution = await solution.SingleOrDefaultAsync();
+                if (theSolution == null)
                 {
                     // For normal users this would be if a solution has been deleted, or the domain has been changed.
-                    // In that case they might like to see the over view of sloutions they have access to.
+                    // In that case they might like to see the over view of solutions they have access to.
                     return Redirect($"https://{RootDomain}:5001/Admin/Index");
                 }
                 // If it is just an old token that got resend somehow. The user might like to get back to where they can generate a new token.
                 if (pageName != null)
                 {
-                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolutoin.Id}?pageName={pageName}");
+                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolution.Id}?pageName={pageName}");
                 }
                 else
                 {
-                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolutoin.Id}");
+                    return Redirect($"https://{RootDomain}:5001/Admin/LoginToSolution/{theSolution.Id}");
                 }
             }
         }

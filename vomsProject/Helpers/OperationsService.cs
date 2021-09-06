@@ -155,12 +155,12 @@ namespace vomsProject.Helpers
 
             try
             {
-                var AddedUser = _context.Users.FirstOrDefault(x => x.Email == userEmail);
+                var addedUser = _context.Users.FirstOrDefault(x => x.Email == userEmail);
 
                 _context.Permissions.Add(new Permission()
                 {
                     PermissionLevel = PermissionLevel.Editor,
-                    User = AddedUser,
+                    User = addedUser,
                     Solution = theSolution
                 });
 

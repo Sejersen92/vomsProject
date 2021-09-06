@@ -62,7 +62,7 @@ namespace vomsProject.Helpers
         }
 
         /// <summary>
-        /// Check if a User has access to a Solution. This funcion will make a lookup in the permissions table.
+        /// Check if a User has access to a Solution. This function will make a lookup in the permissions table.
         /// </summary>
         /// <param name="solution">The Solution</param>
         /// <param name="user">The User</param>
@@ -75,7 +75,7 @@ namespace vomsProject.Helpers
         }
 
         /// <summary>
-        /// Check if a User has the specified permission level on a Solution. This funcion will make a lookup in the permissions table.
+        /// Check if a User has the specified permission level on a Solution. This function will make a lookup in the permissions table.
         /// </summary>
         /// <param name="user">The User</param>
         /// <param name="solution">The Solution</param>
