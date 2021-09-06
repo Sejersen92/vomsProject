@@ -1,24 +1,59 @@
-﻿
-@model DeletedPagesViewModel
+﻿@model DeletedPagesViewModel
 
-@if (Model.FailedToRecoverPageId.HasValue)
-{
-    <p>Failed to Recover page @Model.FailedToRecoverPageId.Value</p>
-    @if (Model.RecoverFailureReason == RecoverFailureReason.HasBeenReplaced)
-    {
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">Recycle bin panel</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">On this page you can recover your solutions deleted pages in a as-few-clicks-as-possible maner. Have fun!</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            @if (Model.FailedToRecoverPageId.HasValue)
+            {
+                <p>Failed to Recover page @Model.FailedToRecoverPageId.Value</p>
+                @if (Model.RecoverFailureReason == RecoverFailureReason.HasBeenReplaced)
+                {
 
-        <p>
-            It seems the page has already been replaced. 
-            If you still want to recover this page you have to delete the new one before you can.
-        </p>
-    }
-}
+                    <p>
+                        It seems the page has already been replaced.
+                        If you still want to recover this page you have to delete the new one before you can.
+                    </p>
+                }
+            }
 
-@foreach (var page in Model.Pages)
-{
-    <form method="post">
-        <p>@(page.PageName == "" ? "(index page)" : page.PageName) deleted at: @(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</p>
-        <input style="display: none" name="pageId" value="@(page.Id)" />
-        <button>Recover Page</button>
-    </form>
-}
+            @if (Model.Pages != null && Model.Pages.Any())
+            {
+                <table class="table table-responsive table-bordered table-hover">
+                    <thead>
+                        <tr>
+                            <th scope="col">Pagename </th>
+                            <th scope="col">Deleted at </th>
+                            <th scope="col">Manage page </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var page in Model.Pages)
+                        {
+                            var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
+
+                            <tr>
+                                <th scope="row">@(page.PageName == "" ? "(index page)" : page.PageName)</th>
+                                <td>@(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</td>
+                                <td>
+                                    <form method="post">
+                                        <input style="display: none" name="pageId" value="@(page.Id)" />
+                                        <button>Recover Page</button>
+                                    </form>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+
+            }
+            else
+            {
+                <h3>You have currently 0 deleted pages to recover. Go back to the previous page @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id })</h3>
+            }
+        </div>
+    </div>
+</div>
+
+
