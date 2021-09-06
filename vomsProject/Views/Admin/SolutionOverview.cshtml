@@ -30,7 +30,7 @@
         <table class="table table-responsive table-bordered table-hover">
             <thead>
                 <tr>
-                    <th scope="col">#</th>
+                    <th scope="col">Page id</th>
                     <th scope="col">Page name & link to page</th>
                     <th scope="col">Manage page</th>
                 </tr>
@@ -41,7 +41,7 @@
                     var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
 
                     <tr>
-                        <th scope="row">@(count++)</th>
+                        <th scope="row">@(page.Id)</th>
                         <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
                         <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
@@ -117,7 +117,7 @@
         <table class="table table-responsive table-bordered table-hover mb-0">
             <thead>
                 <tr>
-                    <th scope="col">UserId</th>
+                    <th scope="col">Nickname</th>
                     <th scope="col">Username</th>
                     <th scope="col">Delete user</th>
                 </tr>
@@ -126,7 +126,7 @@
                 @foreach (var permission in Model.Solution.Permissions)
                 {
                     <tr>
-                        <th scope="row">@permission.User.Id</th>
+                        <th scope="row">@(permission.User.Nickname ?? "N/A")</th>
                         <td class="">@permission.User.UserName</td>
                         <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
