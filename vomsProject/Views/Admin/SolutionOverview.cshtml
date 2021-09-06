@@ -42,7 +42,7 @@
 
                     <tr>
                         <th scope="row">@(count++)</th>
-                        <td><a href="@domainHelper.GetPageUrl(page)" class="card-link">@(pagename)</a></td>
+                        <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
                         <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
                 }

@@ -13,6 +13,7 @@ using vomsProject.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
+using System.Text;
 
 namespace vomsProject.Controllers
 {
@@ -279,7 +280,7 @@ namespace vomsProject.Controllers
             }
             else
             {
-                return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}&pageName={pageName}");
+                return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}&pageName={Uri.EscapeDataString(pageName)}");
             }
         }
 
