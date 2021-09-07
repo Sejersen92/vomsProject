@@ -1,6 +1,8 @@
 ﻿using Azure.Storage.Blobs;
 using Azure.Storage.Blobs.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.WindowsAzure.Storage.Blob;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -14,11 +16,20 @@ namespace vomsProject.Helpers
     {
         private readonly BlobServiceClient _blobServiceClient;
         private readonly string _containerName;
+        private readonly IConfiguration Configuration;
+        private readonly CloudBlobContainer _blobContainer;
 
-        public StorageHelper(string connectionString, string containerName)
+        public StorageHelper(IConfiguration configuration)
         {
-            _blobServiceClient = new BlobServiceClient(connectionString);
-            _containerName = !string.IsNullOrWhiteSpace(containerName) ? containerName : "voms";
+            _containerName = "voms";
+            _blobServiceClient = new BlobServiceClient(Configuration.GetValue<string>("BlobStorageConnection"));
+            _containerName = !string.IsNullOrWhiteSpace(_containerName) ? _containerName : "voms";
+            Configuration = configuration;
+
+            _blobContainer = new CloudBlobContainer(new Uri("https://sejersenstorageaccount.blob.core.windows.net/voms"),
+                new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(
+                    Configuration.GetValue<string>("AccountName"), 
+                    Configuration.GetValue<string>("AccountName")));
         }
 
         public BlobContainerClient GetBlobContainer()
@@ -58,12 +69,12 @@ namespace vomsProject.Helpers
             }
         }
 
-        public async Task<Stream> DownloadBlob(string imageName)
+        public async Task DeleteBlob(string blobName)
         {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-            var blob = await containerClient.GetBlobClient(imageName).DownloadAsync();
+            
 
-            return blob.Value.Content;
+            var blob = _blobContainer.GetBlobReference(blobName);
+            await blob.DeleteIfExistsAsync();
         }
     }
 }
