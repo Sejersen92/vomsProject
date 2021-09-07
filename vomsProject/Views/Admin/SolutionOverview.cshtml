@@ -10,6 +10,7 @@
     var count = 1;
     var friendlyName = !string.IsNullOrWhiteSpace(Model.Solution.FriendlyName) ? Model.Solution.FriendlyName : "";
     var domainName = !string.IsNullOrWhiteSpace(Model.Solution.Domain) ? Model.Solution.Domain : "";
+    var favIcon = Model.Solution.Favicon != null ? Model.Solution.Favicon : null;
 }
 
 <div class="px-4 py-5 my-5 text-center">
@@ -61,10 +62,10 @@
             </form>
 
             <form asp-action="UploadImage" asp-controller="Admin" enctype="multipart/form-data">
-                <input type="file" id="image" name="image"/>
-                <input type="hidden" value="@Model.Pages.FirstOrDefault().Id" name="pageId"/>
-                <input type="hidden" value="@Model.SolutionId" name="solutionId"/>
-                <input type="submit" value="upload shit"/>
+                <input type="file" id="image" name="image" />
+                <input type="hidden" value="@Model.Pages.FirstOrDefault().Id" name="pageId" />
+                <input type="hidden" value="@Model.SolutionId" name="solutionId" />
+                <input type="submit" value="upload shit" />
             </form>
         </div>
         <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
@@ -86,7 +87,7 @@
 <div class="bg-light rounded-3" data-bs-spy="scroll" data-bs-target="#solutionManagement" data-bs-offset="0" tabindex="0">
     <div class="container-fluid">
         <h2 class="fw-bold">Solution management:  </h2>
-        <form asp-action="UpdateSolution" asp-controller="Admin" method="post">
+        <form asp-action="UpdateSolution" asp-controller="Admin" method="post" enctype="multipart/form-data">
             <div class="input-group-lg mb-3" id="solutionManagement">
                 <label class="form-label">Select a stylesheet: </label>
                 <select class="form-select col-8" name="stylesheet">
@@ -115,6 +116,12 @@
                     <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
                 </div>
             }
+
+            <div class="input-group-lg mb-3">
+                <label class="form-label" for="favicon">Upload favicon:</label>
+                <input type="file" class="form-control col-8" id="favicon" name="favicon">
+                <img src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = Model.SolutionId }))" style="max-width: 10rem; max-height: 10rem" />
+            </div>
 
             <div style="display: none">
                 <input type="text" name="solutionId" value="@Model.SolutionId" />

@@ -144,7 +144,8 @@ namespace vomsProject.Controllers
                 Solution = theSolution,
                 StyleSheets = stylesheets,
                 User = user,
-                SelectedStyleId = theSolution.StyleId
+                SelectedStyleId = theSolution.StyleId,
+                Favicon = theSolution.Favicon
             };
 
             return View(model);
@@ -152,12 +153,31 @@ namespace vomsProject.Controllers
 
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null)
+        public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null,
+            List<IFormFile> favicon = null)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var theSolution = Repository.GetSolutionById(solutionId);
+            byte[] fileBytes;
 
-            await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet);
+            foreach (var file in favicon)
+            {
+                if (file.Length > 0)
+                {
+                    using (var ms = new MemoryStream())
+                    {
+                        await file.CopyToAsync(ms);
+                        fileBytes = ms.ToArray();
+                    }
+                    await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet, fileBytes);
+                }
+                else
+                {
+                    await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet);
+                }
+            }
+
+
 
             return RedirectToAction("Index");
         }
@@ -378,12 +398,19 @@ namespace vomsProject.Controllers
 
                 var d = await _storageHelper.UploadToBlob(imageToUpload.OpenReadStream(), _dbContext, page, imageToUpload.FileName);
 
-                return RedirectToAction("SolutionOverview", new {id = theSolution.Id });
+                return RedirectToAction("SolutionOverview", new { id = theSolution.Id });
             }
             catch (Exception e)
             {
                 return RedirectToAction("SolutionOverview", new { id = theSolution.Id });
             }
+        }
+
+        public async Task<IActionResult> GetSolutionFavicon(int solutionId)
+        {
+            var solution = await Repository.GetSolutionById(solutionId).FirstOrDefaultAsync();
+
+            return new FileContentResult(solution.Favicon, "image/png");
         }
     }
 }

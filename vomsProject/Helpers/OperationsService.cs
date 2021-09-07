@@ -109,7 +109,8 @@ namespace vomsProject.Helpers
             }
         }
 
-        public async Task UpdateSolution(User user, IQueryable<Solution> solution, string friendlyName, string domainName, int stylesheet)
+        public async Task UpdateSolution(User user, IQueryable<Solution> solution, string friendlyName, string domainName, int stylesheet
+            , byte[] favicon = null)
         {
             var theSolution = await solution.SingleOrDefaultAsync();
 
@@ -120,6 +121,7 @@ namespace vomsProject.Helpers
 
             theSolution.Domain = domainName;
             theSolution.FriendlyName = friendlyName;
+            theSolution.Favicon = favicon;
 
             theSolution.StyleId = stylesheet;
             await _context.SaveChangesAsync();
