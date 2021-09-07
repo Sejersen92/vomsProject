@@ -14,6 +14,8 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.Configuration;
 using System.IdentityModel.Tokens.Jwt;
 using System.Text;
+using System.IO;
+using Microsoft.AspNetCore.Http;
 
 namespace vomsProject.Controllers
 {
@@ -354,6 +356,34 @@ namespace vomsProject.Controllers
             page.IsDeleted = false;
             await _dbContext.SaveChangesAsync();
             return RedirectToAction("DeletedPages");
+        }
+
+        /// <summary>
+        /// Just for testing - Should be moved into the pageController.
+        /// </summary>
+        /// <param name="image"></param>
+        /// <param name="pageId"></param>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
+        public async Task<IActionResult> UploadImage(List<IFormFile> image, int pageId, int solutionId)
+        {
+            var solution = Repository.GetSolutionById(solutionId);
+            var theSolution = await solution.SingleOrDefaultAsync();
+            var pages = Repository.Pages(solution);
+            var page = await pages.FirstOrDefaultAsync(x => x.Id == pageId);
+
+            try
+            {
+                var imageToUpload = image.FirstOrDefault();
+
+                var d = await _storageHelper.UploadToBlob(imageToUpload.OpenReadStream(), _dbContext, page, imageToUpload.FileName);
+
+                return RedirectToAction("SolutionOverview", new {id = theSolution.Id });
+            }
+            catch (Exception e)
+            {
+                return RedirectToAction("SolutionOverview", new { id = theSolution.Id });
+            }
         }
     }
 }

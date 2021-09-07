@@ -28,22 +28,26 @@ namespace vomsProject.Helpers
             return containerClient;
         }
 
-        public async Task<bool> UploadToBlob(FileStream file, ApplicationDbContext dbContext, Page Page)
+        public async Task<bool> UploadToBlob(Stream file, ApplicationDbContext dbContext, Page Page, string fileName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
             var _context = dbContext;
 
-            var uniqueIdentifier = Guid.NewGuid().ToString();
+            var imageGuid = Guid.NewGuid().ToString();
 
             try
             {
-                await containerClient.UploadBlobAsync(uniqueIdentifier, file);
+                var blob = await containerClient.UploadBlobAsync(imageGuid, file);
+
                 await _context.Images.AddAsync(new Image
                 {
-                    ImageUrl = uniqueIdentifier,
+                    ImageUrl = imageGuid,
                     Page = Page,
-                    Solution = Page.Solution
+                    Solution = Page.Solution,
+                    FriendlyName = fileName
                 });
+
+                await _context.SaveChangesAsync();
 
                 return true;
             }
@@ -54,27 +58,12 @@ namespace vomsProject.Helpers
             }
         }
 
-        public string GetImageUrl(int pageId, ApplicationDbContext dbContext)
+        public async Task<Stream> DownloadBlob(string imageName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
+            var blob = await containerClient.GetBlobClient(imageName).DownloadAsync();
 
-            try
-            {
-                var image = dbContext.Images.FirstOrDefault(x => x.Page.Id == pageId);
-                if (image == null) return null;
-
-                var blobName = image.ImageUrl;
-
-                var blobClient = containerClient.GetBlobClient(blobName);
-                var imageUri = blobClient.Uri;
-
-                return imageUri.ToString();
-            }
-            catch (Exception e)
-            {
-                Console.WriteLine("(GetImageUrl-method) failed with following exception: " + e);
-                return null;
-            }
+            return blob.Value.Content;
         }
     }
 }

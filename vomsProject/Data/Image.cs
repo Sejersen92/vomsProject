@@ -11,5 +11,7 @@ namespace vomsProject.Data
         public string ImageUrl { get; set; }
         public Solution Solution { get; set; }
         public Page Page { get; set; }
+
+        public string FriendlyName { get; set; }
     }
 }
