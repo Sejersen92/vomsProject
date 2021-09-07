@@ -51,17 +51,5 @@ namespace vomsProject.Helpers
                 throw new ArgumentException("Solution cannot be null");
             }
         }
-        public string ReEncodeUrl(string url)
-        {
-            Encoding enc = Encoding.GetEncoding("iso-8859-1");
-            string[] parts = url.Split('/');
-            for (int i = 1; i < parts.Length; i++)
-            {
-                parts[i] = System.Web.HttpUtility.UrlDecode(parts[i]); // Decode to string
-                parts[i] = System.Web.HttpUtility.UrlEncode(parts[i], enc); // Re-encode to latin1
-                parts[i] = parts[i].Replace('+', ' '); // Change + to [space]
-            }
-            return string.Join("/", parts);
-        }
     }
 }

@@ -60,13 +60,6 @@
                 </div>
                 <input type="submit" value="Create page" class="btn btn-primary mb-3" />
             </form>
-
-            <form asp-action="UploadImage" asp-controller="Admin" enctype="multipart/form-data">
-                <input type="file" id="image" name="image" />
-                <input type="hidden" value="@Model.Pages.FirstOrDefault().Id" name="pageId" />
-                <input type="hidden" value="@Model.SolutionId" name="solutionId" />
-                <input type="submit" value="upload shit" />
-            </form>
         </div>
         <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
             <h3>

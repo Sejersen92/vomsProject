@@ -43,6 +43,10 @@ namespace vomsProject.Controllers
             _operationsService = operationsService;
         }
 
+        /// <summary>
+        /// The default admin view containing a list over all "permitted" solutions, i.e. the solutions a logged in user has access to.
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> IndexAsync()
         {
@@ -122,6 +126,11 @@ namespace vomsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// The view which contains all data about and involving a given solution.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> SolutionOverview([FromRoute] int id)
         {
@@ -151,6 +160,15 @@ namespace vomsProject.Controllers
             return View(model);
         }
 
+        /// <summary>
+        /// Update a solution with the following params: 
+        /// </summary>
+        /// <param name="stylesheet"></param>
+        /// <param name="solutionId"></param>
+        /// <param name="friendlyName"></param>
+        /// <param name="domainName"></param>
+        /// <param name="favicon"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null,
@@ -182,6 +200,12 @@ namespace vomsProject.Controllers
             return RedirectToAction("Index");
         }
 
+        /// <summary>
+        /// Create a page in a solution.
+        /// </summary>
+        /// <param name="title"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> CreatePage(string title, int id)
@@ -193,6 +217,12 @@ namespace vomsProject.Controllers
             return Redirect(DomainHelper.GetSolutionIndexPageUrl(theSolution) + title);
         }
 
+        /// <summary>
+        /// Remove a page from a solution.
+        /// </summary>
+        /// <param name="id"></param>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpGet]
         public async Task<IActionResult> RemovePage(int id, int solutionId)
@@ -238,6 +268,12 @@ namespace vomsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Add a user to solution.
+        /// </summary>
+        /// <param name="userEmail"></param>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddUser(string userEmail, int solutionId)
@@ -406,9 +442,16 @@ namespace vomsProject.Controllers
             }
         }
 
+        /// <summary>
+        /// Retrieves the solutionsFavicon - This is currently used as a preview of what Favicon is selected.
+        /// </summary>
+        /// <param name="solutionId"></param>
+        /// <returns></returns>
         public async Task<IActionResult> GetSolutionFavicon(int solutionId)
         {
             var solution = await Repository.GetSolutionById(solutionId).FirstOrDefaultAsync();
+            if (solution.Favicon == null)
+                return NotFound();
 
             return new FileContentResult(solution.Favicon, "image/png");
         }

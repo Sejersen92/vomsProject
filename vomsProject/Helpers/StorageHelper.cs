@@ -22,23 +22,25 @@ namespace vomsProject.Helpers
         public StorageHelper(IConfiguration configuration)
         {
             _containerName = "voms";
-            _blobServiceClient = new BlobServiceClient(Configuration.GetValue<string>("BlobStorageConnection"));
             _containerName = !string.IsNullOrWhiteSpace(_containerName) ? _containerName : "voms";
             Configuration = configuration;
+
+            _blobServiceClient = new BlobServiceClient(Configuration.GetValue<string>("ConnectionStrings:BlobStorageConnection"));
 
             _blobContainer = new CloudBlobContainer(new Uri("https://sejersenstorageaccount.blob.core.windows.net/voms"),
                 new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(
                     Configuration.GetValue<string>("AccountName"), 
-                    Configuration.GetValue<string>("AccountName")));
+                    Configuration.GetValue<string>("AccountKey")));
         }
 
-        public BlobContainerClient GetBlobContainer()
-        {
-            var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
-
-            return containerClient;
-        }
-
+        /// <summary>
+        /// Uploads a blob to the storageaccount (and a specific container) assigned in appsettings.
+        /// </summary>
+        /// <param name="file"></param>
+        /// <param name="dbContext"></param>
+        /// <param name="Page"></param>
+        /// <param name="fileName"></param>
+        /// <returns></returns>
         public async Task<bool> UploadToBlob(Stream file, ApplicationDbContext dbContext, Page Page, string fileName)
         {
             var containerClient = _blobServiceClient.GetBlobContainerClient(_containerName);
@@ -69,10 +71,13 @@ namespace vomsProject.Helpers
             }
         }
 
+        /// <summary>
+        /// Deletes a blob from the same storageaccount (and its specific container).
+        /// </summary>
+        /// <param name="blobName"></param>
+        /// <returns></returns>
         public async Task DeleteBlob(string blobName)
         {
-            
-
             var blob = _blobContainer.GetBlobReference(blobName);
             await blob.DeleteIfExistsAsync();
         }

@@ -17,6 +17,11 @@ namespace vomsProject.Helpers
     public class JwtService
     {
         public static readonly string Issuer = "http://localhost:5001/";
+
+        /// <summary>
+        /// Create a symmetric security key from appsettings to be used in our SecurityToken.
+        /// </summary>
+        /// <param name="configurtion"></param>
         public JwtService(IConfiguration configurtion)
         {
             SymmetricSecurityKey = new SymmetricSecurityKey(Convert.FromBase64String(configurtion.GetValue<string>("TokenSigningKey")));
@@ -33,6 +38,11 @@ namespace vomsProject.Helpers
         private SymmetricSecurityKey SymmetricSecurityKey;
         public TokenValidationParameters TokenValidationParamters;
         
+        /// <summary>
+        /// Creates a one-time-use token which an expiration of 1 minute.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
         public JwtSecurityToken CreateOneTimeToken(User user)
         {
             var claims = new Claim[] {

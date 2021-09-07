@@ -80,11 +80,27 @@ namespace vomsProject.Helpers
             return pageContent;
         }
 
+        /// <summary>
+        /// Publishes a page.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="solution"></param>
+        /// <param name="id"></param>
+        /// <param name="content"></param>
+        /// <param name="publishedHtml"></param>
+        /// <returns></returns>
         public async Task<PageContent> PublishPage(User user, IQueryable<Solution> solution, int id, string content, string publishedHtml)
         {
             return await UpdatePageContent(user, solution, id, content, true, publishedHtml);
         }
 
+        /// <summary>
+        /// Removes a page.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="solution"></param>
+        /// <param name="pageId"></param>
+        /// <returns></returns>
         public async Task RemovePage(User user, IQueryable<Solution> solution, int pageId)
         {
             var theSolution = await solution.SingleOrDefaultAsync();
@@ -109,6 +125,16 @@ namespace vomsProject.Helpers
             }
         }
 
+        /// <summary>
+        /// Updates a solution.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="solution"></param>
+        /// <param name="friendlyName"></param>
+        /// <param name="domainName"></param>
+        /// <param name="stylesheet"></param>
+        /// <param name="favicon"></param>
+        /// <returns></returns>
         public async Task UpdateSolution(User user, IQueryable<Solution> solution, string friendlyName, string domainName, int stylesheet
             , byte[] favicon = null)
         {
@@ -127,6 +153,13 @@ namespace vomsProject.Helpers
             await _context.SaveChangesAsync();
         }
 
+        /// <summary>
+        /// Deletes a solution.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="solution"></param>
+        /// <param name="id"></param>
+        /// <returns></returns>
         public async Task DeleteSolution(User user, IQueryable<Solution> solution, int id)
         {
             var theSolution = await solution.SingleOrDefaultAsync();
@@ -147,6 +180,13 @@ namespace vomsProject.Helpers
             }
         }
 
+        /// <summary>
+        /// Adds a user.
+        /// </summary>
+        /// <param name="user"></param>
+        /// <param name="solution"></param>
+        /// <param name="userEmail"></param>
+        /// <returns></returns>
         public async Task AddUser(User user, IQueryable<Solution> solution, string userEmail)
         {
             var theSolution = await solution.SingleOrDefaultAsync();
@@ -175,8 +215,9 @@ namespace vomsProject.Helpers
             }
         }
 
+        
         /// <summary>
-        /// Remove a user from a specific solution.
+        /// Removes a user.
         /// </summary>
         /// <param name="user">The user who is doing the task.</param>
         /// <param name="solution"></param>
