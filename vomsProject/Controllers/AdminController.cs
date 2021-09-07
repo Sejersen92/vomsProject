@@ -144,7 +144,9 @@ namespace vomsProject.Controllers
                 return Forbid();
             }
             var stylesheets = await _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToListAsync();
-            var pages = await Repository.Pages(solution).ToListAsync();
+            var pages = await Repository.Pages(solution).
+                Include(x => x.PublishedVersion).
+                ToListAsync();
 
             var model = new PageOverview
             {

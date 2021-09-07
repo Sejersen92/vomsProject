@@ -4,7 +4,7 @@
     <h1 class="display-5 fw-bold">Recycle bin panel</h1>
     <div class="col-lg-6 mx-auto">
         <p class="lead mb-4">On this page you can recover your solutions deleted pages in a as-few-clicks-as-possible maner. Have fun!</p>
-        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+        <div class="justify-content-sm-center">
             @if (Model.FailedToRecoverPageId.HasValue)
             {
                 <p>Failed to Recover page @Model.FailedToRecoverPageId.Value</p>
@@ -24,7 +24,7 @@
                     <thead>
                         <tr>
                             <th scope="col">Pagename </th>
-                            <th scope="col">Deleted at </th>
+                            <th scope="col">Deleted at & by</th>
                             <th scope="col">Manage page </th>
                         </tr>
                     </thead>
@@ -35,7 +35,10 @@
 
                             <tr>
                                 <th scope="row">@(page.PageName == "" ? "(index page)" : page.PageName)</th>
-                                <td>@(page.DeletedDate.ToString("yyyy-MM-dd HH:mm"))</td>
+                                <td>
+                                    @(page.DeletedDate.ToString("yyyy-MM-dd HH:mm")) - @(page.PublishedVersion != null ?
+                                page.PublishedVersion.SavedBy.Nickname : "No published version available.")
+                                </td>
                                 <td>
                                     <form method="post">
                                         <input style="display: none" name="pageId" value="@(page.Id)" />
@@ -46,11 +49,11 @@
                         }
                     </tbody>
                 </table>
-
+                <h5>Get back to the solution overview @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id }).</h5>
             }
             else
             {
-                <h3>You have currently 0 deleted pages to recover. Go back to the previous page @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id })</h3>
+                <h3>You have currently 0 deleted pages to recover. Go back to the previous page @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id }).</h3>
             }
         </div>
     </div>

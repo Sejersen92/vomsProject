@@ -7,7 +7,6 @@
 @model PageOverview
 
 @{
-    var count = 1;
     var friendlyName = !string.IsNullOrWhiteSpace(Model.Solution.FriendlyName) ? Model.Solution.FriendlyName : "";
     var domainName = !string.IsNullOrWhiteSpace(Model.Solution.Domain) ? Model.Solution.Domain : "";
     var favIcon = Model.Solution.Favicon != null ? Model.Solution.Favicon : null;
@@ -31,7 +30,7 @@
         <table class="table table-responsive table-bordered table-hover">
             <thead>
                 <tr>
-                    <th scope="col">Page id</th>
+                    <th scope="col">Last edited by/ publish time</th>
                     <th scope="col">Page name & link to page</th>
                     <th scope="col">Manage page</th>
                 </tr>
@@ -42,7 +41,10 @@
                     var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
 
                     <tr>
-                        <th scope="row">@(page.Id)</th>
+                        <td>
+                            <div class="font-weight-bolder">@(page.PublishedVersion != null ? page.PublishedVersion.SavedBy.Nickname : "Administrator")</div>
+                            <div class="w-50 font-weight-lighter">@(page.PublishedVersion != null ? page.PublishedVersion.SaveDate : "Not published yet" )</div>
+                        </td>
                         <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
                         <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
