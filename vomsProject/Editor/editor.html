@@ -7,19 +7,73 @@
     <button id="move-block-button">move down</button>
     <button id="bold-button">bold</button>
     <button id="delete-block-button">delete</button>
+    <button id="load-content">load</button>
+    <button id="save">save</button>
+    <button id="print">print</button>
     <aticle id="page">
     </aticle>
     <script src="voms-editor.js"></script>
     <script type="module">
-      import { BlockType, moveBlock, subscribe, unsubscribe, makeBlock, deleteBlock, makeEditor, makeSelectionBlod } from "./voms-editor.js";
+      import { BlockType, moveBlock, subscribe, unsubscribe, makeBlock, deleteBlock, makeEditor, makeSelectionBlod, getContent, loadContent } from "./voms-editor.js";
       var page = document.getElementById("page");
       var editor = makeEditor(page);
+
+      var savedContent = [
+	  {
+	      type: BlockType.Text,
+	      tagType: "h1",
+	      properties: {},
+	      text: "This is the heading"
+
+	  },
+	  {
+	      type: BlockType.Content,
+	      tagType: "section",
+	      properties: {},
+	      blocks: [
+		  {
+		      type: BlockType.Text,
+		      tagType: "h2",
+		      properties: {},
+		      text: "This is also a heading"
+		  },
+		  {
+		      type: BlockType.Text,
+		      tagType: "p",
+		      properties: {},
+		      text: "This is the paragraph"
+		  }		  
+	      ]
+	  },
+	  {
+	      type: BlockType.Content,
+	      tagType: "ul",
+	      properties: {},
+	      blocks: [
+		  {
+		      type: BlockType.Text,
+		      tagType: "li",
+		      properties: {},
+		      text: "the first one"
+		  },
+		  {
+		      type: BlockType.Text,
+		      tagType: "li",
+		      properties: {},
+		      text: "the second one"
+		  }
+	      ]
+	  }
+      ];
 
       var insertBlockButton = document.getElementById("insert-block-button");
       var insertContainerButton = document.getElementById("insert-container-button");
       var moveBlockButton = document.getElementById("move-block-button");
       var boldButton = document.getElementById("bold-button");
       var deleteBlockButton = document.getElementById("delete-block-button");
+      var loadContentButton = document.getElementById("load-content");
+      var saveButton = document.getElementById("save");
+      var printButton = document.getElementById("print");
       insertBlockButton.onclick = function () {
           var latest = makeBlock(editor.selectedBlock ? editor.selectedBlock.parent : editor, 0, BlockType.Text, "div");
 	  latest.element.focus();
@@ -46,6 +100,15 @@
       };
       deleteBlockButton.onclick = function () {
 	  deleteBlock(editor.selectedBlock);
+      };
+      loadContentButton.onclick = function () {
+	  loadContent(editor, savedContent);
+      };
+      saveButton.onclick = function () {
+	  savedContent = getContent(editor);
+      };
+      printButton.onclick = function () {
+	  console.log(getContent(editor));
       };
     </script>
   </body>

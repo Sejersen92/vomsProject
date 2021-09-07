@@ -23,6 +23,14 @@ export interface EditorEvent {
     }
 }
 
+export interface TransferBlock {
+    type: BlockType;
+    tagType: string;
+    properties: { [key: string]: string };
+    blocks?: TransferBlock[];
+    text?: string;
+}
+
 export interface Block {
     root: Editor;
     parent: Block;
@@ -94,6 +102,51 @@ function emit(block: Block, name: string, event: EditorEvent) {
 	    handlers[i](event);
 	}
     }
+}
+
+export function loadContent(block: Block, content: TransferBlock[]) {
+    if (block.type !== BlockType.Container) {
+	throw "Can't load content into text block";
+    }
+    // Work from behind so index wont change
+    for (let i = block.blocks.length - 1; i >= 0; i--) {
+	deleteBlock(block.blocks[i]);
+    }
+    for (let i = 0; i < content.length; i++) {
+	if (content[i].type === BlockType.Text) {
+	    let child = makeBlock(block, i, BlockType.Text, content[i].tagType);
+	    child.element.innerHTML = content[i].text;
+	} else {
+	    let child = makeBlock(block, i, BlockType.Container, content[i].tagType);
+	    loadContent(child, content[i].blocks);
+	}
+    }
+}
+
+export function getContent(block: Block): TransferBlock[] {
+    if (block.type !== BlockType.Container) {
+	throw "Can't get content from text block";
+    }
+
+    let content: TransferBlock[] = [];
+    for (let i = 0; i < block.blocks.length; i++) {
+	if (block.blocks[i].type === BlockType.Text) {
+	    content.push({
+		type: block.blocks[i].type,
+		tagType: block.blocks[i].tagType,
+		properties: {},
+		text: block.blocks[i].element.innerHTML
+	    });
+	} else {
+	    content.push({
+		type: block.blocks[i].type,
+		tagType: block.blocks[i].tagType,
+		properties: {},
+		blocks: getContent(block.blocks[i])
+	    });
+	}
+    }
+    return content;
 }
 
 let eventHandlers = new WeakMap();
