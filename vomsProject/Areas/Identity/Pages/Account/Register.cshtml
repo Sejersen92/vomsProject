@@ -8,7 +8,7 @@
 <h1>@ViewData["Title"]</h1>
 
 <div class="row">
-    <div class="col-md-4">
+    <div class="col-md-6">
         <form asp-route-returnUrl="@Model.ReturnUrl" method="post">
             <h4>Create a new account.</h4>
             <hr />
@@ -30,7 +30,7 @@
             </div>
             <div class="form-group">
                 <label asp-for="Input.ProductVersion"></label>
-                <select asp-for="Input.ProductVersion" class="form-control">
+                <select asp-for="Input.ProductVersion" class="form-control" id="productSelecter">
                     @if (productVersion == "Community")
                     {
                         <option selected="selected" value="Community">Community</option>
@@ -64,32 +64,85 @@
     </div>
     <div class="col-md-6 col-md-offset-2">
         <section>
-            <h4>Use another service to register.</h4>
+            <h4>Here are your productfeatures: </h4>
             <hr />
-            @{
-                if ((Model.ExternalLogins?.Count ?? 0) == 0)
-                {
+
+            <div id="hidden_Community">
+                <div class="col">
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">Free</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">0DKK<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>Access to our amazing community</li>
+                                <li>10 users included</li>
+                                <li>Email support</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="hidden_Professional">
+                <div class="col">
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3">
+                            <h4 class="my-0 fw-normal">Pro</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">99DKK<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>20 users included</li>
+                                <li>email support</li>
+                                <li>Help center access</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div id="hidden_Enterprise">
+                <div class="col">
+                    <div class="card mb-4 rounded-3 shadow-sm">
+                        <div class="card-header py-3 text-white bg-primary border-primary">
+                            <h4 class="my-0 fw-normal">Enterprise</h4>
+                        </div>
+                        <div class="card-body">
+                            <h1 class="card-title pricing-card-title">499DKK<small class="text-muted fw-light">/mo</small></h1>
+                            <ul class="list-unstyled mt-3 mb-4">
+                                <li>30 users included</li>
+                                <li>Priority phone and email support</li>
+                                <li>Help center access</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            @*@{
+            if ((Model.ExternalLogins?.Count ?? 0) == 0)
+            {
+                <div>
+                    <p>
+                        There are no external authentication services configured. See <a href="https://go.microsoft.com/fwlink/?LinkID=532715">this article</a>
+                        for details on setting up this ASP.NET application to support logging in via external services.
+                    </p>
+                </div>
+            }
+            else
+            {
+                <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
                     <div>
                         <p>
-                            There are no external authentication services configured. See <a href="https://go.microsoft.com/fwlink/?LinkID=532715">this article</a>
-                            for details on setting up this ASP.NET application to support logging in via external services.
+                            @foreach (var provider in Model.ExternalLogins)
+                            {
+                                <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
+                            }
                         </p>
                     </div>
-                }
-                else
-                {
-                    <form id="external-account" asp-page="./ExternalLogin" asp-route-returnUrl="@Model.ReturnUrl" method="post" class="form-horizontal">
-                        <div>
-                            <p>
-                                @foreach (var provider in Model.ExternalLogins)
-                                {
-                                    <button type="submit" class="btn btn-primary" name="provider" value="@provider.Name" title="Log in using your @provider.DisplayName account">@provider.DisplayName</button>
-                                }
-                            </p>
-                        </div>
-                    </form>
-                }
+                </form>
             }
+        }*@
         </section>
     </div>
 </div>
@@ -97,3 +150,30 @@
 @section Scripts {
     <partial name="_ValidationScriptsPartial" />
 }
+
+<script>
+    var community = document.getElementById('hidden_Community');
+    var professional = document.getElementById('hidden_Professional');
+    var enterprise = document.getElementById('hidden_Enterprise');
+    var selector = document.getElementById('productSelecter');
+
+    function showActiveFeatures() {
+        community.style.display = "none";
+        professional.style.display = "none";
+        enterprise.style.display = "none";
+        switch (selector.value) {
+            case "Community":
+                community.style.display = "block";
+                break;
+            case "Professional":
+                professional.style.display = "block";
+                break;
+            case "Enterprise":
+                enterprise.style.display = "block";
+                break;
+        }
+    }
+    showActiveFeatures();
+
+    selector.addEventListener('change', showActiveFeatures);
+</script>
