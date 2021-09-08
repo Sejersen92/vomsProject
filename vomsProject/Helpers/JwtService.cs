@@ -31,7 +31,8 @@ namespace vomsProject.Helpers
                 ValidateIssuer = true,
                 ValidIssuer = Issuer,
                 ValidAudience = Issuer,
-                IssuerSigningKey = SymmetricSecurityKey
+                IssuerSigningKey = SymmetricSecurityKey,
+                ClockSkew = TimeSpan.FromMinutes(1)
             };
         }
 
