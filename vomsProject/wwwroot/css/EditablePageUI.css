@@ -1,5 +1,10 @@
-﻿
+﻿#voms-tools {
+    position: fixed;
+    bottom: 0;
+}
+
 #menu-button {
+    padding: 0;
     box-sizing: border-box;
     position: absolute;
     right: 5rem;
@@ -69,7 +74,6 @@
         width: 100%;
         padding: 0.5em;
     }
-
         .voms-menu button svg {
             max-width: 5em;
             max-height: 1.5em;
@@ -98,10 +102,17 @@
     .voms-menu li + li {
         border-top: 1px solid black;
     }
+        .voms-menu.voms-horizontal li {
+            display: inline-block;
+        }
+        .voms-menu.voms-horizontal li + li {
+            border: none;
+            border-left: 1px solid black;
+        }
 
-#editor-menu.show {
-    display: block;
-}
+        #editor-menu.show {
+            display: block;
+        }
 
 .voms-hideable {
     display: none;
@@ -148,8 +159,7 @@ body.showVersionHistory {
         box-sizing: border-box;
         top: 5rem;
         right: 0;
-        max-width: 400px;
-        width: 100vw;
+        width: 15rem;
     }
 
         #editor-menu.voms-left {
@@ -163,7 +173,11 @@ body.showVersionHistory {
     #versionHistory {
         top: 5rem;
         max-height: calc(100vh - 5rem);
-        max-width: 400px;
+        width: 15rem;
+    }
+}
+@media (max-width: 360px) {
+    #editor-menu, #versionHistory {
         width: 100vw;
     }
 }

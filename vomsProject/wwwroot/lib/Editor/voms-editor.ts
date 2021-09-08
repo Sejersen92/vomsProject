@@ -73,7 +73,7 @@ export function subscribe(block: Block, name: string, handler: (event: EditorEve
     if (block.handlers[name] === undefined) {
 	block.handlers[name] = [];
     }
-    if (block.handlers[name].indexOf(handler) !== -1) {
+    if (block.handlers[name].indexOf(handler) === -1) {
 	block.handlers[name].push(handler);
     }
 }

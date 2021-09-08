@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title></title>
     <link rel="stylesheet" href="/style.css" />
-
-    <link href="/css/quill.voms.css" rel="stylesheet">
     <!-- important default styles -->
     <style>
         /* We would like to be able to shrink the body, so that we can put ui outside the content area. */
@@ -19,16 +17,33 @@
     <link rel="stylesheet" href="/css/EditablePageUI.css" />
 </head>
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
+    <ul id="voms-tools" class="voms-menu voms-horizontal" data-bind="using: tools">
+        <li>
+            <button data-bind="click: insert">insert</button>
+        </li>
+        <li>
+            <button data-bind="click: moveBlock">move?</button>
+        </li>
+        <li>
+            <button data-bind="click: bold">bold</button>
+        </li>
+        <li>
+            <button data-bind="click: insertContainer">group</button>
+        </li>
+        <li>
+            <button data-bind="click: deleteBlock">delete</button>
+        </li>
+    </ul>
     <ul id="versionHistory" class="voms-menu" data-bind="foreach: versions">
         <li>
             <button data-bind="disable: $root.currentVersion() === id || $root.isDeleted(),
-                               click: getVersionFunction(id)">
+                               click: $root.getVersionFunction(id)">
                 <div data-bind="text: saveDate"></div>
-                <strong data-bind="text: getTitle(id)"></strong>
+                <strong data-bind="text: $root.getTitle(id)"></strong>
             </button>
         </li>
     </ul>
-    <button id="menu-button" onclick="toggleMenu()" data-bind="css: { 'voms-left': isMenuLeft() }">Menu</button>
+    <button id="menu-button" data-bind="css: { 'voms-left': isMenuLeft() }, click: toggleMenu">Menu</button>
     <ul id="editor-menu" class="voms-menu" data-bind="css: { show: showMenu(), 'voms-left': isMenuLeft() }">
         <!-- ko if: isDeleted -->
         <li class="voms-notice">
@@ -47,25 +62,26 @@
             <input id="page-title" type="text" placeholder="Give your page a title" data-bind="textInput: title, disable: isDeleted" />
         </li>
         <li>
-            <button onclick="save()" data-bind="disable: (arePropertiesSaved() && isSaved() && isLatesVersion()) || isDeleted(),
-                                                attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' }">
+            <button data-bind="disable: (arePropertiesSaved() && isSaved() && isLatesVersion()) || isDeleted(),
+                               attr: { title: isSaved() && isLatesVersion() ? 'Current page is saved' : '' },
+                               click: save">
                 Save
             </button>
         </li>
         <li>
-            <button onclick="publish()"
-                    data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
-                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
+            <button data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
+                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' },
+                               click: publish">
                 Publish
             </button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: isPublished() }, disable: isDeleted">
-            <button onclick="unpublish()">Unpublish</button>
+            <button data-bind="click: unpublish">Unpublish</button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: isPublished() }">
-            <button onclick="getPublishedVersion()"
-                    data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
-                        attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' }">
+            <button data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
+                               attr: { title: isSaved() && isPublishedVersion() ? 'Current page is published' : '' },
+                               click: getPublishedVersion">
                 <div>
                     Select published version
                 </div>
@@ -73,9 +89,9 @@
             </button>
         </li>
         <li>
-            <button onclick="getSavedVersion()"
-                    data-bind="disable: (isSaved() && isLatesVersion()) || isDeleted(),
-                               attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : '' }">
+            <button data-bind="disable: (isSaved() && isLatesVersion()) || isDeleted(),
+                               attr: { title: isSaved() && isLatesVersion() ? 'This is the last saved version' : '' },
+                               click: getSavedVersion">
                 <div>
                     Select last saved version
                 </div>
@@ -83,10 +99,10 @@
             </button>
         </li>
         <li>
-            <button onclick="toggleVersionHistory()" data-bind="text: showVersionHistory() ? 'Less Versions' : 'More Versions'">More Versions</button>
+            <button data-bind="text: showVersionHistory() ? 'Less Versions' : 'More Versions', click: toggleVersionHistory">More Versions</button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: !isDeleted() }">
-            <button onclick="deletePage()">
+            <button data-bind="click: deletePage">
                 <svg viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
                     <rect x="15" y="65" width="80" height="100" />
                     <rect x="05" y="25" width="100" height="20" />
@@ -99,7 +115,7 @@
             </button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: isDeleted() }">
-            <button onclick="recoverPage()">
+            <button data-bind="click: recoverPage">
                 <svg style="transform: scale(1,-1)" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
                     <rect x="15" y="65" width="80" height="100" />
                     <rect x="05" y="25" width="100" height="20" />
@@ -118,7 +134,7 @@
             </form>
         </li>
         <li>
-            <button onclick="toggleMenuSide()">
+            <button data-bind="click: toggleMenuSide">
                 <svg id="menu-side-arrow" viewBox="0 0 150 20" xmlns="http://www.w3.org/2000/svg">
                     <path d="M 0 10 L 17 0 V 8 H 150 v 4 H 17 V 20 Z" fill="black" />
                 </svg>
@@ -134,10 +150,13 @@
     <footer>
         {{{ footer }}}
     </footer>
-    <script src="https://cdn.quilljs.com/1.3.6/quill.js"></script>
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/lib/knockout/knockout-3.5.1.js"></script>
-    <script>
+    <script type="module">
+        import {
+            subscribe, unsubscribe, makeEditor, getContent, loadContent,
+            makeBlock, deleteBlock, BlockType, moveBlock, makeSelectionBlod
+        } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
         var viewModel = {
             isSaved: ko.observable(true),
@@ -176,7 +195,7 @@
         viewModel.isPublishedVersion = ko.pureComputed(function () {
             return viewModel.publishedVersion() === viewModel.currentVersion();
         });
-        function getTitle(id) {
+        viewModel.getTitle = function (id) {
             switch (id) {
                 // A page can be both published and saved. If so the publish text takes priority.
                 case viewModel.publishedVersion():
@@ -188,42 +207,37 @@
         }
 
         // Toggle the main menu
-        function toggleMenu() {
+        viewModel.toggleMenu = function () {
             viewModel.showMenu(!viewModel.showMenu());
         }
 
         // Toggle the version history menu
-        function toggleVersionHistory() {
+        viewModel.toggleVersionHistory = function () {
             viewModel.showVersionHistory(!viewModel.showVersionHistory());
         }
 
         // Toggle wich side the menu is on.
-        function toggleMenuSide() {
+        viewModel.toggleMenuSide = function () {
             viewModel.isMenuLeft(!viewModel.isMenuLeft());
         }
 
-        var quill = new Quill('#page', {
-            modules: {
-                toolbar: [
-                    [{ header: [1, 2, false] }],
-                    ['bold', 'italic', 'underline'],
-                    ['image', 'code-block']
-                ]
-            },
-            placeholder: 'Write your article...',
-            theme: 'bubble'
-        });
-        quill.setContents({{{ content }}});
+        var page = document.getElementById("page");
+        var editor = makeEditor(page);
 
-        // Function bound to quill's text-change event. Set status to not saved.
+        loadContent(editor, {{{ content }}});
+
+        // Function bind to any change of the content. Set status to not saved.
         function onChange() {
+            unsubscribe(editor, "block-order", onChange);
+            unsubscribe(editor, "text-change", onChange);
             viewModel.isSaved(false);
         }
 
         // When entering a saved state add an event listener to changes.
         ko.computed(function () {
             if (viewModel.isSaved()) {
-                quill.once("text-change", onChange);
+                subscribe(editor, "block-order", onChange);
+                subscribe(editor, "text-change", onChange);
             }
         });
 
@@ -243,7 +257,7 @@
 
         // Save the content.
         // If a different version has been picked but not changed, set it as the latest saved verison.
-        function save() {
+        viewModel.save = function () {
             if (!viewModel.isLatesVersion() && viewModel.isSaved()) {
                 $.ajax({
                     type: "POST",
@@ -259,7 +273,7 @@
                     type: "POST",
                     url: "/api/page/{{{ id }}}/update",
                     contentType: "application/json",
-                    data: JSON.stringify(quill.getContents()),
+                    data: JSON.stringify(getContent(editor)),
                     success: function (saveResult) {
                         whenSaved(saveResult);
                         viewModel.versions.push({
@@ -285,14 +299,14 @@
         }
 
         // Publish and save the content.
-        function publish() {
+        viewModel.publish = function () {
             $.ajax({
                 type: "POST",
                 url: "/api/page/{{{ id }}}/Publish",
                 contentType: "application/json",
                 data: JSON.stringify({
-                    content: quill.getContents(),
-                    html: quill.root.innerHTML
+                    content: getContent(editor),
+                    html: page.innerHTML
                 }),
                 success: function (saveResult) {
                     whenSaved(saveResult);
@@ -304,7 +318,7 @@
         }
 
         // Set the published status to false.
-        function unpublish() {
+        viewModel.unpublish = function () {
             $.ajax({
                 type: "POST",
                 url: "/api/page/{{{ id }}}/unpublish",
@@ -327,9 +341,12 @@
                         viewModel.currentVersion(content.id);
 
                         // Do not react to the change event while setting the content.
-                        quill.off("text-change", onChange);
-                        quill.setContents(JSON.parse(content.content));
-                        quill.once("text-change", onChange);
+
+                        unsubscribe(editor, "block-order", onChange);
+                        unsubscribe(editor, "text-change", onChange);
+                        loadContent(editor, JSON.parse(content.content));
+                        subscribe(editor, "block-order", onChange);
+                        subscribe(editor, "text-change", onChange);
                     }
                 });
             } else {
@@ -338,7 +355,7 @@
         }
 
         // Mark the current page as deleted
-        function deletePage() {
+        viewModel.deletePage = function () {
             $.ajax({
                 type: "POST",
                 url: "/api/page/{{{ id }}}/Delete",
@@ -351,7 +368,7 @@
         // Recover current page
         // This is only here in case the user instanly regrest deleting the page, 
         // as the otherwise would not be able to get to this page.
-        function recoverPage() {
+        viewModel.recoverPage = function () {
             $.ajax({
                 type: "POST",
                 url: "/api/page/{{{ id }}}/Recover",
@@ -369,21 +386,60 @@
 
         // Return a function that will load a specific version.
         // id is the id of the version to load.
-        function getVersionFunction(id) {
+        viewModel.getVersionFunction = function (id) {
             return function () {
                 getVersion(id);
             };
         }
 
         // Load the published version.
-        function getPublishedVersion() {
+        viewModel.getPublishedVersion = function () {
             getVersion(viewModel.publishedVersion());
         }
 
         // Load the last saved version.
-        function getSavedVersion() {
+        viewModel.getSavedVersion = function () {
             getVersion(viewModel.savedVersion())
         }
+
+        viewModel.tools = {
+            insert: function () {
+                var latest = makeBlock(editor.selectedBlock ? editor.selectedBlock.parent : editor, 0, BlockType.Text, "div");
+                latest.element.focus();
+            },
+            // This is not the most ideal function for moving blocks.
+            // it will move the selected text block in this way
+            // into the next block if it is a container
+            // past its next sibling if it has one
+            // past its parent if that parent is not the root
+            // as the first block of the root
+            moveBlock: function() {
+                var move = editor.selectedBlock;
+                var index = move.parent.blocks.indexOf(move) + 1;
+                var parent;
+                if (move.parent.blocks.length === index) {
+                    if (move.parent.parent != null) {
+                        parent = move.parent.parent;
+                        index = move.parent.parent.blocks.indexOf(move) + 1;
+                    } else {
+                        parent = move.parent;
+                        index = 0;
+                    }
+                } else if (move.parent.blocks[index].type === BlockType.Container) {
+                    parent = move.parent.blocks[index];
+                } else {
+                    parent = move.parent;
+                }
+                moveBlock(move, parent, index);
+            },
+            bold: makeSelectionBlod,
+            insertContainer: function() {
+                makeBlock(editor.selectedBlock.parent, 0, BlockType.Container, "div");
+            },
+            deleteBlock: function() {
+                deleteBlock(editor.selectedBlock);
+            }
+        };
 
         ko.applyBindings(viewModel);
     </script>
