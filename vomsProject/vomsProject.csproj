@@ -39,4 +39,11 @@
     <Folder Include="wwwroot\lib\knockout\" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Include="wwwroot\lib\Editor\editor.html" />
+    <None Include="wwwroot\lib\Editor\voms-editor.js" />
+    <None Include="wwwroot\lib\Editor\voms-editor.js.map" />
+    <None Include="wwwroot\lib\Editor\voms-editor.ts" />
+  </ItemGroup>
+
 </Project>
