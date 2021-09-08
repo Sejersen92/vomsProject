@@ -60,7 +60,7 @@
                 <div style="display: none">
                     <input type="text" name="id" value="@Model.SolutionId" />
                 </div>
-                <input type="submit" value="Create page" class="btn btn-primary mb-3" />
+                <input type="submit" value="Create page" class="btn btn-success mb-3" />
             </form>
         </div>
         <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
@@ -121,7 +121,7 @@
             <div style="display: none">
                 <input type="text" name="solutionId" value="@Model.SolutionId" />
             </div>
-            <input type="submit" value="submit" class="btn btn-primary mb-3" />
+            <input type="submit" value="Update solution" class="btn btn-success mb-3" />
         </form>
         <table class="table table-responsive table-bordered table-hover mb-0">
             <thead>
@@ -151,7 +151,7 @@
             <div style="display: none">
                 <input type="text" name="solutionId" value="@Model.SolutionId" />
             </div>
-            <input type="submit" value="submit" class="btn btn-primary mb-3" />
+            <input type="submit" value="Add user" class="btn btn-success mb-3" />
         </form>
     </div>
 </div>
