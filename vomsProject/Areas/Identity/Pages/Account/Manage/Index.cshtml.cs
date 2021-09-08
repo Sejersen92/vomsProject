@@ -27,6 +27,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
         }
 
         public string Username { get; set; }
+        public string Nickname { get; set; }
         public ProductType ProductVersion { get; set; }
 
         [TempData]
@@ -41,6 +42,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             [Display(Name = "Phone number")]
             public string PhoneNumber { get; set; }
             public ProductType ProductVersion { get; set; }
+            public string Nickname { get; set; }
         }
 
         private async Task LoadAsync(User user)
@@ -50,6 +52,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             var productVersion = user.ProductVersion;
 
             Username = userName;
+            Nickname = user.Nickname;
 
             Input = new InputModel
             {

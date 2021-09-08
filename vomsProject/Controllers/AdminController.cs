@@ -216,7 +216,7 @@ namespace vomsProject.Controllers
             var theSolution = await solution.SingleOrDefaultAsync();
 
             title ??= "";
-            return Redirect(DomainHelper.GetSolutionIndexPageUrl(theSolution) + title);
+            return RedirectToAction("LoginToSolution", "Admin", new { id = theSolution.Id, title });
         }
 
         /// <summary>
