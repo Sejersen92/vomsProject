@@ -10,5 +10,8 @@ namespace vomsProject.Data
         public int Id { get; set; }
         public string Name { get; set; }
         public string Css { get; set; }
+
+        //List of friendlynames, variablename and variabletypes.
+        public string StylesheetOptions { get; set; }
     }
 }

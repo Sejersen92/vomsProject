@@ -15,5 +15,7 @@ namespace vomsProject.Models
         public int? SelectedStyleId { get; set; }
         public User User { get; set; }
         public byte[] Favicon { get; set; }
+        public List<StylesheetCustomizations> StylesheetCustomizations { get; set; }
+        public List<string> Fonts { get; set; }
     }
 }

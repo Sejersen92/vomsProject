@@ -99,7 +99,9 @@
                     }
                 </select>
             </div>
-            <div class="input-group-lg mb-3">
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Style selector</button>
+
+            <div class="input-group-lg mb-3 mt-1">
                 <label class="form-label" for="friendlyName">Friendly name:</label>
                 <input type="text" class="form-control col-8" id="friendlyName" name="friendlyName" value="@friendlyName">
             </div>
@@ -123,6 +125,69 @@
             </div>
             <input type="submit" value="Update solution" class="btn btn-success mb-3" />
         </form>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+            <div class="offcanvas-header">
+                <h5 id="offcanvasRightLabel">Style selector</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <form asp-action="SetStyleVariables" asp-controller="Admin" method="post">
+                    @if (!Model.StylesheetCustomizations.Any())
+                    {
+                        <p>
+                            There are no selected stylesheet options for this solution.
+                            Please create or select one to continue.
+                        </p>
+                    }
+                    else
+                    {
+                        @foreach (var customization in Model.StylesheetCustomizations)
+                        {
+                            switch (customization.Type)
+                            {
+                                case "color":
+                                    <div class="form-group mb-2">
+                                        <div class="input-group">
+                                            <input class="form-control" style="padding:0" type="color"
+                                                   name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
+                                            <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
+                                        </div>
+                                    </div>
+                                    break;
+                                case "font":
+                                    <div class="input-group mb-2">
+                                        <label class="input-group-prepend" for="@customization.VariableName">Select your header-font</label>
+                                        <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
+
+                                            @foreach (var font in Model.Fonts)
+                                            {
+                                                if (font == customization.Value)
+                                                {
+                                                    <option selected="selected" value="@font">@font</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@font">@font</option>
+                                                }
+                                            }
+
+                                        </select>
+                                    </div>
+                                    break;
+                            }
+                        }
+                        <div style="display: none">
+                            <input type="text" name="solutionId" value="@Model.SolutionId" />
+                        </div>
+                        <button type="submit" class="btn btn-success">Submit</button>
+                    }
+                </form>
+
+            </div>
+        </div>
+
+
         <table class="table table-responsive table-bordered table-hover mb-0">
             <thead>
                 <tr>
@@ -155,4 +220,3 @@
         </form>
     </div>
 </div>
-

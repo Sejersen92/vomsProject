@@ -25,6 +25,9 @@ namespace vomsProject.Data
         public string FriendlyName { get; set; }
         public byte[] Favicon { get; set; }
 
+        //Style customizations:
+        public string StylesheetCustomization { get; set; }
+        public string SerializedStylesheet { get; set; }
 
         [NotMapped]
         public string DestinationUrl { get; set; }

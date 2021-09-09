@@ -138,11 +138,41 @@ namespace vomsProject.Controllers
             var solution = Repository.GetSolutionById(id);
             var theSolution = await solution
                 .Include(x => x.Permissions).ThenInclude(x => x.User)
+                .Include(x => x.Style)
                 .SingleOrDefaultAsync();
             if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
             {
                 return Forbid();
             }
+
+            var options = new List<StylesheetCustomizations>();
+            var stylesheetKeyValue = new Dictionary<string, string>();
+            var customizations = theSolution.StylesheetCustomization.Split(';');
+
+            foreach (var customization in customizations)
+            {
+                var keyValue = customization.Split(':');
+                if (keyValue.Length == 2)
+                {
+                    stylesheetKeyValue.Add(keyValue[0], keyValue[1]);
+                }
+            }
+
+            foreach (var option in theSolution.Style.StylesheetOptions.Split(';'))
+            {
+                var settings = option.Split(',');
+                if (settings.Length == 4)
+                {
+                    options.Add(new StylesheetCustomizations
+                    {
+                        VariableName = settings[0],
+                        Value = stylesheetKeyValue[settings[1]],
+                        FriendlyName = settings[2],
+                        Type = settings[3]
+                    });
+                }
+            }
+
             var stylesheets = await _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToListAsync();
             var pages = await Repository.Pages(solution).
                 Include(x => x.PublishedVersion).
@@ -156,7 +186,15 @@ namespace vomsProject.Controllers
                 StyleSheets = stylesheets,
                 User = user,
                 SelectedStyleId = theSolution.StyleId,
-                Favicon = theSolution.Favicon
+                Favicon = theSolution.Favicon,
+                Fonts = new List<string>()
+                {
+                    "Calibri",
+                    "Arial",
+                    "Times New Roman",
+                    "Comic sans"
+                },
+                StylesheetCustomizations = options
             };
 
             return View(model);
@@ -456,6 +494,21 @@ namespace vomsProject.Controllers
                 return NotFound();
 
             return new FileContentResult(solution.Favicon, "image/png");
+        }
+
+
+        public async Task<IActionResult> SetStyleVariables([FromBody] Dictionary<string, string> variables, int solutionId)
+        {
+            var solution = await Repository.GetSolutionById(solutionId).FirstOrDefaultAsync();
+            var sb = new StringBuilder();
+            foreach (var variable in variables)
+            {
+                sb.Append($"{variable.Key}:{variable.Value};");
+            }
+            solution.StylesheetCustomization = sb.ToString();
+            await _dbContext.SaveChangesAsync();
+
+            return RedirectToAction("SolutionOverview", solutionId);
         }
     }
 }

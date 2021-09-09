@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vomsProject.Data;
 
 namespace vomsProject.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210909132605_Make StylesheetCustomization Required")]
+    partial class MakeStylesheetCustomizationRequired
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -379,7 +381,6 @@ namespace vomsProject.Data.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<string>("StylesheetOptions")
-                        .IsRequired()
                         .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
@@ -391,8 +392,7 @@ namespace vomsProject.Data.Migrations
                         {
                             Id = 1,
                             Css = "* \r\n                        {box-sizing: border-box;} \r\n                            body {font-family: sans-serif;}",
-                            Name = "Style 1",
-                            StylesheetOptions = ""
+                            Name = "Style 1"
                         });
                 });
 

@@ -41,6 +41,10 @@ namespace vomsProject.Data
                .WithOne()
                .OnDelete(DeleteBehavior.Cascade);
 
+            modelBuilder.Entity<Solution>()
+                .Property(x => x.StylesheetCustomization)
+                .IsRequired();
+
             modelBuilder.Entity<Page>()
                 .HasOne(p => p.LastSavedVersion)
                 .WithOne();
@@ -63,8 +67,10 @@ namespace vomsProject.Data
                 Name = "Style 1",
                 Css = @"* 
                         {box-sizing: border-box;} 
-                            body {font-family: sans-serif;}"
+                            body {font-family: sans-serif;}",
+                StylesheetOptions = ""
             });
+            modelBuilder.Entity<Style>().Property(x => x.StylesheetOptions).IsRequired();
         }
     }
 }
