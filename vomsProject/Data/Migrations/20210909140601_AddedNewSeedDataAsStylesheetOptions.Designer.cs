@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vomsProject.Data;
 
 namespace vomsProject.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210909140601_AddedNewSeedDataAsStylesheetOptions")]
+    partial class AddedNewSeedDataAsStylesheetOptions
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -392,7 +394,7 @@ namespace vomsProject.Data.Migrations
                             Id = 1,
                             Css = "* \r\n                        {box-sizing: border-box;} \r\n                            body {font-family: sans-serif;}",
                             Name = "Style 1",
-                            StylesheetOptions = "buttonColor,The color of the button,color;headerFont,header Font,font"
+                            StylesheetOptions = "buttoncolor,#FFFFFF,knappens farve,color;viktorsfisse,#ba2222,viktors numse,color;headerFont,calibri,header Font,font"
                         });
                 });
 

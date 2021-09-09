@@ -161,15 +161,21 @@ namespace vomsProject.Controllers
             foreach (var option in theSolution.Style.StylesheetOptions.Split(';'))
             {
                 var settings = option.Split(',');
-                if (settings.Length == 4)
+                if (settings.Length == 3)
                 {
+                    if (stylesheetKeyValue.TryGetValue(settings[0], out var value))
+                    {
+                        value = string.Empty;
+                    }
+                    
                     options.Add(new StylesheetCustomizations
                     {
                         VariableName = settings[0],
-                        Value = stylesheetKeyValue[settings[1]],
-                        FriendlyName = settings[2],
-                        Type = settings[3]
+                        Value = value,
+                        FriendlyName = settings[1],
+                        Type = settings[2]
                     });
+
                 }
             }
 
@@ -496,19 +502,24 @@ namespace vomsProject.Controllers
             return new FileContentResult(solution.Favicon, "image/png");
         }
 
-
-        public async Task<IActionResult> SetStyleVariables([FromBody] Dictionary<string, string> variables, int solutionId)
+        [HttpPost]
+        public async Task<IActionResult> SetStyleVariables(IFormCollection variables)
         {
+            int solutionId = int.Parse(variables["id"]);
             var solution = await Repository.GetSolutionById(solutionId).FirstOrDefaultAsync();
             var sb = new StringBuilder();
             foreach (var variable in variables)
             {
+                if (variable.Key == "__RequestVerificationToken" || variable.Key == "id")
+                {
+                    continue;
+                }
                 sb.Append($"{variable.Key}:{variable.Value};");
             }
             solution.StylesheetCustomization = sb.ToString();
             await _dbContext.SaveChangesAsync();
 
-            return RedirectToAction("SolutionOverview", solutionId);
+            return RedirectToAction("SolutionOverview", new { id = solutionId }));
         }
     }
 }

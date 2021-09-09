@@ -132,7 +132,7 @@
                 <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
             </div>
             <div class="offcanvas-body">
-                <form asp-action="SetStyleVariables" asp-controller="Admin" method="post">
+                <form asp-action="SetStyleVariables" asp-controller="Admin" method="post" enctype="application/x-www-form-urlencoded">
                     @if (!Model.StylesheetCustomizations.Any())
                     {
                         <p>
@@ -178,7 +178,7 @@
                             }
                         }
                         <div style="display: none">
-                            <input type="text" name="solutionId" value="@Model.SolutionId" />
+                            <input type="text" name="id" value="@Model.SolutionId" />
                         </div>
                         <button type="submit" class="btn btn-success">Submit</button>
                     }

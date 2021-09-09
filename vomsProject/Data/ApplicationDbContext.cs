@@ -68,7 +68,7 @@ namespace vomsProject.Data
                 Css = @"* 
                         {box-sizing: border-box;} 
                             body {font-family: sans-serif;}",
-                StylesheetOptions = ""
+                StylesheetOptions = @"buttonColor,The color of the button,color;headerFont,header Font,font"
             });
             modelBuilder.Entity<Style>().Property(x => x.StylesheetOptions).IsRequired();
         }
