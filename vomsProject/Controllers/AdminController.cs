@@ -163,7 +163,7 @@ namespace vomsProject.Controllers
                 var settings = option.Split(',');
                 if (settings.Length == 3)
                 {
-                    if (stylesheetKeyValue.TryGetValue(settings[0], out var value))
+                    if (!stylesheetKeyValue.TryGetValue(settings[0], out var value))
                     {
                         value = string.Empty;
                     }
@@ -502,6 +502,7 @@ namespace vomsProject.Controllers
             return new FileContentResult(solution.Favicon, "image/png");
         }
 
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> SetStyleVariables(IFormCollection variables)
         {
@@ -519,7 +520,7 @@ namespace vomsProject.Controllers
             solution.StylesheetCustomization = sb.ToString();
             await _dbContext.SaveChangesAsync();
 
-            return RedirectToAction("SolutionOverview", new { id = solutionId }));
+            return RedirectToAction("SolutionOverview", new { id = solutionId });
         }
     }
 }

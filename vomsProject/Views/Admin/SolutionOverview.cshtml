@@ -99,7 +99,7 @@
                     }
                 </select>
             </div>
-            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Style selector</button>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Configure stylesheet</button>
 
             <div class="input-group-lg mb-3 mt-1">
                 <label class="form-label" for="friendlyName">Friendly name:</label>
@@ -149,15 +149,15 @@
                                 case "color":
                                     <div class="form-group mb-2">
                                         <div class="input-group">
+                                            <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
                                             <input class="form-control" style="padding:0" type="color"
                                                    name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
-                                            <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
                                         </div>
                                     </div>
                                     break;
                                 case "font":
                                     <div class="input-group mb-2">
-                                        <label class="input-group-prepend" for="@customization.VariableName">Select your header-font</label>
+                                        <label class="form-label" for="@customization.VariableName">Select your header-font</label>
                                         <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
 
                                             @foreach (var font in Model.Fonts)
