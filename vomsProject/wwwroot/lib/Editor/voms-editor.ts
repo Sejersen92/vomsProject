@@ -94,19 +94,14 @@ export function unsubscribe(block: Block, name: string, handler: (event: EditorE
 }
 
 function emit(block: Block, name: string, event: EditorEvent) {
-    if (block.root !== block) {
-        if (block.root.handlers[name] !== undefined) {
-	    var handlers = block.root.handlers[name];
-	    for (var i = 0; i < handlers.length; i++) {
-		handlers[i](event);
-	    }
-	}
-    }
     if (block.handlers[name] !== undefined) {
 	var handlers = block.handlers[name];
 	for (var i = 0; i < handlers.length; i++) {
 	    handlers[i](event);
 	}
+    }
+    if (block.parent !== null) {
+	emit(block.parent, name, event);
     }
 }
 
