@@ -53,7 +53,8 @@ function insertChildBlock(parent: Block, block: Block, insertAt: number) {
         } else {
             parent.element.appendChild(block.element);
             parent.blocks.push(block);
-        }
+	}
+	block.parent = parent;
     } else {
         throw "parent block has to be a container";
     }
