@@ -211,11 +211,14 @@ export function deleteBlock(block: Block) {
     let blockIndex = block.parent.blocks.indexOf(block);
     block.parent.blocks.splice(blockIndex, 1);
     block.parent.element.removeChild(block.element);
-    
+
     const parent = block.parent;
+    if (block.root.selectedBlock === block) {
+	block.root.selectedBlock = null;
+    }
     block.root = null;
     block.parent = null
-    
+
     emit(parent, "block-order", {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
