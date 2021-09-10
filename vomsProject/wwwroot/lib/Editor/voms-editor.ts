@@ -61,9 +61,14 @@ function insertChildBlock(parent: Block, block: Block, insertAt: number) {
 }
 
 export function moveBlock(block: Block, toBlock: Block, insertAt: number) {
-    var blockIndex = block.parent.blocks.indexOf(block);
+    let fromBlock = block.parent;
+    let blockIndex = block.parent.blocks.indexOf(block);
     block.parent.blocks.splice(blockIndex, 1);
     insertChildBlock(toBlock, block, insertAt);
+    emit(fromBlock, "block-order", {
+	type: EditorEventType.BlockOrderChange,
+	blockOrderChange: {}
+    });
     emit(toBlock, "block-order", {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
