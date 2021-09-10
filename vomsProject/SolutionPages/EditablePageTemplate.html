@@ -79,8 +79,11 @@
                 Publish
             </button>
         </li>
-        <li class="voms-hideable" data-bind="css: { show: isPublished() }, disable: isDeleted">
-            <button data-bind="click: unpublish">Unpublish</button>
+        <li class="voms-hideable" data-bind="css: { show: isPublished() }">
+            <button data-bind="disable: isDeleted, click: unpublish">Unpublish</button>
+        </li>
+        <li>
+            <button data-bind="disable: isLayoutSaved, click: savePageLayout">Save layout</button>
         </li>
         <li class="voms-hideable" data-bind="css: { show: isPublished() }">
             <button data-bind="disable: (isSaved() && isPublishedVersion()) || isDeleted(),
@@ -146,14 +149,6 @@
             </button>
         </li>
     </ul>
-    <header>
-        {{{ header }}}
-    </header>
-    <main id="page">
-    </main>
-    <footer>
-        {{{ footer }}}
-    </footer>
     <script src="/lib/jquery/dist/jquery.min.js"></script>
     <script src="/lib/knockout/knockout-3.5.1.js"></script>
     <script type="module">
@@ -163,20 +158,35 @@
         } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
         var viewModel = {
+            // Is the content in the editor the same as the saved content of the current version.
             isSaved: ko.observable(true),
+            // Are additonal properties of the page the same as the saved ones.
             arePropertiesSaved: ko.observable(true),
+            // Text to use as the page title. This value will be send to the server when the properties are saved.
             title: ko.observable("{{ title }}"),
+            // The id of the latest saved version.
             savedVersion: ko.observable({{ savedVersion }}),
+            // The date and time were the latest version was saved.
             savedDate: ko.observable("{{ savedDate }}"),
+            // The version that was last loaded into the editor.
             currentVersion: ko.observable({{ savedVersion }}),
+            // Whether the page is currently published.
             isPublished: ko.observable({{ isPublished }}),
+            // The id of the version that was published.
             publishedVersion: ko.observable({{ publishedVersion }}),
+            // The date and time were the page was published.
             publishedDate: ko.observable("{{ publishedDate }}"),
+            // Wheter to show the side menu.
             showMenu: ko.observable(false),
+            // Wheter to show the version history.
             showVersionHistory: ko.observable(false),
+            // To control what side the side menu is on.
             isMenuLeft: ko.observable(false),
+            // Has the page been deleted.
             isDeleted: ko.observable(false),
+            // Has the page been deleted and replaced by an other page.
             hasBeenReplaced: ko.observable(false),
+            // The version history.
             versions: ko.observableArray([
                 // {{#versions}}
                 {
@@ -184,8 +194,12 @@
                     saveDate: "{{ saveDate }}"
                 },
                 // {{/versions}}
-            ])
+            ]),
+            layoutSavedDate: ko.observable("{{ layoutSaveDate }}"),
+            isLayoutSaved: ko.observable(true)
         };
+
+        // update the arePropertiesSaved when the title change.
         viewModel.title.subscribe(function () {
             viewModel.arePropertiesSaved(false);
         });
@@ -225,23 +239,58 @@
             viewModel.isMenuLeft(!viewModel.isMenuLeft());
         }
 
-        var page = document.getElementById("page");
-        var editor = makeEditor(page);
+        var editor = makeEditor(document.body);
 
         loadContent(editor, {{{ content }}});
 
+        var mainContent = null;
+        var headerContent = null;
+        var footerContent = null;
+        for (var i = 0; i < editor.blocks.length; i++) {
+            switch (editor.blocks[i].tagType) {
+                case "main":
+                    mainContent = editor.blocks[i];
+                    break;
+                case "header":
+                    headerContent = editor.blocks[i];
+                    break;
+                case "footer":
+                    footerContent = editor.blocks[i];
+                    break;
+            }
+        }
+
         // Function bind to any change of the content. Set status to not saved.
-        function onChange() {
-            unsubscribe(editor, "block-order", onChange);
-            unsubscribe(editor, "text-change", onChange);
+        function onMainContentChange() {
+            unsubscribe(mainContent, "block-order", onMainContentChange);
+            unsubscribe(mainContent, "text-change", onMainContentChange);
             viewModel.isSaved(false);
+        }
+
+         // Function bind to any change of the content. Set status to not saved.
+        function onLayoutContentChange() {
+            unsubscribe(headerContent, "block-order", onLayoutContentChange);
+            unsubscribe(headerContent, "text-change", onLayoutContentChange);
+            unsubscribe(footerContent, "block-order", onLayoutContentChange);
+            unsubscribe(footerContent, "text-change", onLayoutContentChange);
+            viewModel.isLayoutSaved(false);
         }
 
         // When entering a saved state add an event listener to changes.
         ko.computed(function () {
             if (viewModel.isSaved()) {
-                subscribe(editor, "block-order", onChange);
-                subscribe(editor, "text-change", onChange);
+                subscribe(mainContent, "block-order", onMainContentChange);
+                subscribe(mainContent, "text-change", onMainContentChange);
+            }
+        });
+
+        // When entering a saved state add an event listener to changes.
+        ko.computed(function () {
+            if (viewModel.isLayoutSaved()) {
+                subscribe(headerContent, "block-order", onLayoutContentChange);
+                subscribe(headerContent, "text-change", onLayoutContentChange);
+                subscribe(footerContent, "block-order", onLayoutContentChange);
+                subscribe(footerContent, "text-change", onLayoutContentChange);
             }
         });
 
@@ -308,10 +357,7 @@
                 type: "POST",
                 url: "/api/page/{{{ id }}}/Publish",
                 contentType: "application/json",
-                data: JSON.stringify({
-                    content: getContent(editor),
-                    html: page.innerHTML
-                }),
+                data: JSON.stringify(getContent(editor)),
                 success: function (saveResult) {
                     whenSaved(saveResult);
                     viewModel.publishedVersion(saveResult.latestVersion);
@@ -333,6 +379,20 @@
             });
         }
 
+        // Save the layout content
+        viewModel.savePageLayout = function () {
+            $.ajax({
+                type: "POST",
+                url: "/api/page/{{{ id }}}/layout/update",
+                contentType: "application/json",
+                data: JSON.stringify(getContent(editor)),
+                success: function (saveResult) {
+                    viewModel.layoutSavedDate(saveResult.saveDate);
+                    viewModel.isLayoutSaved(true);
+                }
+            });
+        }
+
         // Load the version belonging by id.
         function getVersion(id) {
             if (viewModel.isSaved() && viewModel.currentVersion() !== id) {
@@ -345,12 +405,11 @@
                         viewModel.currentVersion(content.id);
 
                         // Do not react to the change event while setting the content.
-
-                        unsubscribe(editor, "block-order", onChange);
-                        unsubscribe(editor, "text-change", onChange);
-                        loadContent(editor, JSON.parse(content.content));
-                        subscribe(editor, "block-order", onChange);
-                        subscribe(editor, "text-change", onChange);
+                        unsubscribe(editor, "block-order", onMainContentChange);
+                        unsubscribe(editor, "text-change", onMainContentChange);
+                        loadContent(mainContent, JSON.parse(content.content));
+                        subscribe(editor, "block-order", onMainContentChange);
+                        subscribe(editor, "text-change", onMainContentChange);
                     }
                 });
             } else {
@@ -424,13 +483,14 @@
                 if (move.parent.blocks.length === index) {
                     if (move.parent.parent != null) {
                         parent = move.parent.parent;
-                        index = move.parent.parent.blocks.indexOf(move) + 1;
+                        index = move.parent.parent.blocks.indexOf(move.parent) + 1;
                     } else {
                         parent = move.parent;
                         index = 0;
                     }
                 } else if (move.parent.blocks[index].type === BlockType.Container) {
                     parent = move.parent.blocks[index];
+                    index = 0;
                 } else {
                     parent = move.parent;
                 }

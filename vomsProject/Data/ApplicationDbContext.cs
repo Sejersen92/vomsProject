@@ -40,6 +40,10 @@ namespace vomsProject.Data
                .HasMany(s => s.Layouts)
                .WithOne()
                .OnDelete(DeleteBehavior.Cascade);
+            modelBuilder.Entity<Solution>()
+               .HasOne(s => s.DefaultLayout)
+               .WithOne()
+               .OnDelete(DeleteBehavior.NoAction);
 
             modelBuilder.Entity<Solution>()
                 .Property(x => x.StylesheetCustomization)

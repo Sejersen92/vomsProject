@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -74,6 +75,7 @@ namespace vomsProject.Controllers
                             IsPublished = false,
                             Solution = theSolution,
                             IsDeleted = false,
+                            Layout = await solution.Select(solution => solution.DefaultLayout).FirstOrDefaultAsync()
                         };
                         Context.Add(page);
                         await Context.SaveChangesAsync();
@@ -83,20 +85,22 @@ namespace vomsProject.Controllers
                         id = content.Id,
                         saveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
                     }).ToListAsync();
+
+                    var content = PageContentUtil.ConstructPageContent(page);
+
                     return new EditablePageResult(new EditablePageModel()
                     {
                         id = page.Id,
-                        content = page.LastSavedVersion != null ? page.LastSavedVersion.Content : "{ops:[]}",
+                        content = JsonConvert.SerializeObject(content),
                         title = page.Title,
-                        header = page.Layout != null ? page.Layout.HeaderContent : "",
-                        footer = page.Layout != null ? page.Layout.FooterContent : "",
                         isPublished = page.IsPublished ? "true" : "false",
                         publishedVersion = page.PublishedVersion != null ? page.PublishedVersion.Id.ToString() : "null",
                         publishedDate = page.PublishedVersion != null ? page.PublishedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
                         savedVersion = page.LastSavedVersion != null ? page.LastSavedVersion.Id.ToString() : "null",
                         savedDate = page.LastSavedVersion != null ? page.LastSavedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
                         versions = versions,
-                        styleVariables = theSolution.SerializedStylesheet
+                        styleVariables = theSolution.SerializedStylesheet,
+                        layoutSaveDate = page.Layout != null ? page.Layout.SaveDate.ToString("yyyy-MM-dd HH:mm") : ""
                     });
                 }
             }

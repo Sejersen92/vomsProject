@@ -95,11 +95,25 @@ namespace vomsProject.Controllers
 
                 if (numberOfSolutions < maxSolutions)
                 {
+                    var defaultLayout = new Layout()
+                    {
+                        Name = "Default layout",
+                        HeaderEditableContent = "[]",
+                        HeaderContent = "",
+                        FooterEditableContent = "[]",
+                        FooterContent = "",
+                        SaveDate = DateTime.UtcNow,
+                        SavedBy = user
+                    };
+
                     var project = new Solution()
                     {
                         Subdomain = title,
-                        Style = style
+                        Style = style,
+                        DefaultLayout = defaultLayout
                     };
+
+                    project.Layouts.Add(defaultLayout);
 
                     _dbContext.Permissions.Add(new Permission
                     {

@@ -9,27 +9,13 @@ using System.Linq;
 using System.Threading.Tasks;
 using vomsProject.Data;
 using vomsProject.Helpers;
+using static vomsProject.Helpers.OperationsService;
 
 /*
  This controller is the api used to manage pages.
  */
 namespace vomsProject.Controllers.Api
 {
-    /// <summary>
-    /// Dto used to publish a page.
-    /// </summary>
-    public class PublishDto
-    {
-        public PublishDto(string html, object content)
-        {
-            Html = html;
-            Content = content;
-        }
-
-        public object Content { get; private set; }
-        public string Html { get; private set; }
-    }
-
     /// <summary>
     /// Dto used to change the which version is the latest.
     /// </summary>
@@ -59,102 +45,81 @@ namespace vomsProject.Controllers.Api
         private readonly ApplicationDbContext _context;
         private readonly RepositoryService Repository;
         private readonly UserManager<User> UserManager;
-        public PageController(ApplicationDbContext context, RepositoryService repository, UserManager<User> userManager)
+        private readonly OperationsService Operations;
+        public PageController(ApplicationDbContext context, RepositoryService repository, UserManager<User> userManager, OperationsService operations)
         {
             _context = context;
             Repository = repository;
             UserManager = userManager;
+            Operations = operations;
         }
 
         /// <summary>
         /// Save a new version and set it as the latest version.
         /// </summary>
         /// <param name="id">The id of the page</param>
-        /// <param name="body">The quill delta</param>
+        /// <param name="body">The content from the editor</param>
         /// <returns></returns>
         [Authorize]
         [Route("{id}/update")]
         [HttpPost]
         public async Task<IActionResult> Update(int id, [FromBody] object body)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+
+                var content = await Operations.UpdatePageContent(user, solution, id, body.ToString(), false);
+
+                if (content != null)
+                {
+                    return Ok(new SaveResult
+                    {
+                        LatestVersion = content.Id,
+                        SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+                return NotFound();
+            }
+            catch (ForbittenException)
             {
                 return Forbid();
             }
-
-            var page = await Repository.Pages(solution)
-                .Include(page => page.Versions)
-                .FirstOrDefaultAsync(page => page.Id == id);
-            if (page == null)
-            {
-                return NotFound();
-            }
-            var content = new PageContent()
-            {
-                Content = body.ToString(),
-                SavedBy = user,
-                SaveDate = DateTime.UtcNow,
-                Page = page
-            };
-            page.Versions.Add(content);
-            page.LastSavedVersion = content;
-
-            await _context.SaveChangesAsync();
-            return Ok(new SaveResult 
-            { 
-                LatestVersion = content.Id,
-                SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
-            });
         }
 
         /// <summary>
         /// Publish and Save a new version. Also set this version as the the latest version.
         /// </summary>
         /// <param name="id">The id of the page</param>
-        /// <param name="body">The published version including The quill delta and, the rendered html</param>
+        /// <param name="body">The content from the editor</param>
         /// <returns></returns>
         [Authorize]
         [Route("{id}/publish")]
         [HttpPost]
-        public async Task<IActionResult> Publish(int id, [FromBody] PublishDto body)
+        public async Task<IActionResult> Publish(int id, [FromBody] object body)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+
+                var content = await Operations.PublishPage(user, solution, id, body.ToString());
+
+                if (content != null)
+                {
+                    return Ok(new SaveResult
+                    {
+                        LatestVersion = content.Id,
+                        SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+                return NotFound();
+            }
+            catch (ForbittenException)
             {
                 return Forbid();
             }
-
-            var page = await Repository.Pages(solution)
-                .Include(page => page.Versions)
-                .FirstOrDefaultAsync(page => page.Id == id);
-            if (page == null)
-            {
-                return NotFound();
-            }
-            var content = new PageContent()
-            {
-                Content = body.Content.ToString(),
-                SavedBy = user,
-                SaveDate = DateTime.UtcNow,
-                Page = page
-            };
-            page.Versions.Add(content);
-            page.LastSavedVersion = content;
-            page.PublishedVersion = content;
-            page.HtmlRenderContent = body.Html;
-            page.IsPublished = true;
-
-            await _context.SaveChangesAsync();
-            return Ok(new SaveResult 
-            { 
-                LatestVersion = content.Id,
-                SaveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
-            });
         }
 
         /// <summary>
@@ -167,31 +132,61 @@ namespace vomsProject.Controllers.Api
         [HttpPost]
         public async Task<IActionResult> UnPublish(int id)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+
+                var page = await Operations.UnpublishPage(user, solution, id);
+
+                if (page != null)
+                {
+                    return Ok();
+                }
+                return NotFound();
+            }
+            catch (ForbittenException)
             {
                 return Forbid();
             }
-
-            var page = await Repository.Pages(solution)
-                .FirstOrDefaultAsync(page => page.Id == id);
-            if (page == null)
-            {
-                return NotFound();
-            }
-
-            page.PublishedVersion = null;
-            page.HtmlRenderContent = "";
-            page.IsPublished = false;
-
-            await _context.SaveChangesAsync();
-            return Ok();
         }
 
         /// <summary>
-        /// Get the quill delta for a specified version.
+        /// Set the publish status as false.
+        /// </summary>
+        /// <param name="id">The id of the page with the layout to update</param>
+        /// <param name="body">The content from the editor</param>
+        /// <returns></returns>
+        [Authorize]
+        [Route("{id}/layout/update")]
+        [HttpPost]
+        public async Task<IActionResult> UpdatePageLayout(int id, [FromBody] object body)
+        {
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+                
+                var layout = await Operations.UpdatePageLayout(user, solution, id, body.ToString());
+                
+                if (layout != null)
+                {
+                    return Ok(new SaveResult
+                    {
+                        LatestVersion = layout.Id,
+                        SaveDate = layout.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                    });
+                }
+                return NotFound();
+            }
+            catch (ForbittenException)
+            {
+                return Forbid();
+            }
+        }
+
+        /// <summary>
+        /// Get the editor content for a specified version.
         /// </summary>
         /// <param name="id">The id of the page</param>
         /// <param name="versionId">The id of the version</param>
@@ -201,25 +196,23 @@ namespace vomsProject.Controllers.Api
         [HttpGet]
         public async Task<IActionResult> GetVersion(int id, int versionId)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+
+                var content = await Operations.GetPageContentVersion(user, solution, id, versionId);
+
+                if (content != null)
+                {
+                    return Ok(content);
+                }
+                return NotFound();
+            }
+            catch (ForbittenException)
             {
                 return Forbid();
-            }
-
-            var content = await Repository.Pages(solution)
-                .Where(page => page.Id == id)
-                .SelectMany(page => page.Versions)
-                .Where(version => version.Id == versionId)
-                .FirstOrDefaultAsync();
-
-            if (content != null)
-            {
-                return Ok(content);
-            }
-            return NotFound();
+            }            
         }
 
         /// <summary>

@@ -15,8 +15,6 @@ namespace vomsProject.SolutionPages
         public int id;
         public string content;
         public string title;
-        public string header;
-        public string footer;
         public string isPublished;
         public string publishedVersion;
         public string publishedDate;
@@ -24,5 +22,6 @@ namespace vomsProject.SolutionPages
         public string savedDate;
         public IEnumerable<Version> versions;
         public string styleVariables { get; set; }
+        public string layoutSaveDate;
     }
 }
