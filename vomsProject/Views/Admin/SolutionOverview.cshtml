@@ -175,6 +175,26 @@
                                         </select>
                                     </div>
                                     break;
+                                case "div":
+                                    <div class="input-group mb-2">
+                                        <label class="form-label" for="@customization.VariableName">Select your div-font</label>
+                                        <select class="form-select" aria-label="Header div picker" name="@customization.VariableName" id="@customization.VariableName">
+
+                                            @foreach (var font in Model.Fonts)
+                                            {
+                                                if (font == customization.Value)
+                                                {
+                                                    <option selected="selected" value="@font">@font</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@font">@font</option>
+                                                }
+                                            }
+
+                                        </select>
+                                    </div>
+                                    break;
                             }
                         }
                         <div style="display: none">
@@ -198,7 +218,7 @@
             </thead>
             <tbody>
                 @foreach (var permission in Model.Solution.Permissions)
-                {
+                            {
                     <tr>
                         <th scope="row">@(permission.User.Nickname ?? "N/A")</th>
                         <td class="">@permission.User.UserName</td>

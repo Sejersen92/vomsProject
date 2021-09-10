@@ -198,7 +198,7 @@ namespace vomsProject.Controllers
                     "Calibri",
                     "Arial",
                     "Times New Roman",
-                    "Comic sans"
+                    "Comic Sans MS"
                 },
                 StylesheetCustomizations = options
             };
@@ -507,17 +507,49 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> SetStyleVariables(IFormCollection variables)
         {
             int solutionId = int.Parse(variables["id"]);
-            var solution = await Repository.GetSolutionById(solutionId).FirstOrDefaultAsync();
-            var sb = new StringBuilder();
+            var solution = await Repository.GetSolutionById(solutionId)
+                .Include(x => x.Style).FirstOrDefaultAsync();
+            var stylesheetCustomizationStringBuilder = new StringBuilder();
+            var serializedStylesheetStringBuilder = new StringBuilder();
+
+            var stylesheetKeyValue = new Dictionary<string, string>();
+            var options = solution.Style.StylesheetOptions.Split(';');
+
+            foreach (var option in options)
+            {
+                var keyValue = option.Split(',');
+                if (keyValue.Length == 3)
+                {
+                    stylesheetKeyValue.Add(keyValue[0], keyValue[2]);
+                }
+            }
+
+
+            serializedStylesheetStringBuilder.Append(":root{");
             foreach (var variable in variables)
             {
                 if (variable.Key == "__RequestVerificationToken" || variable.Key == "id")
                 {
                     continue;
                 }
-                sb.Append($"{variable.Key}:{variable.Value};");
+                stylesheetCustomizationStringBuilder.Append($"{variable.Key}:{variable.Value};");
+
+                if (!stylesheetKeyValue.TryGetValue(variable.Key, out var type))
+                {
+                    return BadRequest();
+                }
+                if (type == "font")
+                {
+                    serializedStylesheetStringBuilder.Append($"--{variable.Key}: \"{variable.Value}\";");
+                }
+                else
+                {
+                    serializedStylesheetStringBuilder.Append($"--{variable.Key}: {variable.Value};");
+                }
             }
-            solution.StylesheetCustomization = sb.ToString();
+            serializedStylesheetStringBuilder.Append('}');
+            solution.StylesheetCustomization = stylesheetCustomizationStringBuilder.ToString();
+            solution.SerializedStylesheet = serializedStylesheetStringBuilder.ToString();
             await _dbContext.SaveChangesAsync();
 
             return RedirectToAction("SolutionOverview", new { id = solutionId });

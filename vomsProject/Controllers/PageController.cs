@@ -53,12 +53,11 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> Index(string pageName)
         {
             pageName ??= "";
-            var userTask = UserManager.GetUserAsync(HttpContext.User);
+            var user = await UserManager.GetUserAsync(HttpContext.User);
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
-            var user = await userTask;
+            var theSolution = await solution.SingleOrDefaultAsync();
             if (user != null)
             {
-                var theSolution = await solution.SingleOrDefaultAsync();
                 if (theSolution != null && await _solutionHelper.IsUserOnSolution(theSolution, user))
                 {
                     var page = await _solutionHelper.PageQuery(solution, pageName)
@@ -96,7 +95,8 @@ namespace vomsProject.Controllers
                         publishedDate = page.PublishedVersion != null ? page.PublishedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
                         savedVersion = page.LastSavedVersion != null ? page.LastSavedVersion.Id.ToString() : "null",
                         savedDate = page.LastSavedVersion != null ? page.LastSavedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
-                        versions = versions
+                        versions = versions,
+                        styleVariables = theSolution.SerializedStylesheet
                     });
                 }
             }
@@ -111,16 +111,16 @@ namespace vomsProject.Controllers
                     content = publishedPage.HtmlRenderContent,
                     title = publishedPage.Title,
                     header = publishedPage.Layout != null ? publishedPage.Layout.HeaderContent : "",
-                    footer = publishedPage.Layout != null ? publishedPage.Layout.FooterContent : ""
+                    footer = publishedPage.Layout != null ? publishedPage.Layout.FooterContent : "",
+                    styleVariables = theSolution.SerializedStylesheet
                 });
             }
-            var theSolution1 = await solution.SingleOrDefaultAsync();
-            if (theSolution1 != null)
+            if (theSolution != null)
             {
                 return new Status404PageResult(new Page404Model()
                 {
                     // TODO: Could we get a better name?
-                    solutionName = theSolution1.Subdomain,
+                    solutionName = theSolution.Subdomain,
                     message = "Make sure you typed the url correctly."
                 });
             }

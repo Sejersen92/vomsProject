@@ -3,15 +3,17 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using vomsProject.Data;
 
 namespace vomsProject.Data.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210910084521_Added a div configuration to our seed data")]
+    partial class Addedadivconfigurationtoourseeddata
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -392,7 +394,7 @@ namespace vomsProject.Data.Migrations
                             Id = 1,
                             Css = "* \r\n                        {box-sizing: border-box;} \r\n                            body {font-family: sans-serif;}",
                             Name = "Style 1",
-                            StylesheetOptions = "buttonColor,The color of the button,color;headerFont,header Font,font;divDesign,This will affect all divs,font"
+                            StylesheetOptions = "buttonColor,The color of the button,color;headerFont,header Font,font;divDesign,This will affect all divs,div"
                         });
                 });
 

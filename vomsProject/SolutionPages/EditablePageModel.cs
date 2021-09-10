@@ -23,5 +23,6 @@ namespace vomsProject.SolutionPages
         public string savedVersion;
         public string savedDate;
         public IEnumerable<Version> versions;
+        public string styleVariables { get; set; }
     }
 }

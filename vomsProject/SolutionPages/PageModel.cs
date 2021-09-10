@@ -11,5 +11,6 @@ namespace vomsProject.SolutionPages
         public string title;
         public string header;
         public string footer;
+        public string styleVariables { get; set; }
     }
 }
