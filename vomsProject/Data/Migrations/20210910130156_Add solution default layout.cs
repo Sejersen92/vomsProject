@@ -8,12 +8,14 @@ namespace vomsProject.Data.Migrations
         {
             migrationBuilder.Sql(@"
 INSERT INTO  [dbo].[Layouts]
-SELECT TOP (1) 'Default layout', '[]', '', '[]', '', SYSUTCDATETIME(), [UserId], [Solutions].[Id] AS [SolutionId] FROM  [VOMS].[dbo].[Solutions]
+SELECT 'Default layout', '[]', '', '[]', '', SYSUTCDATETIME(), [UserId], [Solutions].[Id] AS [SolutionId] FROM  [dbo].[Solutions]
 INNER JOIN
-[dbo].[Permissions]
-ON [SolutionId] = [dbo].[Solutions].[Id]
-WHERE [PermissionLevel] = 0
-");
+(SELECT * FROM [dbo].[Permissions] WHERE [Id] IN (
+	SELECT MIN([Id])
+	FROM [dbo].[Permissions] 
+	WHERE [PermissionLevel] = 0
+	GROUP BY [SolutionId])) AS [Permissions]
+ON [SolutionId] = [dbo].[Solutions].[Id]");
 
             migrationBuilder.AddColumn<int>(
                 name: "DefaultLayoutId",
