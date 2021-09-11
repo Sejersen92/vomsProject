@@ -72,7 +72,7 @@ namespace vomsProject.Controllers
             var maxSolutions = 0;
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var productVersion = user.ProductVersion;
-            var style = await _dbContext.Styles.FirstOrDefaultAsync();
+            var style = await _dbContext.Styles.OrderBy((style) => style.Id).FirstOrDefaultAsync();
 
             switch (productVersion)
             {
@@ -111,10 +111,13 @@ namespace vomsProject.Controllers
                     {
                         Subdomain = title,
                         Style = style,
-                        DefaultLayout = defaultLayout
+                        StylesheetCustomization = "",
+                        SerializedStylesheet = "",
+                        Layouts = new List<Layout>()
+                        {
+                            defaultLayout
+                        },
                     };
-
-                    project.Layouts.Add(defaultLayout);
 
                     _dbContext.Permissions.Add(new Permission
                     {
@@ -123,7 +126,13 @@ namespace vomsProject.Controllers
                         Solution = project
                     });
 
+                    // Save changes twice to avoid circular dependencies
                     await _dbContext.SaveChangesAsync();
+
+                    project.DefaultLayout = defaultLayout;
+
+                    await _dbContext.SaveChangesAsync();
+
                     await dbContextTransaction.CommitAsync();
 
                     return RedirectToAction("Index");

@@ -20,7 +20,7 @@ namespace vomsProject.Data
         public ICollection<Permission> Permissions { get; set; }
         public ICollection<Image> Images { get; set; }
         public ICollection<Layout> Layouts { get; set; }
-        public int DefaultLayoutId { get; set; }
+        public int? DefaultLayoutId { get; set; }
         public Layout DefaultLayout { get; set; }
         public int? StyleId { get; set; }
         public Style Style { get; set; }
