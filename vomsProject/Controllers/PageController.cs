@@ -45,6 +45,54 @@ namespace vomsProject.Controllers
             _domainHelper = domainHelper;
             JwtService = jwtService;
         }
+        public static IEnumerable<FaviconModel> GetSolutionFavicons(Solution solution)
+        {
+            var favicons = new List<FaviconModel>();
+            if (solution == null)
+            {
+                return favicons;
+            }
+            string extension = null;
+            switch (solution.FaviconMimeType)
+            {
+                case "image/vnd.microsoft.icon":
+                case "image/x-icon":
+                    extension = ".ico";
+                    break;
+                case "image/gif":
+                    extension = ".gif";
+                    break;
+                case "image/png":
+                    extension = ".png";
+                    break;
+                case "image/svg+xml":
+                    extension = ".svg";
+                    break;
+            }
+
+            if (extension != null)
+            {
+                favicons.Add(new FaviconModel()
+                {
+                    fileName = "/favicon" + extension,
+                    mimeType = solution.FaviconMimeType
+                });
+            }
+            return favicons;
+        }
+        private static IActionResult NotFound(Solution solution, string message)
+        {
+            return new Status404PageResult(new Page404Model()
+            {
+                solutionName = solution == null
+                    ? "Non existing website"
+                    : (!string.IsNullOrWhiteSpace(solution.FriendlyName)
+                        ? solution.FriendlyName
+                        : solution.Subdomain),
+                message = message,
+                favicons = GetSolutionFavicons(solution)
+            });
+        }
 
         /// <summary>
         /// This is the page dispatcher. Each request for a page on a solution is looked up by this handler.
@@ -100,7 +148,8 @@ namespace vomsProject.Controllers
                         savedDate = page.LastSavedVersion != null ? page.LastSavedVersion.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
                         versions = versions,
                         styleVariables = theSolution.SerializedStylesheet,
-                        layoutSaveDate = page.Layout != null ? page.Layout.SaveDate.ToString("yyyy-MM-dd HH:mm") : ""
+                        layoutSaveDate = page.Layout != null ? page.Layout.SaveDate.ToString("yyyy-MM-dd HH:mm") : "",
+                        favicons = GetSolutionFavicons(theSolution)
                     });
                 }
             }
@@ -116,25 +165,17 @@ namespace vomsProject.Controllers
                     title = publishedPage.Title,
                     header = publishedPage.Layout != null ? publishedPage.Layout.HeaderContent : "",
                     footer = publishedPage.Layout != null ? publishedPage.Layout.FooterContent : "",
-                    styleVariables = theSolution.SerializedStylesheet
+                    styleVariables = theSolution.SerializedStylesheet,
+                    favicons = GetSolutionFavicons(theSolution)
                 });
             }
             if (theSolution != null)
             {
-                return new Status404PageResult(new Page404Model()
-                {
-                    // TODO: Could we get a better name?
-                    solutionName = theSolution.Subdomain,
-                    message = "Make sure you typed the url correctly."
-                });
+                return NotFound(theSolution, "Make sure you typed the url correctly.");
             }
             else
             {
-                return new Status404PageResult(new Page404Model()
-                {
-                    solutionName = "Non existing website",
-                    message = $"There is no website on the requested domain: {Request.Host.Host}."
-                });
+                return NotFound(null, $"There is no website on the requested domain: {Request.Host.Host}.");
             }
         }
 
@@ -146,9 +187,31 @@ namespace vomsProject.Controllers
         {
             var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
             var style = await solution.Include(solution => solution.Style).Select(solution => solution.Style).SingleOrDefaultAsync();
+            var theSolution = await solution.FirstOrDefaultAsync();
+            if (style == null)
+            {
+                return NotFound(theSolution, "We could not find the style sheet for this solution.");
+            }
 
             return new FileContentResult(Encoding.UTF8.GetBytes(style != null ? style.Css : ""), "text/css");
         }
+
+        /// <summary>
+        /// Return the favicon for a solution.
+        /// </summary>
+        /// <returns></returns>
+        public async Task<IActionResult> Favicon(string ext)
+        {
+            var solution = await _solutionHelper.GetSolutionByDomainName(Request.Host.Host)
+                .FirstOrDefaultAsync();
+            if (solution.Favicon == null)
+            {
+                return NotFound(solution, "We could not find a favicon for this solution.");
+            }
+
+            return new FileContentResult(solution.Favicon, solution.FaviconMimeType);
+        }
+
         /// <summary>
         /// Log in a user on the solution. On success redirect to index page. On failure redirect to the CMS page.
         /// </summary>

@@ -240,7 +240,7 @@ namespace vomsProject.Helpers
         /// <param name="favicon"></param>
         /// <returns></returns>
         public async Task UpdateSolution(User user, IQueryable<Solution> solution, string friendlyName, string domainName, int stylesheet
-            , byte[] favicon = null)
+            , string faviconMimeType = null, byte[] favicon = null)
         {
             var theSolution = await solution.SingleOrDefaultAsync();
 
@@ -251,7 +251,11 @@ namespace vomsProject.Helpers
 
             theSolution.Domain = domainName;
             theSolution.FriendlyName = friendlyName;
-            theSolution.Favicon = favicon;
+            if (favicon != null && faviconMimeType != null)
+            {
+                theSolution.FaviconMimeType = faviconMimeType;
+                theSolution.Favicon = favicon;
+            }
 
             theSolution.StyleId = stylesheet;
             await _context.SaveChangesAsync();

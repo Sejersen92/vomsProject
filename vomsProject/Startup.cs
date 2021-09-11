@@ -95,6 +95,10 @@ namespace vomsProject
                 {
                     endpoints.MapControllerRoute(
                         name: "Style",
+                        pattern: "/favicon.{ext}",
+                        defaults: new { controller = "Page", action = "Favicon" });
+                    endpoints.MapControllerRoute(
+                        name: "Style",
                         pattern: "/Style.css",
                         defaults: new { controller = "Page", action = "Style" });
                     endpoints.MapControllerRoute(

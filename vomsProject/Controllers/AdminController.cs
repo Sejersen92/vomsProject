@@ -16,6 +16,7 @@ using System.IdentityModel.Tokens.Jwt;
 using System.Text;
 using System.IO;
 using Microsoft.AspNetCore.Http;
+using static vomsProject.Helpers.OperationsService;
 
 namespace vomsProject.Controllers
 {
@@ -234,30 +235,34 @@ namespace vomsProject.Controllers
         public async Task<IActionResult> UpdateSolution(int stylesheet, int solutionId, string friendlyName = null, string domainName = null,
             List<IFormFile> favicon = null)
         {
-            var user = await UserManager.GetUserAsync(HttpContext.User);
-            var theSolution = Repository.GetSolutionById(solutionId);
-            byte[] fileBytes;
-
-            foreach (var file in favicon)
+            try
             {
-                if (file.Length > 0)
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var theSolution = Repository.GetSolutionById(solutionId);
+                if (favicon != null && favicon.Count > 0)
                 {
+
+                    byte[] fileBytes;
+                    var file = favicon.First();
+
                     using (var ms = new MemoryStream())
                     {
                         await file.CopyToAsync(ms);
                         fileBytes = ms.ToArray();
                     }
-                    await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet, fileBytes);
+                    await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet, file.ContentType, fileBytes);
                 }
                 else
                 {
                     await _operationsService.UpdateSolution(user, theSolution, friendlyName, domainName, stylesheet);
                 }
+
+                return RedirectToAction("Index");
             }
-
-
-
-            return RedirectToAction("Index");
+            catch (ForbittenException)
+            {
+                return Forbid();
+            }
         }
 
         /// <summary>
@@ -513,7 +518,7 @@ namespace vomsProject.Controllers
             if (solution.Favicon == null)
                 return NotFound();
 
-            return new FileContentResult(solution.Favicon, "image/png");
+            return new FileContentResult(solution.Favicon, solution.FaviconMimeType);
         }
 
         [Authorize]

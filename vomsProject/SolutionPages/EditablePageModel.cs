@@ -23,5 +23,6 @@ namespace vomsProject.SolutionPages
         public IEnumerable<Version> versions;
         public string styleVariables { get; set; }
         public string layoutSaveDate;
+        public IEnumerable<FaviconModel> favicons;
     }
 }

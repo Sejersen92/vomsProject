@@ -3,6 +3,9 @@
 <head>
     <meta charset="utf-8" />
     <title>{{ solutionName }} - Page not found</title>
+    {{#favicons}}
+    <link rel="icon" type="{{mimeType}}" href="{{fileName}}"/>
+    {{/favicons}}
 </head>
 <body>
     <h1>404 Page not found</h1>

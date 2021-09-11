@@ -25,6 +25,7 @@ namespace vomsProject.Data
         public int? StyleId { get; set; }
         public Style Style { get; set; }
         public string FriendlyName { get; set; }
+        public string FaviconMimeType { get; set; }
         public byte[] Favicon { get; set; }
 
         //Style customizations:

@@ -12,5 +12,6 @@ namespace vomsProject.SolutionPages
         public string header;
         public string footer;
         public string styleVariables { get; set; }
+        public IEnumerable<FaviconModel> favicons;
     }
 }

@@ -5,10 +5,9 @@ using System.Threading.Tasks;
 
 namespace vomsProject.SolutionPages
 {
-    public class Page404Model
+    public class FaviconModel
     {
-        public string solutionName;
-        public string message;
-        public IEnumerable<FaviconModel> favicons;
+        public string fileName;
+        public string mimeType;
     }
 }

@@ -16,6 +16,9 @@
         {{{styleVariables}}}
     </style>
     <link rel="stylesheet" href="/css/EditablePageUI.css" />
+    {{#favicons}}
+    <link rel="icon" type="{{mimeType}}" href="{{fileName}}" />
+    {{/favicons}}
 </head>
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
     <ul id="voms-tools" class="voms-menu voms-horizontal" data-bind="using: tools">
