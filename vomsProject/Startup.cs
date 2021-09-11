@@ -57,10 +57,10 @@ namespace vomsProject
                 app.UseHsts();
             }
             app.UseHttpsRedirection();
-            app.UseStaticFiles();
 
             app.UseWhen(isHostRootDomain, (app) =>
             {
+                app.UseStaticFiles();
                 app.UseRouting();
 
                 app.UseAuthentication();
@@ -78,6 +78,14 @@ namespace vomsProject
             // Here we specify the middleware that are used for solutions.
             app.UseWhen((context) => !isHostRootDomain(context), (app) =>
             {
+                app.UseStaticFiles(new StaticFileOptions() 
+                {
+                    FileProvider = new FilteredFileProvider(env.WebRootFileProvider, (subpath) => {
+                        var segments = subpath.TrimStart('/').Split('/');
+                        return segments[0] == "lib" || segments[0] == "css";
+                    }),
+                    RequestPath = ""
+                });
                 app.UseRouting();
 
                 app.UseAuthentication();
