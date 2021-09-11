@@ -1,183 +1,189 @@
-﻿@model vomsProject.Models.HomePageViewModel
+﻿@using Microsoft.AspNetCore.Identity
+@using vomsProject.Data
+@model vomsProject.Models.HomePageViewModel
 @{
     ViewData["Title"] = "Home Page";
 }
+@inject UserManager<User> UserManager
+@inject SignInManager<User> SignInManager
 
-<div>
-    <div class="container py-4">
-        <header class="pb-3 mb-4 border-bottom">
-            <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
-                <h1>VOMS - Get your CMS on.</h1>
-            </a>
-        </header>
-
-        <div class="p-5 mb-4 bg-light rounded-3">
-            <div class="container-fluid py-5">
-                <h1 class="display-5 fw-bold text-center">Visual Object Management System</h1>
-                <p class="col-md-12 fs-4">VOMS, or Visual Object Management System, is created by Victor Obeling and Mikkel Sejersen as a school project to showcase their abilites within programming. Complete our product-flow below by following the button to get started!</p>
-                <div id="list-example" class="list-group text-center">
-                    <a class="list-group-item list-group-item-action" href="#list-item-1">See our product here</a>
-                </div>
+@if (SignInManager.IsSignedIn(User))
+{
+    <div class="px-4 py-5 my-5 text-center">
+        <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
+        <div class="col-lg-6 mx-auto">
+            <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
+            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
+                <a href="@Url.Action("Index", "Admin")"><i class="fas fa-house-user"> - solutions configuration</i></a>
             </div>
         </div>
+        <div class="col-lg-6 mx-auto mt-5">
 
-        <div class="row align-items-md-stretch">
-            <div class="col-md-6">
-                <div class="h-100 p-5 text-white bg-dark rounded-3">
-                    <h2>Viktor Obeling</h2>
-                    <p>Viktor comes from dnp VisioSign an works a backend developer. </p>
-                </div>
-            </div>
-            <div class="col-md-6">
-                <div class="h-100 p-5 bg-light border rounded-3">
-                    <h2>Mikkel Sejersen</h2>
-                    <p>Mikkel comes from Kraftvaerk A/S as a backend consultant.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-    <div>
-        <h3>Need inspiration for your site? See all of our solutions below!</h3>
+            <h3>Need inspiration for your site? See all of our solutions below!</h3>
 
-        @foreach (var solution in Model.Solutions)
-        {
-            if (solution != null)
+            @foreach (var solution in Model.Solutions)
             {
-                if (User.Identity.IsAuthenticated)
+                if (solution != null)
                 {
-                    <a asp-action="Solution" asp-controller="Preview" asp-route-id="@solution.Id" class="m-2">
+                    <a href="@Url.Action("LoginToSolution", "Admin", new { id = solution.Id, pageName = "" })" class="m-2">
                         <div class="card">
                             <div class="card-header">
                                 <h3 class="card-title">@solution.Subdomain</h3>
                             </div>
-                            <div class="card-body">
-                                @foreach (var permission in solution.Permissions)
-                                {
-                                    <p class="card-text">@permission.User</p>
-                                }
+                            @if (true)
+                            {
 
+                            }
+                            <div class="card-body">
+                                <img onerror="this.style.display='none'" src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = solution.Id }))" style="width: 25rem; height: 25rem" />
                             </div>
-                        </div>
-                    </a>
-                }
-                else
-                {
-                    <a href="@(solution.DestinationUrl)" class="m-2">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">@solution.Subdomain</h3>
-                            </div>
+
                         </div>
                     </a>
                 }
             }
-        }
+        </div>
     </div>
-    <div class="pricing-header p-3 pb-md-4 mx-auto text-center scrollspy-example" data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" tabindex="0">
-        <h1 class="display-4 fw-normal">Pricing</h1>
-        <p class="fs-5 text-muted">Get a overview over what you get right here!</p>
-    </div>
-    <div class="row row-cols-1 row-cols-md-3 mb-3 text-center" id="list-item-1">
-        <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm">
-                <div class="card-header py-3">
-                    <h4 class="my-0 fw-normal">Free</h4>
+}
+else
+{
+    <div>
+        <div class="container py-4">
+            <header class="pb-3 mb-4 border-bottom">
+                <a href="/" class="d-flex align-items-center text-dark text-decoration-none">
+                    <h1>VOMS - Get your CMS on.</h1>
+                </a>
+            </header>
+
+            <div class="p-5 mb-4 bg-light rounded-3">
+                <div class="container-fluid py-5">
+                    <h1 class="display-5 fw-bold text-center">Visual Object Management System</h1>
+                    <p class="col-md-12 fs-4">VOMS, or Visual Object Management System, is created by Victor Obeling and Mikkel Sejersen as a school project to showcase their abilites within programming. Complete our product-flow below by following the button to get started!</p>
+                    <div id="list-example" class="list-group text-center">
+                        <a class="list-group-item list-group-item-action" href="#list-item-1">See our product here</a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">0DKK<small class="text-muted fw-light">/mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>Access to our amazing community</li>
-                        <li>10 users included</li>
-                        <li>Email support</li>
-                    </ul>
-                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Community">Sign up for free</a>
+            </div>
+
+            <div class="row align-items-md-stretch">
+                <div class="col-md-6">
+                    <div class="h-100 p-5 text-white bg-dark rounded-3">
+                        <h2>Viktor Obeling</h2>
+                        <p>Viktor comes from dnp VisioSign an works a backend developer. </p>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="h-100 p-5 bg-light border rounded-3">
+                        <h2>Mikkel Sejersen</h2>
+                        <p>Mikkel comes from Kraftvaerk A/S as a backend consultant.</p>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm">
-                <div class="card-header py-3">
-                    <h4 class="my-0 fw-normal">Pro</h4>
+
+        <div class="pricing-header p-3 pb-md-4 mx-auto text-center scrollspy-example" data-bs-spy="scroll" data-bs-target="#list-example" data-bs-offset="0" tabindex="0">
+            <h1 class="display-4 fw-normal">Pricing</h1>
+            <p class="fs-5 text-muted">Get a overview over what you get right here!</p>
+        </div>
+        <div class="row row-cols-1 row-cols-md-3 mb-3 text-center" id="list-item-1">
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Free</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">0DKK<small class="text-muted fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>Access to our amazing community</li>
+                            <li>10 users included</li>
+                            <li>Email support</li>
+                        </ul>
+                        <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Community">Sign up for free</a>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">99DKK<small class="text-muted fw-light">/mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>20 users included</li>
-                        <li>email support</li>
-                        <li>Help center access</li>
-                    </ul>
-                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Professional">Get started</a>
+            </div>
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm">
+                    <div class="card-header py-3">
+                        <h4 class="my-0 fw-normal">Pro</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">99DKK<small class="text-muted fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>20 users included</li>
+                            <li>email support</li>
+                            <li>Help center access</li>
+                        </ul>
+                        <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Professional">Get started</a>
+                    </div>
+                </div>
+            </div>
+            <div class="col">
+                <div class="card mb-4 rounded-3 shadow-sm border-primary">
+                    <div class="card-header py-3 text-white bg-primary border-primary">
+                        <h4 class="my-0 fw-normal">Enterprise</h4>
+                    </div>
+                    <div class="card-body">
+                        <h1 class="card-title pricing-card-title">499DKK<small class="text-muted fw-light">/mo</small></h1>
+                        <ul class="list-unstyled mt-3 mb-4">
+                            <li>30 users included</li>
+                            <li>Priority phone and email support</li>
+                            <li>Help center access</li>
+                        </ul>
+                        <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Enterprise">Get started</a>
+                    </div>
                 </div>
             </div>
         </div>
-        <div class="col">
-            <div class="card mb-4 rounded-3 shadow-sm border-primary">
-                <div class="card-header py-3 text-white bg-primary border-primary">
-                    <h4 class="my-0 fw-normal">Enterprise</h4>
-                </div>
-                <div class="card-body">
-                    <h1 class="card-title pricing-card-title">499DKK<small class="text-muted fw-light">/mo</small></h1>
-                    <ul class="list-unstyled mt-3 mb-4">
-                        <li>30 users included</li>
-                        <li>Priority phone and email support</li>
-                        <li>Help center access</li>
-                    </ul>
-                    <a class="w-100 btn btn-lg btn-primary" asp-area="Identity" asp-page="/Account/Register" asp-route-productVersion="Enterprise">Get started</a>
-                </div>
-            </div>
+        <h2 class="display-6 text-center mb-4">Compare plans</h2>
+        <div class="table-responsive">
+            <table class="table text-center">
+                <thead>
+                    <tr>
+                        <th style="width: 34%;"></th>
+                        <th style="width: 22%;">Free</th>
+                        <th style="width: 22%;">Pro</th>
+                        <th style="width: 22%;">Enterprise</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <th scope="row" class="text-start">Public solution</th>
+                        <td><i class="fas fa-check"></i></td>
+                        <td><i class="fas fa-check"></i></td>
+                        <td><i class="fas fa-check"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="text-start">Private solution</th>
+                        <td></td>
+                        <td><i class="fas fa-check"></i></td>
+                        <td><i class="fas fa-check"></i></td>
+                    </tr>
+                </tbody>
+                <tbody>
+                    <tr>
+                        <th scope="row" class="text-start">Number of creatable solutions</th>
+                        <td style="font-weight: bold">1</td>
+                        <td style="font-weight: bold">5</td>
+                        <td style="font-weight: bold">20</td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="text-start">Custom Domain support</th>
+                        <td></td>
+                        <td><i class="fas fa-check"></i></td>
+                        <td><i class="fas fa-check"></i></td>
+                    </tr>
+                    <tr>
+                        <th scope="row" class="text-start">Unlimited members</th>
+                        <td></td>
+                        <td><i class="fas fa-check"></i></td>
+                        <td><i class="fas fa-check"></i></td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
-    <h2 class="display-6 text-center mb-4">Compare plans</h2>
-    <div class="table-responsive">
-        <table class="table text-center">
-            <thead>
-                <tr>
-                    <th style="width: 34%;"></th>
-                    <th style="width: 22%;">Free</th>
-                    <th style="width: 22%;">Pro</th>
-                    <th style="width: 22%;">Enterprise</th>
-                </tr>
-            </thead>
-            <tbody>
-                <tr>
-                    <th scope="row" class="text-start">Public solution</th>
-                    <td><i class="fas fa-check"></i></td>
-                    <td><i class="fas fa-check"></i></td>
-                    <td><i class="fas fa-check"></i></td>
-                </tr>
-                <tr>
-                    <th scope="row" class="text-start">Private solution</th>
-                    <td></td>
-                    <td><i class="fas fa-check"></i></td>
-                    <td><i class="fas fa-check"></i></td>
-                </tr>
-            </tbody>
-            <tbody>
-                <tr>
-                    <th scope="row" class="text-start"># of ownerships</th>
-                    <td style="font-weight: bold">1</td>
-                    <td style="font-weight: bold">5</td>
-                    <td style="font-weight: bold">20</td>
-                </tr>
-                <tr>
-                    <th scope="row" class="text-start">Custom Domain support</th>
-                    <td></td>
-                    <td><i class="fas fa-check"></i></td>
-                    <td><i class="fas fa-check"></i></td>
-                </tr>
-                <tr>
-                    <th scope="row" class="text-start">Unlimited members</th>
-                    <td></td>
-                    <td><i class="fas fa-check"></i></td>
-                    <td><i class="fas fa-check"></i></td>
-                </tr>
-                <tr>
-                    <th scope="row" class="text-start">Extra security</th>
-                    <td></td>
-                    <td></td>
-                    <td><i class="fas fa-check"></i></td>
-                </tr>
-            </tbody>
-        </table>
-    </div>
-</div>
+}
+
+
