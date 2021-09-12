@@ -40,7 +40,7 @@
     </ul>
     <ul id="versionHistory" class="voms-menu" data-bind="foreach: versions">
         <li>
-            <button data-bind="disable: $root.currentVersion() === id || $root.isDeleted(),
+            <button data-bind="disable: ($root.currentVersion() === id && $root.isSaved()) || $root.isDeleted(),
                                click: $root.getVersionFunction(id)">
                 <div data-bind="text: saveDate"></div>
                 <strong data-bind="text: $root.getTitle(id)"></strong>
@@ -395,7 +395,9 @@
 
         // Load the version belonging by id.
         function getVersion(id) {
-            if (viewModel.isSaved() && viewModel.currentVersion() !== id) {
+            if (viewModel.isDeleted()) {
+                console.log("Page is deleted")
+            } else if (viewModel.currentVersion() !== id || !viewModel.isSaved()) {
                 $.ajax({
                     type: "GET",
                     url: "/api/page/{{{ id }}}/Version/" + id,
