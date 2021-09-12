@@ -17,6 +17,7 @@
                     </p>
                 }
             }
+            <h5>Get back to the solution overview @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id }).</h5>
 
             @if (Model.Pages != null && Model.Pages.Any())
             {
@@ -49,7 +50,6 @@
                         }
                     </tbody>
                 </table>
-                <h5>Get back to the solution overview @Html.ActionLink("here", "SolutionOverview", "Admin", new { id = Model.Solution.Id }).</h5>
             }
             else
             {
