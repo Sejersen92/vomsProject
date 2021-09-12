@@ -407,11 +407,11 @@
                         viewModel.currentVersion(content.id);
 
                         // Do not react to the change event while setting the content.
-                        unsubscribe(editor, "block-order", onMainContentChange);
-                        unsubscribe(editor, "text-change", onMainContentChange);
+                        unsubscribe(mainContent, "block-order", onMainContentChange);
+                        unsubscribe(mainContent, "text-change", onMainContentChange);
                         loadContent(mainContent, JSON.parse(content.content));
-                        subscribe(editor, "block-order", onMainContentChange);
-                        subscribe(editor, "text-change", onMainContentChange);
+                        subscribe(mainContent, "block-order", onMainContentChange);
+                        subscribe(mainContent, "text-change", onMainContentChange);
                     }
                 });
             } else {
