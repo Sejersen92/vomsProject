@@ -43,6 +43,7 @@ export interface Block {
 
 export interface Editor extends Block {
     selectedBlock: Block;
+    elementBlocks: WeakMap<Node, Block>;
 }
 
 function insertChildBlock(parent: Block, block: Block, insertAt: number) {
@@ -150,7 +151,10 @@ export function getContent(block: Block): TransferBlock[] {
     return content;
 }
 
-let eventHandlers = new WeakMap();
+let eventHandlers = new WeakMap<Block, {
+    textChange(): void;
+    blockFocus(): void;
+}>();
 export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagType: string): Block {
     function textChange() {
 	emit(block, "text-change", {
@@ -176,6 +180,7 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         element: element,
         handlers: {}
     };
+    block.root.elementBlocks.set(element, block);
     element.addEventListener("focus", blockFocus);
     element.style.userSelect = "contain";
     if (type === BlockType.Text) {
@@ -235,10 +240,12 @@ export function makeEditor(element: HTMLElement): Editor {
         tagType: element.tagName,
         element: element,
         blocks: [],
-        handlers: {}
+        handlers: {},
+        elementBlocks: new WeakMap()
     };
     block.root = block;
     block.selectedBlock = null;
+    block.elementBlocks.set(element, block);
 
     return block;
 }
@@ -316,11 +323,17 @@ function makeRangeBold(start: Node, end: Node) {
     }
     parent.insertBefore(bold, end);
 }
-export function makeSelectionBlod() {
+export function makeSelectionBlod(editor: Editor) {
     var selection = getSelection();
 
     for(var i = 0; i < selection.rangeCount; i++) {
 	const range = selection.getRangeAt(i);
+        let blockNode = range.commonAncestorContainer;
+        let block = editor.elementBlocks.get(blockNode);
+        while (block === undefined) {
+            blockNode = blockNode.parentNode;
+            block = editor.elementBlocks.get(blockNode);
+        }
 
 	const selectArea = getCronStart(range);
 	if (range.startContainer.parentNode == range.endContainer.parentNode) {
@@ -377,6 +390,10 @@ export function makeSelectionBlod() {
 		throw "unsupported node type";
 	    }
 	}
+        emit(block, "text-change", {
+	    type: EditorEventType.TextChange,
+	    textChange: {}
+        });
     }
 }
 

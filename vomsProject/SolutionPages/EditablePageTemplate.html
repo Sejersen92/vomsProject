@@ -498,7 +498,9 @@
                 }
                 moveBlock(move, parent, index);
             },
-            bold: makeSelectionBlod,
+            bold: function () {
+                makeSelectionBlod(editor);
+            },
             insertContainer: function() {
                 makeBlock(editor.selectedBlock.parent, 0, BlockType.Container, "div");
             },
