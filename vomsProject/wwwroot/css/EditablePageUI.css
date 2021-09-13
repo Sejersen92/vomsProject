@@ -85,7 +85,7 @@
             background: rgba(0,0,0,0.2)
         }
 
-    .voms-menu input {
+    .voms-menu input, .voms-menu select {
         width: 100%;
         border: 1px solid black;
     }
@@ -94,7 +94,7 @@
         padding: 0.2em;
     }
 
-        .voms-menu li.voms-input input {
+        .voms-menu li.voms-input input, .voms-menu li.voms-input select {
             margin-top: 0.1em;
             padding: 0.2em;
         }

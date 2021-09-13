@@ -5,15 +5,15 @@ export enum BlockType {
 }
 
 export enum EditorEventType {
-    TextChange,
-    BlockOrderChange,
-    BlockSelection
+    TextChange = "text-change",
+    BlockOrderChange = "block-selection",
+    BlockSelection = "block-selection"
 }
 
 export interface EditorEvent {
     type: EditorEventType;
     textChange?: {
-	
+
     };
     blockOrderChange?: {
 
@@ -23,6 +23,7 @@ export interface EditorEvent {
     }
 }
 
+// The serializeable representation of a block tree
 export interface TransferBlock {
     type: BlockType;
     tagType: string;
@@ -31,6 +32,7 @@ export interface TransferBlock {
     text?: string;
 }
 
+// The logical repesentation of the editor
 export interface Block {
     root: Editor;
     parent: Block;
@@ -39,8 +41,10 @@ export interface Block {
     blocks?: Block[];
     element: HTMLElement;
     handlers: { [key: string]: ((event: EditorEvent) => void)[]; };
+    editingDisabled: boolean;
 };
 
+// The root element or the editor element
 export interface Editor extends Block {
     selectedBlock: Block;
     elementBlocks: WeakMap<Node, Block>;
@@ -61,52 +65,63 @@ function insertChildBlock(parent: Block, block: Block, insertAt: number) {
     }
 }
 
+// Move block from its parent to toBlock, inserted at insertAt.
 export function moveBlock(block: Block, toBlock: Block, insertAt: number) {
+    if (block.parent.editingDisabled || toBlock.editingDisabled) {
+        throw "Editing is disabled";
+    }
     let fromBlock = block.parent;
     let blockIndex = block.parent.blocks.indexOf(block);
     block.parent.blocks.splice(blockIndex, 1);
     insertChildBlock(toBlock, block, insertAt);
-    emit(fromBlock, "block-order", {
+    emit(fromBlock, EditorEventType.BlockOrderChange, {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
-    emit(toBlock, "block-order", {
+    emit(toBlock, EditorEventType.BlockOrderChange, {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
 }
 
-export function subscribe(block: Block, name: string, handler: (event: EditorEvent) => void) {
-    if (block.handlers[name] === undefined) {
-	block.handlers[name] = [];
+// Subscribe to events with eventType on block using handler
+export function subscribe(block: Block, eventType: EditorEventType, handler: (event: EditorEvent) => void) {
+    if (block.handlers[eventType] === undefined) {
+	block.handlers[eventType] = [];
     }
-    if (block.handlers[name].indexOf(handler) === -1) {
-	block.handlers[name].push(handler);
+    if (block.handlers[eventType].indexOf(handler) === -1) {
+	block.handlers[eventType].push(handler);
     }
 }
 
-export function unsubscribe(block: Block, name: string, handler: (event: EditorEvent) => void) {
-    if (block.handlers[name] !== undefined) {
-	var index = block.handlers[name].indexOf(handler);
+// Unsubscribe from events with eventType on block using handler
+export function unsubscribe(block: Block, eventType: EditorEventType, handler: (event: EditorEvent) => void) {
+    if (block.handlers[eventType] !== undefined) {
+	var index = block.handlers[eventType].indexOf(handler);
 	if (index !== -1) {
-	    block.handlers[name].splice(index, 1);
+	    block.handlers[eventType].splice(index, 1);
 	}
     }
 }
 
-function emit(block: Block, name: string, event: EditorEvent) {
-    if (block.handlers[name] !== undefined) {
-	var handlers = block.handlers[name];
+function emit(block: Block, eventType: EditorEventType, event: EditorEvent) {
+    if (block.handlers[eventType] !== undefined) {
+	var handlers = block.handlers[eventType];
 	for (var i = 0; i < handlers.length; i++) {
 	    handlers[i](event);
 	}
     }
     if (block.parent !== null) {
-	emit(block.parent, name, event);
+	emit(block.parent, eventType, event);
     }
 }
 
+// Load content into block
 export function loadContent(block: Block, content: TransferBlock[]) {
+    if (block.editingDisabled) {
+        throw "Editing is disabled";
+    }
+
     if (block.type !== BlockType.Container) {
 	throw "Can't load content into text block";
     }
@@ -125,6 +140,7 @@ export function loadContent(block: Block, content: TransferBlock[]) {
     }
 }
 
+// Get content from block
 export function getContent(block: Block): TransferBlock[] {
     if (block.type !== BlockType.Container) {
 	throw "Can't get content from text block";
@@ -151,20 +167,52 @@ export function getContent(block: Block): TransferBlock[] {
     return content;
 }
 
+// enable editing on block
+export function enableEditing(block: Block) {
+    block.editingDisabled = false;
+    if (block.type === BlockType.Text) {
+        block.element.contentEditable = "true";
+    } else {
+        for (let i = 0; i < block.blocks.length; i++) {
+            enableEditing(block.blocks[i]);
+        }
+    }
+}
+
+// disable editing on block
+export function disableEditing(block: Block) {
+    block.editingDisabled = true;
+    if (block.type === BlockType.Text) {
+        block.element.contentEditable = "false";
+    } else {
+        for (let i = 0; i < block.blocks.length; i++) {
+            disableEditing(block.blocks[i]);
+        }
+    }
+}
+
+// This is used to keep track the of the event handleres used on the dom node.
+// We keep this weak map to avoid exposing these methods on the block object.
 let eventHandlers = new WeakMap<Block, {
     textChange(): void;
     blockFocus(): void;
 }>();
-export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagType: string): Block {
+
+// Make a block with parent as it parent, inserted at insertAt, block type type, tag type tagType
+export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagType: string): Block{
+    if (parent.editingDisabled) {
+        throw "Editing is disabled";
+    }
+
     function textChange() {
-	emit(block, "text-change", {
+	emit(block, EditorEventType.TextChange, {
 	    type: EditorEventType.TextChange,
 	    textChange: {}
 	});
     }
     function blockFocus() {
 	block.root.selectedBlock = block;
-	emit(block, "block-selection", {
+	emit(block, EditorEventType.BlockSelection, {
 	    type: EditorEventType.BlockSelection,
 	    blockSelection: {
 		selected: block
@@ -178,7 +226,8 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         type: type,
         tagType: tagType,
         element: element,
-        handlers: {}
+        handlers: {},
+        editingDisabled: false
     };
     block.root.elementBlocks.set(element, block);
     element.addEventListener("focus", blockFocus);
@@ -192,7 +241,7 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         throw "Invalid block type";
     }
     insertChildBlock(parent, block, insertAt);
-    emit(parent, "block-order", {
+    emit(parent, EditorEventType.BlockOrderChange, {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
@@ -203,7 +252,12 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
     return block;
 }
 
+// Delete block and child blocks
 export function deleteBlock(block: Block) {
+    if (block.parent.editingDisabled) {
+        throw "Editing is disabled";
+    }
+
     if (block.type === BlockType.Container) {
 	// Work from behind so index wont change
 	for (let i = block.blocks.length - 1; i >= 0; i--) {
@@ -225,12 +279,13 @@ export function deleteBlock(block: Block) {
     block.root = null;
     block.parent = null
 
-    emit(parent, "block-order", {
+    emit(parent, EditorEventType.BlockOrderChange, {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
 }
 
+// Create a new editor on element
 export function makeEditor(element: HTMLElement): Editor {
     let block: Editor = {
 	selectedBlock: null,
@@ -241,6 +296,7 @@ export function makeEditor(element: HTMLElement): Editor {
         element: element,
         blocks: [],
         handlers: {},
+        editingDisabled: false,
         elementBlocks: new WeakMap()
     };
     block.root = block;
@@ -323,6 +379,8 @@ function makeRangeBold(start: Node, end: Node) {
     }
     parent.insertBefore(bold, end);
 }
+
+// Make the current selection of the editor bold
 export function makeSelectionBlod(editor: Editor) {
     var selection = getSelection();
 
@@ -332,7 +390,14 @@ export function makeSelectionBlod(editor: Editor) {
         let block = editor.elementBlocks.get(blockNode);
         while (block === undefined) {
             blockNode = blockNode.parentNode;
+            if (blockNode === null) {
+                continue;
+            }
             block = editor.elementBlocks.get(blockNode);
+        }
+        if (block.editingDisabled) {
+            // we can't throw here as it might effect the operation on an other valid selection.
+            continue;
         }
 
 	const selectArea = getCronStart(range);
@@ -370,7 +435,7 @@ export function makeSelectionBlod(editor: Editor) {
 	    if (startContainer.nextSibling !== endContainer) {
 		makeRangeBold(startContainer.nextSibling, endContainer)
 	    }
-	    
+
 	    if (selectArea[1].node.TEXT_NODE === 3) {
 		const textNode = selectArea[1].node as Text;
 		const insertPoint = textNode.splitText(selectArea[1].count);
@@ -390,24 +455,9 @@ export function makeSelectionBlod(editor: Editor) {
 		throw "unsupported node type";
 	    }
 	}
-        emit(block, "text-change", {
+        emit(block, EditorEventType.TextChange, {
 	    type: EditorEventType.TextChange,
 	    textChange: {}
         });
     }
 }
-
-// events block-change
-// text-change
-// selection-change
-
-// apis
-// get content
-// set content
-// insert
-// format text
-// selection https://developer.mozilla.org/en-US/docs/Web/API/Selection
-// cursor position
-
-// delete block
-// get current block focus event

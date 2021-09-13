@@ -82,6 +82,11 @@
         <li class="voms-hideable" data-bind="css: { show: isPublished() }">
             <button data-bind="disable: isDeleted, click: unpublish">Unpublish</button>
         </li>
+        <li class="voms-input">
+            <label for="select-edit-area">Edit area</label>
+            <select id="select-edit-area" data-bind="options: editableAreas, 
+                                                     value: selectedEditableArea"></select>
+        </li>
         <li>
             <button data-bind="disable: isLayoutSaved, click: savePageLayout">Save layout</button>
         </li>
@@ -154,7 +159,8 @@
     <script type="module">
         import {
             subscribe, unsubscribe, makeEditor, getContent, loadContent,
-            makeBlock, deleteBlock, BlockType, moveBlock, makeSelectionBlod
+            makeBlock, deleteBlock, BlockType, moveBlock, makeSelectionBlod,
+            enableEditing, disableEditing
         } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
         var viewModel = {
@@ -196,7 +202,9 @@
                 // {{/versions}}
             ]),
             layoutSavedDate: ko.observable("{{ layoutSaveDate }}"),
-            isLayoutSaved: ko.observable(true)
+            isLayoutSaved: ko.observable(true),
+            editableAreas: ko.observableArray(["header", "footer", "main"]),
+            selectedEditableArea: ko.observable("main")
         };
 
         // update the arePropertiesSaved when the title change.
@@ -297,6 +305,26 @@
         // When title changes update page title.
         ko.computed(function () {
             document.title = viewModel.title();
+        });
+
+        ko.computed(function () {
+            switch (viewModel.selectedEditableArea()) {
+                case "main":
+                    enableEditing(mainContent);
+                    disableEditing(headerContent);
+                    disableEditing(footerContent);
+                    break;
+                case "header":
+                    disableEditing(mainContent);
+                    enableEditing(headerContent);
+                    disableEditing(footerContent);
+                    break;
+                case "footer":
+                    disableEditing(mainContent);
+                    disableEditing(headerContent);
+                    enableEditing(footerContent);
+                    break;
+            }
         });
 
         // Stuff we need to do when the content is saved.
@@ -467,9 +495,34 @@
             getVersion(viewModel.savedVersion())
         }
 
+        function getEditableRoot() {
+            switch (viewModel.selectedEditableArea()) {
+                case "main":
+                    return mainContent;
+                case "header":
+                    return headerContent;
+                case "footer":
+                    return footerContent;
+            }
+        }
+        function getActiveBlock() {
+            if (!editor.selectedBlock || editor.selectedBlock.disableEditing) {
+                return getEditableRoot();
+            }
+            return editor.selectedBlock;
+        }
+
         viewModel.tools = {
             insert: function () {
-                var latest = makeBlock(editor.selectedBlock ? editor.selectedBlock.parent : editor, 0, BlockType.Text, "div");
+                var block = getActiveBlock();
+                var index;
+                if (block.type === BlockType.Container) {
+                    index = block.length;
+                } else {
+                    index = block.parent.blocks.indexOf(block) + 1;
+                    block = block.parent;
+                }
+                var latest = makeBlock(block, index, BlockType.Text, "div");
                 latest.element.focus();
             },
             // This is not the most ideal function for moving blocks.
@@ -478,12 +531,13 @@
             // past its next sibling if it has one
             // past its parent if that parent is not the root
             // as the first block of the root
-            moveBlock: function() {
+            moveBlock: function () {
+                var root = getEditableRoot();
                 var move = editor.selectedBlock;
                 var index = move.parent.blocks.indexOf(move) + 1;
                 var parent;
                 if (move.parent.blocks.length === index) {
-                    if (move.parent.parent != null) {
+                    if (move.parent !== root) {
                         parent = move.parent.parent;
                         index = move.parent.parent.blocks.indexOf(move.parent) + 1;
                     } else {
@@ -501,8 +555,16 @@
             bold: function () {
                 makeSelectionBlod(editor);
             },
-            insertContainer: function() {
-                makeBlock(editor.selectedBlock.parent, 0, BlockType.Container, "div");
+            insertContainer: function () {
+                var block = getActiveBlock();
+                var index;
+                if (block.type === BlockType.Container) {
+                    index = block.length;
+                } else {
+                    index = block.parent.blocks.indexOf(block) + 1;
+                    block = block.parent;
+                }
+                makeBlock(block, index, BlockType.Container, "div");
             },
             deleteBlock: function() {
                 deleteBlock(editor.selectedBlock);
