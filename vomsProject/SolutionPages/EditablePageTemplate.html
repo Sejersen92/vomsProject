@@ -160,7 +160,7 @@
         import {
             subscribe, unsubscribe, makeEditor, getContent, loadContent,
             makeBlock, deleteBlock, BlockType, moveBlock, makeSelectionBlod,
-            enableEditing, disableEditing
+            enableEditing, disableEditing, useEditing
         } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
         var viewModel = {
@@ -441,7 +441,9 @@
                         // Do not react to the change event while setting the content.
                         unsubscribe(mainContent, "block-order", onMainContentChange);
                         unsubscribe(mainContent, "text-change", onMainContentChange);
-                        loadContent(mainContent, JSON.parse(content.content));
+                        useEditing(mainContent, function () {
+                            loadContent(mainContent, JSON.parse(content.content));
+                        });
                         subscribe(mainContent, "block-order", onMainContentChange);
                         subscribe(mainContent, "text-change", onMainContentChange);
                     }
