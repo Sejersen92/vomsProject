@@ -167,16 +167,26 @@ export function getContent(block: Block): TransferBlock[] {
     return content;
 }
 
-// enable editing on block
-export function enableEditing(block: Block) {
+function enableEditingDriver(block: Block, pushDisabled: boolean, enabled: Block[]) {
+    if (pushDisabled && block.editingDisabled) {
+        pushDisabled = false;
+        enabled.push(block);
+    }
     block.editingDisabled = false;
     if (block.type === BlockType.Text) {
         block.element.contentEditable = "true";
     } else {
         for (let i = 0; i < block.blocks.length; i++) {
-            enableEditing(block.blocks[i]);
+            enableEditingDriver(block.blocks[i], pushDisabled, enabled);
         }
     }
+}
+
+// enable editing on block
+export function enableEditing(block: Block): Block[] {
+    const enabled: Block[] = [];
+    enableEditingDriver(block, true, enabled);
+    return enabled;
 }
 
 // disable editing on block
@@ -188,6 +198,15 @@ export function disableEditing(block: Block) {
         for (let i = 0; i < block.blocks.length; i++) {
             disableEditing(block.blocks[i]);
         }
+    }
+}
+
+// Can temporarily enable editing for the execution of edit
+export function useEditing(block: Block, edit: (block?: Block) => void) {
+    const enabled = enableEditing(block);
+    edit(block);
+    for (let i = 0; i < enabled.length; i++) {
+        disableEditing(enabled[i]);
     }
 }
 

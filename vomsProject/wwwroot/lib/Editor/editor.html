@@ -10,11 +10,13 @@
     <button id="load-content">load</button>
     <button id="save">save</button>
     <button id="print">print</button>
+    <button id="disable-blocks">disable</button>
+    <button id="disable-partial-blocks">disable partial</button>
+    <button id="use-edit">use edit</button>
     <aticle id="page">
     </aticle>
-    <script src="voms-editor.js"></script>
     <script type="module">
-      import { BlockType, moveBlock, subscribe, unsubscribe, makeBlock, deleteBlock, makeEditor, makeSelectionBlod, getContent, loadContent } from "./voms-editor.js";
+        import { BlockType, moveBlock, subscribe, unsubscribe, makeBlock, deleteBlock, makeEditor, makeSelectionBlod, getContent, loadContent, enableEditing, disableEditing, useEditing } from "./voms-editor.js";
       var page = document.getElementById("page");
       var editor = makeEditor(page);
 
@@ -42,7 +44,7 @@
 		      tagType: "p",
 		      properties: {},
 		      text: "This is the paragraph"
-		  }		  
+		  }
 	      ]
 	  },
 	  {
@@ -74,6 +76,9 @@
       var loadContentButton = document.getElementById("load-content");
       var saveButton = document.getElementById("save");
       var printButton = document.getElementById("print");
+      var disableButton = document.getElementById("disable-blocks");
+      var disablePartialButton = document.getElementById("disable-partial-blocks");
+      var useEditButton = document.getElementById("use-edit");
       insertBlockButton.onclick = function () {
           var latest = makeBlock(editor.selectedBlock ? editor.selectedBlock.parent : editor, 0, BlockType.Text, "div");
 	  latest.element.focus();
@@ -109,6 +114,18 @@
       };
       printButton.onclick = function () {
 	  console.log(getContent(editor));
+      };
+      disableButton.onclick = function () {
+          disableEditing(editor);
+      };
+      disablePartialButton.onclick = function () {
+          disableEditing(editor.blocks[1].blocks[1]);
+          disableEditing(editor.blocks[2]);
+      };
+      useEditButton.onclick = function () {
+          useEditing(editor, function () {
+              loadContent(editor, savedContent);
+          });
       };
     </script>
   </body>
