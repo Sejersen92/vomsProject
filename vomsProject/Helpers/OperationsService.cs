@@ -158,7 +158,7 @@ namespace vomsProject.Helpers
 
             var blockContent = JsonConvert.DeserializeObject<IEnumerable<Editor.TransferBlock>>(content);
             var header = blockContent.FirstOrDefault(block => block.tagType == "header");
-            var footer = blockContent.FirstOrDefault(block => block.tagType == "main");
+            var footer = blockContent.FirstOrDefault(block => block.tagType == "footer");
 
             layout.HeaderContent = header.ToHtml();
             layout.HeaderEditableContent = JsonConvert.SerializeObject(header.blocks);
