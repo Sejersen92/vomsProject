@@ -285,6 +285,41 @@ export function deleteBlock(block: Block) {
     });
 }
 
+// Change the tag type for a block
+export function ChagneTagType(block: Block, tagType: string) {
+    if (block.parent.editingDisabled) {
+        throw "Editing is disabled";
+    }
+    const element = document.createElement(tagType);
+    while (block.element.firstChild) {
+        element.appendChild(block.element.firstChild)
+    }
+    const handlers = eventHandlers.get(block);
+    block.element.removeEventListener("input", handlers.textChange);
+    block.element.removeEventListener("focus", handlers.blockFocus);
+
+    block.parent.element.replaceChild(element, block.element);
+    block.root.elementBlocks.delete(block.element);
+    block.element = element;
+    block.tagType = tagType;
+
+    block.root.elementBlocks.set(element, block);
+    element.addEventListener("focus", handlers.blockFocus);
+    element.style.userSelect = "contain";
+    if (block.type === BlockType.Text) {
+        if (block.editingDisabled) {
+            element.contentEditable = "false";
+        } else {
+            element.contentEditable = "true";
+        }
+        element.addEventListener("input", handlers.textChange);
+    }
+    emit(block.parent, EditorEventType.BlockOrderChange, {
+	type: EditorEventType.BlockOrderChange,
+	blockOrderChange: {}
+    });
+}
+
 // Create a new editor on element
 export function makeEditor(element: HTMLElement): Editor {
     let block: Editor = {
