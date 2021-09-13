@@ -127,7 +127,7 @@ export function loadContent(block: Block, content: TransferBlock[]) {
     }
     // Work from behind so index wont change
     for (let i = block.blocks.length - 1; i >= 0; i--) {
-	deleteBlock(block.blocks[i]);
+	uncheckedDeleteBlock(block.blocks[i]);
     }
     for (let i = 0; i < content.length; i++) {
 	if (content[i].type === BlockType.Text) {
@@ -252,16 +252,13 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
     return block;
 }
 
-// Delete block and child blocks
-export function deleteBlock(block: Block) {
-    if (block.parent.editingDisabled) {
-        throw "Editing is disabled";
-    }
-
+// Same as delete block but it will not care if editing is disabled.
+// This should be the function used when deleting is part of a bigger edit.
+function uncheckedDeleteBlock(block: Block) {
     if (block.type === BlockType.Container) {
 	// Work from behind so index wont change
 	for (let i = block.blocks.length - 1; i >= 0; i--) {
-	    deleteBlock(block.blocks[i]);
+	    uncheckedDeleteBlock(block.blocks[i]);
 	}
     }
     const handlers = eventHandlers.get(block);
@@ -283,6 +280,14 @@ export function deleteBlock(block: Block) {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
+}
+
+// Delete block and child blocks
+export function deleteBlock(block: Block) {
+    if (block.parent.editingDisabled) {
+        throw "Editing is disabled";
+    }
+    uncheckedDeleteBlock(block);
 }
 
 // Change the tag type for a block
