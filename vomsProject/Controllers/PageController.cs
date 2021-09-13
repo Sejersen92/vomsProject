@@ -128,11 +128,14 @@ namespace vomsProject.Controllers
                         Context.Add(page);
                         await Context.SaveChangesAsync();
                     }
-                    var versions = await Context.PageContents.Where(content => content.Page == page).Select(content => new EditablePageModel.Version()
-                    {
-                        id = content.Id,
-                        saveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
-                    }).ToListAsync();
+                    var versions = await Context.PageContents
+                        .Where(content => content.Page == page)
+                        .OrderByDescending(content => content.SaveDate)
+                        .Select(content => new EditablePageModel.Version()
+                        {
+                            id = content.Id,
+                            saveDate = content.SaveDate.ToString("yyyy-MM-dd HH:mm")
+                        }).ToListAsync();
 
                     var content = PageContentUtil.ConstructPageContent(page);
 

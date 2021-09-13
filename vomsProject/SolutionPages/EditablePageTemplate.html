@@ -357,7 +357,7 @@
                     data: JSON.stringify(getContent(editor)),
                     success: function (saveResult) {
                         whenSaved(saveResult);
-                        viewModel.versions.push({
+                        viewModel.versions.unshift({
                             id: saveResult.latestVersion,
                             saveDate: saveResult.saveDate
                         });
@@ -388,6 +388,10 @@
                 data: JSON.stringify(getContent(editor)),
                 success: function (saveResult) {
                     whenSaved(saveResult);
+                    viewModel.versions.unshift({
+                        id: saveResult.latestVersion,
+                        saveDate: saveResult.saveDate
+                    });
                     viewModel.publishedVersion(saveResult.latestVersion);
                     viewModel.publishedDate(saveResult.saveDate);
                     viewModel.isPublished(true);
