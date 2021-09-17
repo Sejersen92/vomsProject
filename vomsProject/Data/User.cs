@@ -14,5 +14,7 @@ namespace vomsProject.Data
 
         public string Nickname { get; set; }
 
+        public bool DisableTutorials { get; set; }
+
     }
 }
