@@ -10,5 +10,6 @@ namespace vomsProject.Models
     {
         public IEnumerable<Solution> Solutions { get; set; }
         public bool? HasReachedProductLimit { get; set; }
+        public User User { get; set; }
     }
 }

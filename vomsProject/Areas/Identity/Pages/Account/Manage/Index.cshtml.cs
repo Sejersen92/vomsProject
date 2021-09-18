@@ -29,6 +29,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
         public string Username { get; set; }
         public string Nickname { get; set; }
         public ProductType ProductVersion { get; set; }
+        public bool DisableTutorials { get; set; }
 
         [TempData]
         public string StatusMessage { get; set; }
@@ -43,6 +44,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             public string PhoneNumber { get; set; }
             public ProductType ProductVersion { get; set; }
             public string Nickname { get; set; }
+            public bool DisableTutorials { get; set; }
         }
 
         private async Task LoadAsync(User user)
@@ -50,6 +52,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             var userName = await _userManager.GetUserNameAsync(user);
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var productVersion = user.ProductVersion;
+            var disableTutorials = user.DisableTutorials;
 
             Username = userName;
             Nickname = user.Nickname;
@@ -57,7 +60,8 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             Input = new InputModel
             {
                 PhoneNumber = phoneNumber,
-                ProductVersion = productVersion
+                ProductVersion = productVersion,
+                DisableTutorials = disableTutorials
             };
         }
 
@@ -88,6 +92,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             }
 
             user.ProductVersion = Input.ProductVersion;
+            user.DisableTutorials = Input.DisableTutorials;
             await _dbContext.SaveChangesAsync();
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);

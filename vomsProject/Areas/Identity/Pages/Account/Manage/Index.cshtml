@@ -55,6 +55,12 @@
                     </select>
                 </div>
             </div>
+            <div class="form-group">
+                <label asp-for="Input.DisableTutorials"></label>
+                <input type="checkbox" asp-for="Input.DisableTutorials" class="form-check" />
+                <span asp-validation-for="Input.DisableTutorials" class="text-danger"></span>
+                <p>This is enabled by default and will show highlighted areas of interest. This is, in addition to the quick help guide, a way to enable users a quick start on their VOMS-journey.</p>
+            </div>
             <br />
             <button id="update-profile-button" type="submit" class="btn btn-primary">Save</button>
         </form>

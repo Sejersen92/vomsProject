@@ -1,7 +1,6 @@
 ﻿@using Microsoft.AspNetCore.Identity
 @using vomsProject.Data
 @inject SignInManager<User> SignInManager
-@inject UserManager<User> UserManager
 
 @model AdminViewModel
 @{
@@ -10,89 +9,208 @@
 
 @if (SignInManager.IsSignedIn(User))
 {
-
-    if (Model != null)
+    if (!Model.User.DisableTutorials)
     {
-        colClass = (Model.Solutions.Count() == 1 ? "col-sm" :
-            (Model.Solutions.Count() == 2 ? "col-sm-4" :
-                (Model.Solutions.Count() >= 3 ? "col-sm-3" : "col-sm")));
+        if (Model != null)
+        {
+            colClass = (Model.Solutions.Count() == 1 ? "col-sm" :
+                (Model.Solutions.Count() == 2 ? "col-sm-4" :
+                    (Model.Solutions.Count() >= 3 ? "col-sm-3" : "col-sm")));
 
-        <div class="px-4 py-5 my-5 text-center">
-            <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
-            <div class="col-lg-6 mx-auto">
-                <p class="lead mb-4">This is your solution overview. On this page you are able to see all your solutions, or create a new one.</p>
-                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                    <a href="#pagesManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Pages management</a>
-                    <a href="#solutionManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Solution management</a>
+            <div class="px-4 py-5 my-5 text-center">
+                <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
+                <div class="col-lg-6 mx-auto">
+                    <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <div class="alert alert-secondary mb-0">
+                            <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
+                        </div>
+                        <div class="alert alert-secondary mb-0">
+                            <a href="@Url.Action("Index", "Home")"><i class="fas fa-home"> - Home</i></a>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-lg-6 mx-auto mt-5">
+                    @if (Model.Solutions.Count() == 1)
+                    {
+                        <h3>Here is your solution:</h3>
+                    }
+                    else
+                    {
+                        <h3>Here are your solutions:</h3>
+                    }
                 </div>
             </div>
-            <div class="col-lg-6 mx-auto mt-5">
-                @if (Model.Solutions.Count() == 1)
-                {
-                    <h3>Here is your solution:</h3>
-                }
-                else
-                {
-                    <h3>Here are your solutions:</h3>
-                }
-            </div>
-        </div>
 
-        <div class="row mb-3">
-            @foreach (var solution in Model.Solutions)
-            {
-                if (solution != null)
+            <div class="row mb-3">
+                @foreach (var solution in Model.Solutions)
                 {
-                    <div class="@colClass">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5 class="card-title">Title: @solution.Subdomain</h5>
-                                <p class="card-text">id: @solution.Id</p>
-                            </div>
-                            <div class="card-body">
-                                <ul class="list-group list-group-flush">
-                                    @foreach (var permission in solution.Permissions)
-                                    {
-                                        <li class="list-group-item">@permission.User.UserName</li>
-                                    }
-                                </ul>
-                            </div>
-                            <div class="card-footer text-center">
-                                <div class="btn-group">
-                                    @Html.ActionLink("Login", "LoginToSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
-                                    @Html.ActionLink("Manage", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
-                                    @Html.ActionLink("Delete", "DeleteSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-danger" })
+                    if (solution != null)
+                    {
+                        <div class="@colClass">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Title: @solution.Subdomain</h5>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (var permission in solution.Permissions)
+                                        {
+                                            <li class="list-group-item">@permission.User.UserName</li>
+                                        }
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <div class="btn-group">
+                                        <a href="@Url.Action("LoginToSolution", "Admin", new { id = solution.Id })" class="btn btn-primary"><i class="fas fa-sign-in-alt"> Login</i></a>
+                                        <a href="@Url.Action("SolutionOverview", "Admin", new { id = solution.Id })" class="btn btn-primary"><i class="fas fa-edit"> Manage</i></a>
+                                        <a href="@Url.Action("Delete", "Admin", new { id = solution.Id })" class="btn btn-danger"><i class="fas fa-trash-alt"> Delete</i></a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    }
+                }
+            </div>
+        }
+
+        <div class="bg-light rounded-3" style="border: 1px solid #008415; box-shadow: inset 0px 0px 10px 2px #4cff00">
+            <div class="container-fluid text-center">
+                <h1 class="fw-bold">Create Solution: </h1>
+                @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
+                {
+                    @if (Model.HasReachedProductLimit.HasValue && Model.HasReachedProductLimit.Value)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <p>You have reached your solution-ownership limit for this plan. <a asp-area="Identity" asp-page="/Account/Manage/Index">Upgrade your plan here!</a></p>
+                        </div>
+                    }
+                    <div class="card-body">
+                        <div class="input-group mb-2">
+                            <label class="input-group-text" for="title">Title</label>
+                            <input type="text" id="title" name="title" class="form-control" />
+                        </div>
+                        <input id="Submit" type="submit" value="submit" class="btn btn-success mb-3" />
                     </div>
                 }
-            }
+            </div>
+        </div>
+
+        <div class="offcanvas offcanvas-bottom show" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body small">
+                <p>Welcome to <strong>VOMS</strong>. Below here will be a one-sentence guide on how to execute key-features on this page.</p>
+                <p>Let's create a solution. You can do that by entering a name in the higlighted <strong>Create Solution</strong> area.</p>
+                <p>Want to check out your account settings? Just click on the <strong><i class="fas fa-user-cog"> - User configurations</i></strong>.</p>
+                <p>Already got a solution? Just click on the <strong><i class="fas fa-edit"> Manage</i></strong> to check it out.</p>
+            </div>
         </div>
     }
+    else
+    {
+        if (Model != null)
+        {
+            colClass = (Model.Solutions.Count() == 1 ? "col-sm" :
+                (Model.Solutions.Count() == 2 ? "col-sm-4" :
+                    (Model.Solutions.Count() >= 3 ? "col-sm-3" : "col-sm")));
 
-    <div class="bg-light rounded-3">
-        <div class="container-fluid text-center">
-            <h1 class="fw-bold">Create Solution: </h1>
-            @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
-            {
-                @if (Model.HasReachedProductLimit.HasValue && Model.HasReachedProductLimit.Value)
-                {
-                    <div class="alert alert-danger" role="alert">
-                        <p>You have reached your solution-ownership limit for this plan. <a asp-area="Identity" asp-page="/Account/Manage/Index">Upgrade your plan here!</a></p>
+            <div class="px-4 py-5 my-5 text-center">
+                <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
+                <div class="col-lg-6 mx-auto">
+                    <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
+                    <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                        <div class="alert alert-secondary mb-0">
+                            <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
+                        </div>
+                        <div class="alert alert-secondary mb-0">
+                            <a href="@Url.Action("Index", "Admin")"><i class="fas fa-bookmark"> - Solution Overview</i></a>
+                        </div>
                     </div>
-                }
-                <div class="card-body">
-                    <div class="input-group mb-2">
-                        <label class="input-group-text" for="title">Title</label>
-                        <input type="text" id="title" name="title" class="form-control" />
-                    </div>
-                    <input id="Submit" type="submit" value="submit" class="btn btn-success mb-3" />
                 </div>
-            }
-        </div>
-    </div>
+                <div class="col-lg-6 mx-auto mt-5">
+                    @if (Model.Solutions.Count() == 1)
+                    {
+                        <h3>Here is your solution:</h3>
+                    }
+                    else if (Model.Solutions.Count() > 1)
+                    {
+                        <h3>Here are your solutions:</h3>
+                    }
+                </div>
+            </div>
 
+            <div class="row mb-3">
+                @foreach (var solution in Model.Solutions)
+                {
+                    if (solution != null)
+                    {
+                        <div class="@colClass">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">Title: @solution.Subdomain</h5>
+                                    <p class="card-text">id: @solution.Id</p>
+                                </div>
+                                <div class="card-body">
+                                    <ul class="list-group list-group-flush">
+                                        @foreach (var permission in solution.Permissions)
+                                        {
+                                            <li class="list-group-item">@permission.User.UserName</li>
+                                        }
+                                    </ul>
+                                </div>
+                                <div class="card-footer text-center">
+                                    <div class="btn-group">
+                                        @Html.ActionLink("Login", "LoginToSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
+                                        @Html.ActionLink("Manage", "SolutionOverview", "Admin", new { id = solution.Id }, new { @class = "btn btn-primary" })
+                                        @Html.ActionLink("Delete", "DeleteSolution", "Admin", new { id = solution.Id }, new { @class = "btn btn-danger" })
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    }
+                }
+            </div>
+        }
+
+        <div class="bg-light rounded-3">
+            <div class="container-fluid text-center">
+                <h1 class="fw-bold">Create Solution: </h1>
+                @using (Html.BeginForm("Index", "Admin", FormMethod.Post))
+                {
+                    @if (Model.HasReachedProductLimit.HasValue && Model.HasReachedProductLimit.Value)
+                    {
+                        <div class="alert alert-danger" role="alert">
+                            <p>You have reached your solution-ownership limit for this plan. <a asp-area="Identity" asp-page="/Account/Manage/Index">Upgrade your plan here!</a></p>
+                        </div>
+                    }
+
+                    <div class="card-body">
+                        <div class="input-group mb-2">
+                            <label class="input-group-text" for="title">Title</label>
+                            <input type="text" id="title" name="title" class="form-control" />
+                        </div>
+                        <input id="Submit" type="submit" value="submit" class="btn btn-success mb-3" />
+                    </div>
+
+                }
+            </div>
+        </div>
+        <div class="offcanvas offcanvas-bottom" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body small">
+                <p>Welcome to <strong>VOMS</strong>. Below here will be a one-sentence guide on how to execute key-features on this page.</p>
+                <p>Let's create a solution. You can do that by entering a name in the <strong>Create Solution</strong> area.</p>
+                <p>Want to check out your account settings? Just click on the <strong><i class="fas fa-user-cog"> - User configurations</i></strong>.</p>
+                <p>Already got a solution? Just click on the <strong><i class="fas fa-edit"> Manage</i></strong> to check it out.</p>
+            </div>
+        </div>
+    }
 }
 else
 {
@@ -102,3 +220,7 @@ else
         <a class="btn btn-primary" asp-area="Identity" asp-page="/Account/Login">Login</a>
     </div>
 }
+<script>
+    var myOffcanvas = document.getElementById('offcanvasScrolling')
+    
+</script>

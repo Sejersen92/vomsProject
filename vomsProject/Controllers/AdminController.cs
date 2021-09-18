@@ -54,7 +54,8 @@ namespace vomsProject.Controllers
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var model = new AdminViewModel()
             {
-                Solutions = await Repository.GetSolutionsByUser(user)
+                Solutions = await Repository.GetSolutionsByUser(user),
+                User = user
             };
 
             return View(model);
@@ -142,7 +143,8 @@ namespace vomsProject.Controllers
                     var model = new AdminViewModel()
                     {
                         Solutions = await Repository.GetSolutionsByUser(user),
-                        HasReachedProductLimit = true
+                        HasReachedProductLimit = true,
+                        User = user
                     };
 
                     return View(model);

@@ -4,43 +4,109 @@
 @{
     ViewData["Title"] = "Home Page";
 }
-@inject UserManager<User> UserManager
 @inject SignInManager<User> SignInManager
 
 @if (SignInManager.IsSignedIn(User))
 {
-    <div class="px-4 py-5 my-5 text-center">
-        <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
-                <a href="@Url.Action("Index", "Admin")"><i class="fas fa-house-user"> - solutions configuration</i></a>
+    if (!Model.User.DisableTutorials)
+    {
+        <div class="px-4 py-5 my-5 text-center">
+            <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
+            <div class="col-lg-6 mx-auto">
+                <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <div class="alert alert-secondary mb-0">
+                        <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
+                    </div>
+                    <div class="alert alert-success mb-0" style="border: 1px solid #03ff00; box-shadow: inset 0px 0px 10px 2px #4cff00">
+                        <a href="@Url.Action("Index", "Admin")"><i class="fas fa-house-user"> - solutions configuration</i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mx-auto mt-5">
+                <h3>Need inspiration for your site? See all of our solutions below!</h3>
+                @foreach (var solution in Model.Solutions)
+                {
+                    if (solution != null)
+                    {
+                        <a href="@Url.Action("LoginToSolution", "Admin", new { id = solution.Id, pageName = "" })" class="m-2">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">@solution.Subdomain</h3>
+                                </div>
+                                <div class="card-body">
+                                    <img onerror="this.style.display='none'" src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = solution.Id }))" style="width: 100%; height: 100%" />
+                                </div>
+                            </div>
+                        </a>
+                    }
+                }
             </div>
         </div>
-        <div class="col-lg-6 mx-auto mt-5">
 
-            <h3>Need inspiration for your site? See all of our solutions below!</h3>
-
-            @foreach (var solution in Model.Solutions)
-            {
-                if (solution != null)
-                {
-                    <a href="@Url.Action("LoginToSolution", "Admin", new { id = solution.Id, pageName = "" })" class="m-2">
-                        <div class="card">
-                            <div class="card-header">
-                                <h3 class="card-title">@solution.Subdomain</h3>
-                            </div>
-                            <div class="card-body">
-                                <img onerror="this.style.display='none'" src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = solution.Id }))" style="width: 25rem; height: 25rem" />
-                            </div>
-
-                        </div>
-                    </a>
-                }
-            }
+        <div class="offcanvas offcanvas-bottom show" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body small">
+                <p>Welcome to <strong>VOMS</strong>. Below here will be a one-sentence guide on how to execute key-features on this page.</p>
+                <p>Let's create a solution. You can do that by clicking the higlighted <strong><i class="fas fa-house-user"> - solutions configuration</i></strong>.</p>
+                <p>Want to check out your account settings? Just click on the <strong><i class="fas fa-user-cog"> - User configurations</i></strong>.</p>
+            </div>
         </div>
-    </div>
+    }
+    else
+    {
+        <div class="px-4 py-5 my-5 text-center">
+            <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
+            <div class="col-lg-6 mx-auto">
+                <p class="lead mb-4">This is your personalized homepage. Here is a quick-help dashboard:</p>
+                <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+                    <div class="alert alert-secondary">
+                        <a asp-area="Identity" asp-page="/Account/Manage/Index"><i class="fas fa-user-cog"> - User configurations</i></a>
+                    </div>
+                    <div class="alert alert-secondary">
+                        <a href="@Url.Action("Index", "Admin")"><i class="fas fa-house-user"> - solutions configuration</i></a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-6 mx-auto mt-5">
+
+                <h3>Need inspiration for your site? See all of our solutions below!</h3>
+
+                @foreach (var solution in Model.Solutions)
+                {
+                    if (solution != null)
+                    {
+                        <a href="@Url.Action("LoginToSolution", "Admin", new { id = solution.Id, pageName = "" })" class="m-2">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h3 class="card-title">@solution.Subdomain</h3>
+                                </div>
+                                <div class="card-body">
+                                    <img onerror="this.style.display='none'" src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = solution.Id }))" style="width: 25rem; height: 25rem" />
+                                </div>
+
+                            </div>
+                        </a>
+                    }
+                }
+            </div>
+        </div>
+
+        <div class="offcanvas offcanvas-bottom" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+            <div class="offcanvas-header">
+                <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Tutorial Helper</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body small">
+                <p>Welcome to VOMS. Here you are capable of creating a solution, join an existing solution or just browse the various solutions for inspiration.</p>
+                <p>Let's create a solution. You can do that by clicking the <strong><i class="fas fa-house-user"> - solutions configuration</i></strong>.</p>
+                <p>Want to check out your account settings? Just click on the  <strong><i class="fas fa-user-cog"> - User configurations</i></strong>.</p>
+            </div>
+        </div>
+    }
 }
 else
 {

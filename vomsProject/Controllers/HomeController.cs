@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Logging;
@@ -20,22 +21,26 @@ namespace vomsProject.Controllers
         private readonly ApplicationDbContext _dbContext;
         private readonly IConfiguration _configuration;
         private readonly DomainHelper _domainHelper;
+        private readonly UserManager<User> UserManager;
 
         public HomeController(ILogger<HomeController> logger, RepositoryService repository, 
-            ApplicationDbContext dbContext, IConfiguration configuration, DomainHelper domainHelper)
+            ApplicationDbContext dbContext, IConfiguration configuration, DomainHelper domainHelper, UserManager<User> userManager)
         {
             _logger = logger;
             _repository = repository;
             _dbContext = dbContext;
             _configuration = configuration;
-            _domainHelper = domainHelper;
+            _domainHelper = domainHelper; 
+            UserManager = userManager;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
+            var user = await UserManager.GetUserAsync(HttpContext.User);
             var model = new HomePageViewModel 
             { 
-                Solutions = _dbContext.Solutions.Include(x => x.Permissions).ThenInclude(x => x.User).ToList()
+                Solutions = _dbContext.Solutions.Include(x => x.Permissions).ThenInclude(x => x.User).ToList(),
+                User = user
             };
 
             foreach (var solution in model.Solutions)
