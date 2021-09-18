@@ -216,8 +216,8 @@ export function useEditing(block: Block, edit: (block?: Block) => void) {
 // This is used to keep track the of the event handleres used on the dom node.
 // We keep this weak map to avoid exposing these methods on the block object.
 let eventHandlers = new WeakMap<Block, {
-    textChange(): void;
-    blockFocus(): void;
+    textChange(event: Event): void;
+    blockFocus(event: Event): void;
 }>();
 
 // Make a block with parent as it parent, inserted at insertAt, block type type, tag type tagType
@@ -226,21 +226,26 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         throw "Editing is disabled";
     }
 
-    function textChange() {
-	emit(block, EditorEventType.TextChange, {
-	    type: EditorEventType.TextChange,
-	    textChange: {}
-	});
+    function textChange(event: InputEvent) {
+        if (event.target === block.element) {
+	    emit(block, EditorEventType.TextChange, {
+	        type: EditorEventType.TextChange,
+	        textChange: {}
+	    });
+        }
     }
-    function blockFocus() {
-	block.root.selectedBlock = block;
-	emit(block, EditorEventType.BlockSelection, {
-	    type: EditorEventType.BlockSelection,
-	    blockSelection: {
-		selected: block
-	    }
-	});
+    function blockFocus(event: FocusEvent) {
+        if (event.target === block.element) {
+	    block.root.selectedBlock = block;
+            emit(block, EditorEventType.BlockSelection, {
+	        type: EditorEventType.BlockSelection,
+	        blockSelection: {
+		    selected: block
+	        }
+	    });
+        }
     }
+
     var element = document.createElement(tagType);
     var block: Block = {
         root: parent.root,
