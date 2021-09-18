@@ -318,7 +318,7 @@ export function deleteBlock(block: Block) {
 }
 
 // Change the tag type for a block
-export function ChagneTagType(block: Block, tagType: string) {
+export function chagneTagType(block: Block, tagType: string) {
     if (block.parent.editingDisabled) {
         throw "Editing is disabled";
     }

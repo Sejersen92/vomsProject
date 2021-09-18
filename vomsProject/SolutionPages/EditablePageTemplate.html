@@ -23,6 +23,15 @@
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
     <ul id="voms-tools" class="voms-menu voms-horizontal" data-bind="using: tools">
         <li>
+            <label for="select-tag-type">Tag</label>
+            <select id="select-tag-type" data-bind="value: $root.selectedTagType">
+                <option value="p">Paragraph</option>
+                <option value="h1">Header 1</option>
+                <option value="h2">Header 2</option>
+                <option value="h3">Header 3</option>
+            </select>
+        </li>
+        <li>
             <button data-bind="click: insert">insert</button>
         </li>
         <li>
@@ -159,7 +168,7 @@
     <script type="module">
         import {
             subscribe, unsubscribe, makeEditor, getContent, loadContent,
-            makeBlock, deleteBlock, BlockType, moveBlock, makeSelectionBlod,
+            makeBlock, deleteBlock, BlockType, moveBlock, chagneTagType, makeSelectionBlod,
             enableEditing, disableEditing, useEditing
         } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
@@ -201,10 +210,16 @@
                 },
                 // {{/versions}}
             ]),
+            // The date and time were the layout was saved.
             layoutSavedDate: ko.observable("{{ layoutSaveDate }}"),
+            // Is the layout in the editor the same as the saved layout.
             isLayoutSaved: ko.observable(true),
+            // The options for what area is editable.
             editableAreas: ko.observableArray(["header", "footer", "main"]),
-            selectedEditableArea: ko.observable("main")
+            // The selectet area to edit.
+            selectedEditableArea: ko.observable("main"),
+            // The tag type to use for a new block.
+            selectedTagType: ko.observable("p"),
         };
 
         // update the arePropertiesSaved when the title change.
@@ -250,6 +265,14 @@
         var editor = makeEditor(document.body);
 
         loadContent(editor, {{{ content }}});
+
+        subscribe(editor, EditorEventType.BlockSelection, function () {
+            if (editor.selectedBlock !== null && editor.selectedBlock.type === BlockType.Text) {
+                viewModel.selectedTagType(editor.selectedBlock.tagType);
+            } else {
+                viewModel.selectedTagType("p");
+            }
+        });
 
         var mainContent = null;
         var headerContent = null;
@@ -307,6 +330,7 @@
             document.title = viewModel.title();
         });
 
+        // Enable and disable editing on blocks acording to selectedEditableArea
         ko.computed(function () {
             switch (viewModel.selectedEditableArea()) {
                 case "main":
@@ -324,6 +348,18 @@
                     disableEditing(headerContent);
                     enableEditing(footerContent);
                     break;
+            }
+        });
+
+        // Update the tag type of the selected block when selectedTagType change
+        ko.computed(function () {
+            console.log(editor.selectedBlock);
+            var tagType = viewModel.selectedTagType();
+            if (editor.selectedBlock !== null
+                && editor.selectedBlock.type === BlockType.Text
+                && editor.selectedBlock.tagType !== tagType) {
+                chagneTagType(editor.selectedBlock, tagType);
+                editor.selectedBlock.element.focus();
             }
         });
 
@@ -528,7 +564,7 @@
                     index = block.parent.blocks.indexOf(block) + 1;
                     block = block.parent;
                 }
-                var latest = makeBlock(block, index, BlockType.Text, "div");
+                var latest = makeBlock(block, index, BlockType.Text, viewModel.selectedTagType());
                 latest.element.focus();
             },
             // This is not the most ideal function for moving blocks.
