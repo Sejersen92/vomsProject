@@ -191,6 +191,9 @@ export function enableEditing(block: Block): Block[] {
 
 // disable editing on block
 export function disableEditing(block: Block) {
+    if (block.root.selectedBlock === block) {
+	block.root.selectedBlock = null;
+    }
     block.editingDisabled = true;
     if (block.type === BlockType.Text) {
         block.element.contentEditable = "false";
