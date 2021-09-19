@@ -1,8 +1,10 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using vomsProject.Data;
@@ -25,11 +27,13 @@ namespace vomsProject.Helpers
         private readonly ApplicationDbContext _context;
         private readonly RepositoryService Repository;
         private readonly UserManager<User> UserManager;
-        public OperationsService(ApplicationDbContext context, RepositoryService repository, UserManager<User> userManager)
+        private readonly BlobServiceClient BlobServiceClient;
+        public OperationsService(ApplicationDbContext context, RepositoryService repository, UserManager<User> userManager, BlobServiceClient blobServiceClient)
         {
             _context = context;
             Repository = repository;
             UserManager = userManager;
+            BlobServiceClient = blobServiceClient;
         }
 
         /// <summary>
@@ -196,6 +200,64 @@ namespace vomsProject.Helpers
                 .SelectMany(page => page.Versions)
                 .Where(version => version.Id == versionId)
                 .FirstOrDefaultAsync();
+        }
+
+        /// <summary>
+        /// The infomation needed to upload an image
+        /// </summary>
+        public class UploadImage
+        {
+            public string FileName;
+            public string ContentType;
+            public Stream Content;
+        }
+
+        /// <summary>
+        /// Upload a set of images
+        /// </summary>
+        /// <param name="user">The user who is uploading the images</param>
+        /// <param name="solution">The solution the images should belong to</param>
+        /// <param name="pageId">The id of the page the images should belong to</param>
+        /// <param name="images">a list of images to upload</param>
+        /// <returns></returns>
+        public async Task<IEnumerable<Image>> UploadImages(User user, IQueryable<Solution> solution, int pageId, IEnumerable<UploadImage> images)
+        {
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (theSolution == null || !await Repository.IsUserOnSolution(theSolution, user))
+            {
+                throw new ForbittenException();
+            }
+            var page = await Repository.Pages(solution)
+                    .Where(page => page.Id == pageId)
+                    .FirstOrDefaultAsync();
+
+            if (page == null)
+            {
+                return null;
+            }
+
+            var dbImages = new List<Image>();
+            foreach (var image in images)
+            {
+                var imageGuid = Guid.NewGuid().ToString();
+                var containerClient = BlobServiceClient.GetBlobContainerClient("voms");
+                var blob = await containerClient.UploadBlobAsync(imageGuid, image.Content);
+
+                dbImages.Add(new Image()
+                {
+                    ImageUrl = imageGuid,
+                    Page = page,
+                    Solution = theSolution,
+                    FriendlyName = image.FileName,
+                    MimeType = image.ContentType
+                });
+            }
+
+            _context.Images.AddRange(dbImages);
+
+            await _context.SaveChangesAsync();
+
+            return dbImages;
         }
 
         /// <summary>

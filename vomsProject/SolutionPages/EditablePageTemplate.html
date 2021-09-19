@@ -169,7 +169,8 @@
         import {
             subscribe, unsubscribe, makeEditor, getContent, loadContent,
             makeBlock, deleteBlock, BlockType, moveBlock, chagneTagType, makeSelectionBlod,
-            enableEditing, disableEditing, useEditing
+            enableEditing, disableEditing, useEditing,
+            EditorEventType
         } from "/lib/Editor/voms-editor.js"
         ko.options.deferUpdates = true;
         var viewModel = {
@@ -266,11 +267,23 @@
 
         loadContent(editor, {{{ content }}});
 
+        // Change the current selected tag type to the one of the selected block
         subscribe(editor, EditorEventType.BlockSelection, function () {
             if (editor.selectedBlock !== null && editor.selectedBlock.type === BlockType.Text) {
                 viewModel.selectedTagType(editor.selectedBlock.tagType);
             } else {
                 viewModel.selectedTagType("p");
+            }
+        });
+
+        // The transformations we do on insertions:
+        // Uploading and inserting images as a block.
+        subscribe(editor, EditorEventType.BeforeInput, function (event) {
+            const dataTransfer = event.beforeInput.event.dataTransfer;
+            if (dataTransfer) {
+                uploadFiles(dataTransfer.files);
+
+                event.beforeInput.event.preventDefault()
             }
         });
 
@@ -353,7 +366,6 @@
 
         // Update the tag type of the selected block when selectedTagType change
         ko.computed(function () {
-            console.log(editor.selectedBlock);
             var tagType = viewModel.selectedTagType();
             if (editor.selectedBlock !== null
                 && editor.selectedBlock.type === BlockType.Text
@@ -517,6 +529,39 @@
                     }
                 }
             });
+        }
+
+        // Upload a set of files.
+        function uploadFiles(files) {
+            if (files.length > 0) {
+                var upload = new FormData();
+                for (let i = 0; i < files.length; i++) {
+                    upload.append("files", files[i]);
+                }
+                $.ajax({
+                    type: "POST",
+                    url: "/api/page/{{{ id }}}/upload",
+                    data: upload,
+                    processData: false,
+                    contentType: false,
+                    success: function (data) {
+                        var latest;
+                        var block = getActiveBlock();
+                        var index;
+                        if (block.type === BlockType.Container) {
+                            index = block.length;
+                        } else {
+                            index = block.parent.blocks.indexOf(block) + 1;
+                            block = block.parent;
+                        }
+                        for (var i = 0; i < data.length; i++) {
+                            latest = makeBlock(block, index, BlockType.Text, "img", { src: "/pages/" + data[i].pageId + "/images/" + data[i].id, alt: "" });
+                            index++;
+                        }
+                        latest.element.focus();
+                    }
+                });
+            }
         }
 
         // Return a function that will load a specific version.

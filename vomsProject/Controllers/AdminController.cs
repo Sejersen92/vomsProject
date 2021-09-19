@@ -23,7 +23,6 @@ namespace vomsProject.Controllers
     public class AdminController : Controller
     {
         private readonly ApplicationDbContext _dbContext;
-        private readonly StorageHelper _storageHelper;
         private readonly UserManager<User> UserManager;
         private readonly IConfiguration Configuration;
         private readonly JwtService JwtService;
@@ -31,10 +30,9 @@ namespace vomsProject.Controllers
         private readonly RepositoryService Repository;
         private readonly OperationsService _operationsService;
 
-        public AdminController(StorageHelper storageHelper, ApplicationDbContext dbContext, UserManager<User> userManager,
+        public AdminController(ApplicationDbContext dbContext, UserManager<User> userManager,
             IConfiguration configuration, JwtService jwtService, DomainHelper domainHelper, RepositoryService repository, OperationsService operationsService)
         {
-            _storageHelper = storageHelper;
             _dbContext = dbContext;
             UserManager = userManager;
             Configuration = configuration;
@@ -488,34 +486,6 @@ namespace vomsProject.Controllers
             page.IsDeleted = false;
             await _dbContext.SaveChangesAsync();
             return RedirectToAction("DeletedPages");
-        }
-
-        /// <summary>
-        /// Just for testing - Should be moved into the pageController.
-        /// </summary>
-        /// <param name="image"></param>
-        /// <param name="pageId"></param>
-        /// <param name="solutionId"></param>
-        /// <returns></returns>
-        public async Task<IActionResult> UploadImage(List<IFormFile> image, int pageId, int solutionId)
-        {
-            var solution = Repository.GetSolutionById(solutionId);
-            var theSolution = await solution.SingleOrDefaultAsync();
-            var pages = Repository.Pages(solution);
-            var page = await pages.FirstOrDefaultAsync(x => x.Id == pageId);
-
-            try
-            {
-                var imageToUpload = image.FirstOrDefault();
-
-                var d = await _storageHelper.UploadToBlob(imageToUpload.OpenReadStream(), _dbContext, page, imageToUpload.FileName);
-
-                return RedirectToAction("SolutionOverview", new { id = theSolution.Id });
-            }
-            catch (Exception e)
-            {
-                return RedirectToAction("SolutionOverview", new { id = theSolution.Id });
-            }
         }
 
         /// <summary>

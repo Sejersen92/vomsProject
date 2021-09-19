@@ -38,6 +38,15 @@ namespace vomsProject.Controllers.Api
         public int LatestVersion { get; set; }
         public string SaveDate { get; set; }
     }
+
+    /// <summary>
+    /// Result of uploading a image
+    /// </summary>
+    public class ImageResult
+    {
+        public int Id { get; set; }
+        public int PageId { get; set; }
+    }
     [Route("api/[controller]")]
     [ApiController]
     public class PageController : ControllerBase
@@ -331,6 +340,45 @@ namespace vomsProject.Controllers.Api
             page.IsDeleted = false;
             await _context.SaveChangesAsync();
             return Ok();
+        }
+
+        /// <summary>
+        /// Upload a list of images
+        /// </summary>
+        /// <param name="id">The id of the page the images belong to</param>
+        /// <param name="files">The images to upload</param>
+        /// <returns></returns>
+        [Authorize]
+        [Route("{id}/Upload")]
+        [HttpPost]
+        public async Task<IActionResult> Upload(int id, List<IFormFile> files)
+        {
+            try
+            {
+                var user = await UserManager.GetUserAsync(HttpContext.User);
+                var solution = Repository.GetSolutionByDomainName(Request.Host.Host);
+                var upload = files.Select(file => new UploadImage()
+                {
+                    ContentType = file.ContentType,
+                    FileName = file.FileName,
+                    Content = file.OpenReadStream()
+                });
+                var images = await Operations.UploadImages(user, solution, id, upload);
+                if (images == null)
+                {
+                    return NotFound();
+                }
+
+                return Ok(images.Select((image) => new ImageResult() 
+                {
+                    Id = image.Id,
+                    PageId = image.Page.Id
+                }));
+            }
+            catch (ForbittenException)
+            {
+                return Forbid();
+            }
         }
     }
 }
