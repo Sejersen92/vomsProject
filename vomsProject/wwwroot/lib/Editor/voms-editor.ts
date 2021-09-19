@@ -5,13 +5,17 @@ export enum BlockType {
 }
 
 export enum EditorEventType {
+    BeforeInput = "before-input",
     TextChange = "text-change",
-    BlockOrderChange = "block-selection",
+    BlockOrderChange = "block-order",
     BlockSelection = "block-selection"
 }
 
 export interface EditorEvent {
     type: EditorEventType;
+    beforeInput?: {
+        event: InputEvent;
+    };
     textChange?: {
 
     };
@@ -40,6 +44,7 @@ export interface Block {
     tagType: string;
     blocks?: Block[];
     element: HTMLElement;
+    properties: { [key: string]: string };
     handlers: { [key: string]: ((event: EditorEvent) => void)[]; };
     editingDisabled: boolean;
 };
@@ -131,10 +136,10 @@ export function loadContent(block: Block, content: TransferBlock[]) {
     }
     for (let i = 0; i < content.length; i++) {
 	if (content[i].type === BlockType.Text) {
-	    let child = makeBlock(block, i, BlockType.Text, content[i].tagType);
+	    let child = makeBlock(block, i, BlockType.Text, content[i].tagType, content[i].properties);
 	    child.element.innerHTML = content[i].text;
 	} else {
-	    let child = makeBlock(block, i, BlockType.Container, content[i].tagType);
+	    let child = makeBlock(block, i, BlockType.Container, content[i].tagType, content[i].properties);
 	    loadContent(child, content[i].blocks);
 	}
     }
@@ -148,18 +153,19 @@ export function getContent(block: Block): TransferBlock[] {
 
     let content: TransferBlock[] = [];
     for (let i = 0; i < block.blocks.length; i++) {
+        let properties = JSON.parse(JSON.stringify(block.blocks[i].properties));
 	if (block.blocks[i].type === BlockType.Text) {
 	    content.push({
 		type: block.blocks[i].type,
 		tagType: block.blocks[i].tagType,
-		properties: {},
+		properties: properties,
 		text: block.blocks[i].element.innerHTML
 	    });
 	} else {
 	    content.push({
 		type: block.blocks[i].type,
 		tagType: block.blocks[i].tagType,
-		properties: {},
+		properties: properties,
 		blocks: getContent(block.blocks[i])
 	    });
 	}
@@ -191,6 +197,9 @@ export function enableEditing(block: Block): Block[] {
 
 // disable editing on block
 export function disableEditing(block: Block) {
+    if (block.root.selectedBlock === block) {
+	block.root.selectedBlock = null;
+    }
     block.editingDisabled = true;
     if (block.type === BlockType.Text) {
         block.element.contentEditable = "false";
@@ -213,31 +222,48 @@ export function useEditing(block: Block, edit: (block?: Block) => void) {
 // This is used to keep track the of the event handleres used on the dom node.
 // We keep this weak map to avoid exposing these methods on the block object.
 let eventHandlers = new WeakMap<Block, {
-    textChange(): void;
-    blockFocus(): void;
+    beforeInput(event: Event): void;
+    textChange(event: Event): void;
+    blockFocus(event: Event): void;
 }>();
 
 // Make a block with parent as it parent, inserted at insertAt, block type type, tag type tagType
-export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagType: string): Block{
+export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagType: string, properties: { [key: string]: string }): Block{
     if (parent.editingDisabled) {
         throw "Editing is disabled";
     }
 
-    function textChange() {
-	emit(block, EditorEventType.TextChange, {
-	    type: EditorEventType.TextChange,
-	    textChange: {}
-	});
+    function beforeInput(event: InputEvent) {
+        if (event.target === block.element) {
+	    emit(block, EditorEventType.BeforeInput, {
+	        type: EditorEventType.BeforeInput,
+	        beforeInput: {
+                    event: event
+                }
+	    });
+        }
     }
-    function blockFocus() {
-	block.root.selectedBlock = block;
-	emit(block, EditorEventType.BlockSelection, {
-	    type: EditorEventType.BlockSelection,
-	    blockSelection: {
-		selected: block
-	    }
-	});
+
+    function textChange(event: InputEvent) {
+        if (event.target === block.element) {
+	    emit(block, EditorEventType.TextChange, {
+	        type: EditorEventType.TextChange,
+	        textChange: {}
+	    });
+        }
     }
+    function blockFocus(event: FocusEvent) {
+        if (event.target === block.element) {
+	    block.root.selectedBlock = block;
+            emit(block, EditorEventType.BlockSelection, {
+	        type: EditorEventType.BlockSelection,
+	        blockSelection: {
+		    selected: block
+	        }
+	    });
+        }
+    }
+
     var element = document.createElement(tagType);
     var block: Block = {
         root: parent.root,
@@ -245,6 +271,7 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         type: type,
         tagType: tagType,
         element: element,
+        properties: JSON.parse(JSON.stringify(properties)),
         handlers: {},
         editingDisabled: false
     };
@@ -253,11 +280,15 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
     element.style.userSelect = "contain";
     if (type === BlockType.Text) {
         element.contentEditable = "true";
+        element.addEventListener("beforeinput", beforeInput);
         element.addEventListener("input", textChange);
     } else if (type === BlockType.Container) {
         block.blocks = [];
     } else {
         throw "Invalid block type";
+    }
+    for (let property in properties) {
+        element.setAttribute(property, properties[property]);
     }
     insertChildBlock(parent, block, insertAt);
     emit(parent, EditorEventType.BlockOrderChange, {
@@ -265,6 +296,7 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
 	blockOrderChange: {}
     });
     eventHandlers.set(block, {
+        beforeInput: beforeInput,
 	textChange: textChange,
 	blockFocus: blockFocus
     });
@@ -281,6 +313,7 @@ function uncheckedDeleteBlock(block: Block) {
 	}
     }
     const handlers = eventHandlers.get(block);
+    block.element.removeEventListener("beforeinput", handlers.beforeInput);
     block.element.removeEventListener("input", handlers.textChange);
     block.element.removeEventListener("focus", handlers.blockFocus);
 
@@ -310,7 +343,7 @@ export function deleteBlock(block: Block) {
 }
 
 // Change the tag type for a block
-export function ChagneTagType(block: Block, tagType: string) {
+export function chagneTagType(block: Block, tagType: string) {
     if (block.parent.editingDisabled) {
         throw "Editing is disabled";
     }
@@ -319,6 +352,7 @@ export function ChagneTagType(block: Block, tagType: string) {
         element.appendChild(block.element.firstChild)
     }
     const handlers = eventHandlers.get(block);
+    block.element.removeEventListener("beforeinput", handlers.beforeInput);
     block.element.removeEventListener("input", handlers.textChange);
     block.element.removeEventListener("focus", handlers.blockFocus);
 
@@ -336,12 +370,22 @@ export function ChagneTagType(block: Block, tagType: string) {
         } else {
             element.contentEditable = "true";
         }
+        element.addEventListener("beforeinput", handlers.beforeInput);
         element.addEventListener("input", handlers.textChange);
     }
+    for (let property in block.properties) {
+        element.setAttribute(property, block.properties[property]);
+    }
+
     emit(block.parent, EditorEventType.BlockOrderChange, {
 	type: EditorEventType.BlockOrderChange,
 	blockOrderChange: {}
     });
+}
+
+export function setProperty(block: Block, name: string, value: string) {
+    block.properties[name] = value;
+    block.element.setAttribute(name, value);
 }
 
 // Create a new editor on element
@@ -354,6 +398,7 @@ export function makeEditor(element: HTMLElement): Editor {
         tagType: element.tagName,
         element: element,
         blocks: [],
+        properties: {},
         handlers: {},
         editingDisabled: false,
         elementBlocks: new WeakMap()

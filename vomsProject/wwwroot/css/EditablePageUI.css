@@ -90,6 +90,11 @@
         border: 1px solid black;
     }
 
+    .voms-menu.voms-horizontal input,
+    .voms-menu.voms-horizontal select {
+        width: auto;
+    }
+
     .voms-menu li.voms-input {
         padding: 0.2em;
     }

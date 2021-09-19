@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using Azure.Storage.Blobs;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
@@ -31,9 +32,11 @@ namespace vomsProject.Controllers
         private readonly RepositoryService _solutionHelper;
         private readonly DomainHelper _domainHelper;
         private readonly JwtService JwtService;
+        private readonly BlobServiceClient BlobServiceClient;
 
         public PageController(ILogger<PageController> logger, IConfiguration configuration,
-            ApplicationDbContext context, UserManager<User> userManager, RepositoryService solutionHelper, DomainHelper domainHelper, SignInManager<User> signInManager, JwtService jwtService)
+            ApplicationDbContext context, UserManager<User> userManager, RepositoryService solutionHelper,
+            DomainHelper domainHelper, SignInManager<User> signInManager, JwtService jwtService, BlobServiceClient blobServiceClient)
         {
             _logger = logger;
             Configuration = configuration;
@@ -44,6 +47,7 @@ namespace vomsProject.Controllers
             _solutionHelper = solutionHelper;
             _domainHelper = domainHelper;
             JwtService = jwtService;
+            BlobServiceClient = blobServiceClient;
         }
         public static IEnumerable<FaviconModel> GetSolutionFavicons(Solution solution)
         {
@@ -180,6 +184,39 @@ namespace vomsProject.Controllers
             {
                 return NotFound(null, $"There is no website on the requested domain: {Request.Host.Host}.");
             }
+        }
+
+        /// <summary>
+        /// Return an image corasponding to an id and a page id.
+        /// </summary>
+        /// <param name="pageId">The id of the page the image should belong to</param>
+        /// <param name="imageId">The id of the image</param>
+        /// <returns></returns>
+        public async Task<IActionResult> Image(int pageId, int imageId)
+        {
+            var solution = _solutionHelper.GetSolutionByDomainName(Request.Host.Host);
+            var image = await _solutionHelper.Pages(solution)
+                .Where(page => page.Id == pageId)
+                .SelectMany(page => page.Images)
+                .Include(image => image.Page)
+                .Where(image => image.Id == imageId)
+                .FirstOrDefaultAsync();
+            var theSolution = await solution.SingleOrDefaultAsync();
+            if (image != null)
+            {
+                if (!image.Page.IsPublished)
+                {
+                    var user = await UserManager.GetUserAsync(HttpContext.User);
+                    if (theSolution == null || !await _solutionHelper.IsUserOnSolution(theSolution, user))
+                    {
+                        return NotFound(theSolution, "The image was not found");
+                    }
+                }
+                var containerClient = BlobServiceClient.GetBlobContainerClient("voms");
+                var blobClient = containerClient.GetBlobClient(image.ImageUrl);
+                return new FileStreamResult(await blobClient.OpenReadAsync(), image.MimeType);
+            }
+            return NotFound(theSolution, "The image was not found");
         }
 
         /// <summary>

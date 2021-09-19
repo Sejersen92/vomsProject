@@ -1,3 +1,4 @@
+using Azure.Storage.Blobs;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
@@ -5,6 +6,8 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.WindowsAzure.Storage.Blob;
+using System;
 using vomsProject.Data;
 using vomsProject.Helpers;
 
@@ -31,7 +34,13 @@ namespace vomsProject
                 .AddEntityFrameworkStores<ApplicationDbContext>();
             services.AddControllersWithViews();
 
-            services.AddScoped<StorageHelper>();
+            services.AddScoped((provider) =>
+                new BlobServiceClient(Configuration.GetValue<string>("ConnectionStrings:BlobStorageConnection")));
+            services.AddScoped((provider) => 
+                new CloudBlobContainer(new Uri("https://sejersenstorageaccount.blob.core.windows.net/voms"),
+                    new Microsoft.WindowsAzure.Storage.Auth.StorageCredentials(
+                        Configuration.GetValue<string>("AccountName"),
+                        Configuration.GetValue<string>("AccountKey"))));
             services.AddScoped<RepositoryService>();
             services.AddScoped(typeof(DomainHelper));
             services.AddScoped<OperationsService>();
@@ -93,6 +102,10 @@ namespace vomsProject
 
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapControllerRoute(
+                        name: "Image",
+                        pattern: "/pages/{pageId}/images/{imageId}",
+                        defaults: new { controller = "Page", action = "Image" });
                     endpoints.MapControllerRoute(
                         name: "Style",
                         pattern: "/favicon.{ext}",
