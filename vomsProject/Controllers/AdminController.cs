@@ -191,25 +191,21 @@ namespace vomsProject.Controllers
                 }
             }
 
-            foreach (var option in theSolution.Style.StylesheetOptions.Split(';'))
+            foreach (var option in StylesheetOptions.GetFromString(theSolution.Style.StylesheetOptions))
             {
-                var settings = option.Split(',');
-                if (settings.Length == 3)
-                {
-                    if (!stylesheetKeyValue.TryGetValue(settings[0], out var value))
-                    {
-                        value = string.Empty;
-                    }
-                    
-                    options.Add(new StylesheetCustomizations
-                    {
-                        VariableName = settings[0],
-                        Value = value,
-                        FriendlyName = settings[1],
-                        Type = settings[2]
-                    });
 
+                if (!stylesheetKeyValue.TryGetValue(option.Name, out var value))
+                {
+                    value = string.Empty;
                 }
+
+                options.Add(new StylesheetCustomizations
+                {
+                    VariableName = option.Name,
+                    Value = value,
+                    FriendlyName = option.Description,
+                    Type = option.Type
+                });
             }
 
             var stylesheets = await _dbContext.Styles.Select(style => new Option() { Id = style.Id, Text = style.Name }).ToListAsync();
@@ -518,19 +514,16 @@ namespace vomsProject.Controllers
             int solutionId = int.Parse(variables["id"]);
             var solution = await Repository.GetSolutionById(solutionId)
                 .Include(x => x.Style).FirstOrDefaultAsync();
+
             var stylesheetCustomizationStringBuilder = new StringBuilder();
             var serializedStylesheetStringBuilder = new StringBuilder();
 
             var stylesheetKeyValue = new Dictionary<string, string>();
-            var options = solution.Style.StylesheetOptions.Split(';');
+            var options = StylesheetOptions.GetFromString(solution.Style.StylesheetOptions);
 
             foreach (var option in options)
             {
-                var keyValue = option.Split(',');
-                if (keyValue.Length == 3)
-                {
-                    stylesheetKeyValue.Add(keyValue[0], keyValue[2]);
-                }
+                stylesheetKeyValue.Add(option.Name, option.Type);
             }
 
 

@@ -153,18 +153,15 @@
                             {
                                 case "color":
                                     <div class="form-group mb-2">
-                                        <div class="input-group">
-                                            <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
-                                            <input class="form-control" style="padding:0" type="color"
-                                                   name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
-                                        </div>
+                                        <label class="form-label col-12 font-weight-light" for="@customization.VariableName">@customization.FriendlyName</label>
+                                        <input class="form-control col-12" style="padding:0" type="color"
+                                               name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
                                     </div>
                                     break;
                                 case "font":
-                                    <div class="input-group mb-2">
-                                        <label class="form-label" for="@customization.VariableName">Select your header-font</label>
-                                        <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
-
+                                    <div class="form-group mb-2">
+                                        <label class="form-label col-12" for="@customization.VariableName">Select your header-font</label>
+                                        <select class="form-select col-12" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
                                             @foreach (var font in Model.Fonts)
                                             {
                                                 if (font == customization.Value)
@@ -176,27 +173,6 @@
                                                     <option value="@font">@font</option>
                                                 }
                                             }
-
-                                        </select>
-                                    </div>
-                                    break;
-                                case "div":
-                                    <div class="input-group mb-2">
-                                        <label class="form-label" for="@customization.VariableName">Select your div-font</label>
-                                        <select class="form-select" aria-label="Header div picker" name="@customization.VariableName" id="@customization.VariableName">
-
-                                            @foreach (var font in Model.Fonts)
-                                            {
-                                                if (font == customization.Value)
-                                                {
-                                                    <option selected="selected" value="@font">@font</option>
-                                                }
-                                                else
-                                                {
-                                                    <option value="@font">@font</option>
-                                                }
-                                            }
-
                                         </select>
                                     </div>
                                     break;
