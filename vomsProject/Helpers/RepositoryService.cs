@@ -122,9 +122,11 @@ namespace vomsProject.Helpers
         /// </summary>
         /// <param name="user"></param>
         /// <returns></returns>
-        public async Task<IEnumerable<Solution>> GetSolutionsByUser(User user)
+        public IQueryable<Solution> GetSolutionsByUser(User user)
         {
-            return await Context.Solutions.Include(x => x.Permissions).ThenInclude(perm => perm.User).Where(x => x.Permissions.Any(perm => perm.User == user)).ToListAsync();
+            return Context.Solutions.Include(x => x.Permissions).
+                ThenInclude(perm => perm.User).
+                Where(x => x.Permissions.Any(perm => perm.User == user));
         }
     }
 }

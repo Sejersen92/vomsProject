@@ -47,12 +47,20 @@ namespace vomsProject.Controllers
         /// </summary>
         /// <returns></returns>
         [Authorize]
-        public async Task<IActionResult> IndexAsync()
+        public async Task<IActionResult> IndexAsync(string searchString, int? pageNumber = 1)
         {
             var user = await UserManager.GetUserAsync(HttpContext.User);
+            var solutions = Repository.GetSolutionsByUser(user);
+            var pageSize = 3;
+
+            if (!string.IsNullOrEmpty(searchString) && searchString != "All")
+            {
+                solutions = solutions.Where(s => s.Subdomain == searchString);
+            }
+
             var model = new AdminViewModel()
             {
-                Solutions = await Repository.GetSolutionsByUser(user),
+                Solutions = await PaginatedList<Solution>.CreateAsync(solutions, pageNumber ?? 1, pageSize),
                 User = user
             };
 
@@ -66,12 +74,13 @@ namespace vomsProject.Controllers
         /// <returns></returns>
         [Authorize]
         [HttpPost]
-        public async Task<IActionResult> Index(string title)
+        public async Task<IActionResult> Index(string title, int? pageNumber = 1)
         {
             var maxSolutions = 0;
             var user = await UserManager.GetUserAsync(HttpContext.User);
             var productVersion = user.ProductVersion;
             var style = await _dbContext.Styles.OrderBy((style) => style.Id).FirstOrDefaultAsync();
+            var pageSize = 3;
 
             switch (productVersion)
             {
@@ -140,7 +149,7 @@ namespace vomsProject.Controllers
                 {
                     var model = new AdminViewModel()
                     {
-                        Solutions = await Repository.GetSolutionsByUser(user),
+                        Solutions = await PaginatedList<Solution>.CreateAsync(Repository.GetSolutionsByUser(user), pageNumber ?? 1, pageSize),
                         HasReachedProductLimit = true,
                         User = user
                     };

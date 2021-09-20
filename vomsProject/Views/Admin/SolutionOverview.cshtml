@@ -10,546 +10,276 @@
     var friendlyName = !string.IsNullOrWhiteSpace(Model.Solution.FriendlyName) ? Model.Solution.FriendlyName : "";
     var domainName = !string.IsNullOrWhiteSpace(Model.Solution.Domain) ? Model.Solution.Domain : "";
     var favIcon = Model.Solution.Favicon != null ? Model.Solution.Favicon : null;
+    var showOffCanvas = "";
+    if (!Model.User.DisableTutorials)
+    {
+        showOffCanvas = "show";
+    }
 }
 
-@if (!Model.User.DisableTutorials)
-{
-    <div class="px-4 py-5 my-5 text-center">
-        <h1 class="display-5 fw-bold">Admin panel</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">On this page you can configure your solution to your needs in a simple, easy and fast maner. Have fun!</p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a href="#pagesManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Pages management</a>
-                <a href="#solutionManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Solution management</a>
-            </div>
+<div class="px-4 py-5 my-5 text-center">
+    <h1 class="display-5 fw-bold">Admin panel</h1>
+    <div class="col-lg-6 mx-auto">
+        <p class="lead mb-4">On this page you can configure your solution to your needs in a simple, easy and fast maner. Have fun!</p>
+        <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
+            <a href="#pagesManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Pages management</a>
+            <a href="#solutionManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Solution management</a>
         </div>
     </div>
+</div>
 
-    <div class="bg-light rounded-3 mb-2" data-bs-spy="scroll" data-bs-target="#pagesManagement" data-bs-offset="0" tabindex="0">
-        <div class="container-fluid" id="pagesManagement">
-            <h2 class="fw-bold">Pages management:  </h2>
-            <h3>Pages overview</h3>
-            <table class="table table-responsive table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">Last edited by/ publish time</th>
-                        <th scope="col">Page name & link to page</th>
-                        <th scope="col">Manage page</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var page in Model.Pages)
-                    {
-                        var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
-
-                        <tr>
-                            <td>
-                                <div class="font-weight-bolder">@(page.PublishedVersion != null ? page.PublishedVersion.SavedBy.Nickname : "Administrator")</div>
-                                <div class="w-50 font-weight-lighter">@(page.PublishedVersion != null ? page.PublishedVersion.SaveDate : "Not published yet" )</div>
-                            </td>
-                            <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
-                            <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <div class="mb-3 mt-3 row">
-                <form asp-action="CreatePage" asp-controller="Admin" method="post">
-                    <div class="input-group-lg mb-2 mt-2">
-                        <label class="form-label">Page name:</label>
-                        <input class="form-control" type="text" id="title" name="title" />
-                    </div>
-                    <div style="display: none">
-                        <input type="text" name="id" value="@Model.SolutionId" />
-                    </div>
-                    <input type="submit" value="Create page" class="btn btn-success mb-3" />
-                </form>
-            </div>
-            <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
-                <h3>
-                    Recycle Bin
-                    <svg style="height: 1em; vertical-align: bottom;" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
-                        <rect x="15" y="65" width="80" height="100" />
-                        <rect x="05" y="25" width="100" height="20" />
-                        <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
-                        <line x1="35" x2="35" y1="80" y2="150" />
-                        <line x1="55" x2="55" y1="80" y2="150" />
-                        <line x1="75" x2="75" y1="80" y2="150" />
-                    </svg>
-                </h3>
-            </a>
-        </div>
-    </div>
-
-    <div class="bg-light rounded-3" data-bs-spy="scroll" data-bs-target="#solutionManagement" data-bs-offset="0" tabindex="0">
-        <div class="container-fluid">
-            <h2 class="fw-bold">Solution management:  </h2>
-            <form asp-action="UpdateSolution" asp-controller="Admin" method="post" enctype="multipart/form-data">
-                <div class="input-group-lg mb-3" id="solutionManagement">
-                    <label class="form-label">Select a stylesheet: </label>
-                    <select class="form-select col-8" name="stylesheet">
-                        @foreach (var style in Model.StyleSheets)
-                        {
-                            if (Model.SelectedStyleId == style.Id)
-                            {
-                                <option value="@style.Id" selected>@style.Text</option>
-                            }
-                            else
-                            {
-                                <option value="@style.Id">@style.Text</option>
-                            }
-                        }
-                    </select>
-                </div>
-                <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Configure stylesheet</button>
-
-                <div class="input-group-lg mb-3 mt-1">
-                    <label class="form-label" for="friendlyName">Friendly name:</label>
-                    <input type="text" class="form-control col-8" id="friendlyName" name="friendlyName" value="@friendlyName">
-                </div>
-
-                @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+<div class="bg-light rounded-3 mb-2" data-bs-spy="scroll" data-bs-target="#pagesManagement" data-bs-offset="0" tabindex="0">
+    <div class="container-fluid" id="pagesManagement">
+        <h2 class="fw-bold">Pages management:  </h2>
+        <h3>Pages overview</h3>
+        <table class="table table-responsive table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th scope="col">Last edited by/ publish time</th>
+                    <th scope="col">Page name & link to page</th>
+                    <th scope="col">Manage page</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var page in Model.Pages)
                 {
-                    <div class="input-group-lg mb-3">
-                        <label class="form-label" for="domainName">Custom Domain:</label>
-                        <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
-                    </div>
+                    var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
+
+                    <tr>
+                        <td>
+                            <div class="font-weight-bolder">@(page.PublishedVersion != null ? page.PublishedVersion.SavedBy.Nickname : "Administrator")</div>
+                            <div class="w-50 font-weight-lighter">@(page.PublishedVersion != null ? page.PublishedVersion.SaveDate : "Not published yet" )</div>
+                        </td>
+                        <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
+                        <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
+                    </tr>
                 }
-
-                <div class="input-group-lg mb-3">
-                    <label class="form-label" for="favicon">Upload favicon:</label>
-                    <input type="file" class="form-control col-8" id="favicon" name="favicon">
-                    <img src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = Model.SolutionId }))" style="max-width: 10rem; max-height: 10rem" />
+            </tbody>
+        </table>
+        <div class="mb-3 mt-3 row">
+            <form asp-action="CreatePage" asp-controller="Admin" method="post">
+                <div class="input-group-lg mb-2 mt-2">
+                    <label class="form-label">Page name:</label>
+                    <input class="form-control" type="text" id="title" name="title" />
                 </div>
-
                 <div style="display: none">
-                    <input type="text" name="solutionId" value="@Model.SolutionId" />
+                    <input type="text" name="id" value="@Model.SolutionId" />
                 </div>
-                <input type="submit" value="Update solution" class="btn btn-success mb-3" />
+                <input type="submit" value="Create page" class="btn btn-success mb-3" />
             </form>
+        </div>
+        <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
+            <h3>
+                Recycle Bin
+                <svg style="height: 1em; vertical-align: bottom;" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
+                    <rect x="15" y="65" width="80" height="100" />
+                    <rect x="05" y="25" width="100" height="20" />
+                    <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
+                    <line x1="35" x2="35" y1="80" y2="150" />
+                    <line x1="55" x2="55" y1="80" y2="150" />
+                    <line x1="75" x2="75" y1="80" y2="150" />
+                </svg>
+            </h3>
+        </a>
+    </div>
+</div>
 
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-                <div class="offcanvas-header">
-                    <h5 id="offcanvasRightLabel">Style selector</h5>
-                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <form asp-action="SetStyleVariables" asp-controller="Admin" method="post" enctype="application/x-www-form-urlencoded">
-                        @if (!Model.StylesheetCustomizations.Any())
+<div class="bg-light rounded-3" data-bs-spy="scroll" data-bs-target="#solutionManagement" data-bs-offset="0" tabindex="0">
+    <div class="container-fluid">
+        <h2 class="fw-bold">Solution management:  </h2>
+        <form asp-action="UpdateSolution" asp-controller="Admin" method="post" enctype="multipart/form-data">
+            <div class="input-group-lg mb-3" id="solutionManagement">
+                <label class="form-label">Select a stylesheet: </label>
+                <select class="form-select col-8" name="stylesheet">
+                    @foreach (var style in Model.StyleSheets)
+                    {
+                        if (Model.SelectedStyleId == style.Id)
                         {
-                            <p>
-                                There are no selected stylesheet options for this solution.
-                                Please create or select one to continue.
-                            </p>
+                            <option value="@style.Id" selected>@style.Text</option>
                         }
                         else
                         {
-                            @foreach (var customization in Model.StylesheetCustomizations)
-                            {
-                                switch (customization.Type)
-                                {
-                                    case "color":
-                                        <div class="form-group mb-2">
-                                            <div class="input-group">
-                                                <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
-                                                <input class="form-control" style="padding:0" type="color"
-                                                       name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
-                                            </div>
-                                        </div>
-                                        break;
-                                    case "font":
-                                        <div class="input-group mb-2">
-                                            <label class="form-label" for="@customization.VariableName">Select your header-font</label>
-                                            <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
-
-                                                @foreach (var font in Model.Fonts)
-                                                {
-                                                    if (font == customization.Value)
-                                                    {
-                                                        <option selected="selected" value="@font">@font</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@font">@font</option>
-                                                    }
-                                                }
-
-                                            </select>
-                                        </div>
-                                        break;
-                                    case "div":
-                                        <div class="input-group mb-2">
-                                            <label class="form-label" for="@customization.VariableName">Select your div-font</label>
-                                            <select class="form-select" aria-label="Header div picker" name="@customization.VariableName" id="@customization.VariableName">
-
-                                                @foreach (var font in Model.Fonts)
-                                                {
-                                                    if (font == customization.Value)
-                                                    {
-                                                        <option selected="selected" value="@font">@font</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@font">@font</option>
-                                                    }
-                                                }
-
-                                            </select>
-                                        </div>
-                                        break;
-                                }
-                            }
-                            <div style="display: none">
-                                <input type="text" name="id" value="@Model.SolutionId" />
-                            </div>
-                            <button type="submit" class="btn btn-success">Submit</button>
+                            <option value="@style.Id">@style.Text</option>
                         }
-                    </form>
-                </div>
+                    }
+                </select>
+            </div>
+            <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Configure stylesheet</button>
+
+            <div class="input-group-lg mb-3 mt-1">
+                <label class="form-label" for="friendlyName">Friendly name:</label>
+                <input type="text" class="form-control col-8" id="friendlyName" name="friendlyName" value="@friendlyName">
             </div>
 
-            <table class="table table-responsive table-bordered table-hover mb-0">
-                <thead>
-                    <tr>
-                        <th scope="col">Nickname</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Delete user</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var permission in Model.Solution.Permissions)
-                    {
-                        <tr>
-                            <th scope="row">@(permission.User.Nickname ?? "N/A")</th>
-                            <td class="">@permission.User.UserName</td>
-                            <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <h1 class="fw-bold">Add a new user:  </h1>
-            <form asp-action="AddUser" asp-controller="Admin" method="post">
-                <div class="input-group-lg mb-2 mt-2">
-                    <label class="form-label">Assign through email</label>
-                    <input class="form-control" type="email" id="userEmail" name="userEmail" />
+            @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+            {
+                <div class="input-group-lg mb-3">
+                    <label class="form-label" for="domainName">Custom Domain:</label>
+                    <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
                 </div>
-                <div style="display: none">
-                    <input type="text" name="solutionId" value="@Model.SolutionId" />
-                </div>
-                <input type="submit" value="Add user" class="btn btn-success mb-3" />
-            </form>
-        </div>
-    </div>
+            }
 
-    <div class="offcanvas offcanvas-bottom show" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body small">
-            <p>Welcome to <strong>VOMS</strong>. Below here will be some guides on how to execute key-features on this page.</p>
-            <hr />
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Pages Management:</h6>
-                        <p>The first thing you see in the page management section is the page-overview <strong>table</strong>.</p>
-                        <p><em>Do you want to <strong>delete</strong> a page?</em> Just click on the button and the page gets deleted immediately.</p>
-                        <p><em>Would you rather <strong>access</strong> a page?</em> Just click on the title of the page name.</p>
-                        <p><em>Did you accidentally delete a page?</em> Just click on the <i class="fas fa-trash-alt"> Recycle bin</i> to recover the page.</p>
-                    </div>
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Solution Management: Update Solution - Step by step</h6>
-                        <p>The first thing you are asked to use in the Solutions Management is the <strong>style selector</strong>. This is a dropdown of available stylesheets.</p>
-                        <p>When you have selected a stylesheet, you are then capable of <strong>configuring </strong>said stylesheet.</p>
-                        <p>The next thing you are capable of filling out is the <strong>friendly name</strong>. This is used to increase recognizability.</p>
-                        @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+            <div class="input-group-lg mb-3">
+                <label class="form-label" for="favicon">Upload favicon:</label>
+                <input type="file" class="form-control col-8" id="favicon" name="favicon">
+                <img src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = Model.SolutionId }))" style="max-width: 10rem; max-height: 10rem" />
+            </div>
+
+            <div style="display: none">
+                <input type="text" name="solutionId" value="@Model.SolutionId" />
+            </div>
+            <input type="submit" value="Update solution" class="btn btn-success mb-3" />
+        </form>
+
+        <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
+            <div class="offcanvas-header">
+                <h5 id="offcanvasRightLabel">Style selector</h5>
+                <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+            </div>
+            <div class="offcanvas-body">
+                <form asp-action="SetStyleVariables" asp-controller="Admin" method="post" enctype="application/x-www-form-urlencoded">
+                    @if (!Model.StylesheetCustomizations.Any())
+                    {
+                        <p>
+                            There are no selected stylesheet options for this solution.
+                            Please create or select one to continue.
+                        </p>
+                    }
+                    else
+                    {
+                        @foreach (var customization in Model.StylesheetCustomizations)
                         {
-                            <p>Map your <strong>custom domain</strong> here by inserting your domain-name.</p>
+                            switch (customization.Type)
+                            {
+                                case "color":
+                                    <div class="form-group mb-2">
+                                        <div class="input-group">
+                                            <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
+                                            <input class="form-control" style="padding:0" type="color"
+                                                   name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
+                                        </div>
+                                    </div>
+                                    break;
+                                case "font":
+                                    <div class="input-group mb-2">
+                                        <label class="form-label" for="@customization.VariableName">Select your header-font</label>
+                                        <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
+
+                                            @foreach (var font in Model.Fonts)
+                                            {
+                                                if (font == customization.Value)
+                                                {
+                                                    <option selected="selected" value="@font">@font</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@font">@font</option>
+                                                }
+                                            }
+
+                                        </select>
+                                    </div>
+                                    break;
+                                case "div":
+                                    <div class="input-group mb-2">
+                                        <label class="form-label" for="@customization.VariableName">Select your div-font</label>
+                                        <select class="form-select" aria-label="Header div picker" name="@customization.VariableName" id="@customization.VariableName">
+
+                                            @foreach (var font in Model.Fonts)
+                                            {
+                                                if (font == customization.Value)
+                                                {
+                                                    <option selected="selected" value="@font">@font</option>
+                                                }
+                                                else
+                                                {
+                                                    <option value="@font">@font</option>
+                                                }
+                                            }
+
+                                        </select>
+                                    </div>
+                                    break;
+                            }
                         }
-                        <p>Lastly, you are able to insert a <strong>favicon </strong>here. Just upload an image here, preferably .ico, .svg or .png</p>
-                        <p>When you're done, just click the <strong>update solution</strong> button.</p>
-                    </div>
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Solution Management: Users - Step by step</h6>
-                        <p>The first thing you see here is the attached users for this specific solution.</p>
-                        <p>Click on the <strong>Remove </strong>button to remove that specific user from the solution.</p>
-                        <p>Need to add that pal of yours? Fill out their email-address and hit the <strong>Add user</strong> button.</p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-}
-else
-{
-    <div class="px-4 py-5 my-5 text-center">
-        <h1 class="display-5 fw-bold">Admin panel</h1>
-        <div class="col-lg-6 mx-auto">
-            <p class="lead mb-4">On this page you can configure your solution to your needs in a simple, easy and fast maner. Have fun!</p>
-            <div class="d-grid gap-2 d-sm-flex justify-content-sm-center">
-                <a href="#pagesManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Pages management</a>
-                <a href="#solutionManagement" class="btn btn-outline-info btn-lg px-4 me-sm-3 fw-bold">Solution management</a>
-            </div>
-        </div>
-    </div>
-
-    <div class="bg-light rounded-3 mb-2" data-bs-spy="scroll" data-bs-target="#pagesManagement" data-bs-offset="0" tabindex="0">
-        <div class="container-fluid" id="pagesManagement">
-            <h2 class="fw-bold">Pages management:  </h2>
-            <h3>Pages overview</h3>
-            <table class="table table-responsive table-bordered table-hover">
-                <thead>
-                    <tr>
-                        <th scope="col">Last edited by/ publish time</th>
-                        <th scope="col">Page name & link to page</th>
-                        <th scope="col">Manage page</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @foreach (var page in Model.Pages)
-                    {
-                        var pagename = !string.IsNullOrWhiteSpace(page.PageName) ? page.PageName : "(Index page)";
-
-                        <tr>
-                            <td>
-                                <div class="font-weight-bolder">@(page.PublishedVersion != null ? page.PublishedVersion.SavedBy.Nickname : "Administrator")</div>
-                                <div class="w-50 font-weight-lighter">@(page.PublishedVersion != null ? page.PublishedVersion.SaveDate : "Not published yet" )</div>
-                            </td>
-                            <td><a href="@Url.Action("LoginToSolution", "Admin", new { id = Model.SolutionId, page.PageName })" class="card-link">@(pagename)</a></td>
-                            <td>@Html.ActionLink("Delete page", "RemovePage", "Admin", new { id = page.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
-                        </tr>
+                        <div style="display: none">
+                            <input type="text" name="id" value="@Model.SolutionId" />
+                        </div>
+                        <button type="submit" class="btn btn-success">Submit</button>
                     }
-                </tbody>
-            </table>
-            <div class="mb-3 mt-3 row">
-                <form asp-action="CreatePage" asp-controller="Admin" method="post">
-                    <div class="input-group-lg mb-2 mt-2">
-                        <label class="form-label">Page name:</label>
-                        <input class="form-control" type="text" id="title" name="title" />
-                    </div>
-                    <div style="display: none">
-                        <input type="text" name="id" value="@Model.SolutionId" />
-                    </div>
-                    <input type="submit" value="Create page" class="btn btn-success mb-3" />
                 </form>
             </div>
-            <a class="mb-1 btn btn-outline-dark" href="@Url.Action("DeletedPages", "Admin", new { id = Model.SolutionId })" style="text-decoration: none">
-                <h3>
-                    Recycle Bin
-                    <svg style="height: 1em; vertical-align: bottom;" viewBox="0 0 115 170" xmlns="http://www.w3.org/2000/svg" fill="white" stroke="black" stroke-width="10">
-                        <rect x="15" y="65" width="80" height="100" />
-                        <rect x="05" y="25" width="100" height="20" />
-                        <path d="M 35 20 V 05 h 40 V 20" fill="transparent" />
-                        <line x1="35" x2="35" y1="80" y2="150" />
-                        <line x1="55" x2="55" y1="80" y2="150" />
-                        <line x1="75" x2="75" y1="80" y2="150" />
-                    </svg>
-                </h3>
-            </a>
         </div>
-    </div>
 
-    <div class="bg-light rounded-3" data-bs-spy="scroll" data-bs-target="#solutionManagement" data-bs-offset="0" tabindex="0">
-        <div class="container-fluid">
-            <h2 class="fw-bold">Solution management:  </h2>
-            <form asp-action="UpdateSolution" asp-controller="Admin" method="post" enctype="multipart/form-data">
-                <div class="input-group-lg mb-3" id="solutionManagement">
-                    <label class="form-label">Select a stylesheet: </label>
-                    <select class="form-select col-8" name="stylesheet">
-                        @foreach (var style in Model.StyleSheets)
-                        {
-                            if (Model.SelectedStyleId == style.Id)
-                            {
-                                <option value="@style.Id" selected>@style.Text</option>
-                            }
-                            else
-                            {
-                                <option value="@style.Id">@style.Text</option>
-                            }
-                        }
-                    </select>
-                </div>
-                <button class="btn btn-primary" type="button" data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">Configure stylesheet</button>
-
-                <div class="input-group-lg mb-3 mt-1">
-                    <label class="form-label" for="friendlyName">Friendly name:</label>
-                    <input type="text" class="form-control col-8" id="friendlyName" name="friendlyName" value="@friendlyName">
-                </div>
-
-                @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+        <table class="table table-responsive table-bordered table-hover mb-0">
+            <thead>
+                <tr>
+                    <th scope="col">Nickname</th>
+                    <th scope="col">Username</th>
+                    <th scope="col">Delete user</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var permission in Model.Solution.Permissions)
                 {
-                    <div class="input-group-lg mb-3">
-                        <label class="form-label" for="domainName">Custom Domain:</label>
-                        <input type="text" class="form-control col-8" id="domainName" name="domainName" value="@domainName">
-                    </div>
-                }
-
-                <div class="input-group-lg mb-3">
-                    <label class="form-label" for="favicon">Upload favicon:</label>
-                    <input type="file" class="form-control col-8" id="favicon" name="favicon">
-                    <img src="@(Url.Action("GetSolutionFavicon", "Admin", new { solutionId = Model.SolutionId }))" style="max-width: 10rem; max-height: 10rem" />
-                </div>
-
-                <div style="display: none">
-                    <input type="text" name="solutionId" value="@Model.SolutionId" />
-                </div>
-                <input type="submit" value="Update solution" class="btn btn-success mb-3" />
-            </form>
-
-            <div class="offcanvas offcanvas-end" tabindex="-1" id="offcanvasRight" aria-labelledby="offcanvasRightLabel">
-                <div class="offcanvas-header">
-                    <h5 id="offcanvasRightLabel">Style selector</h5>
-                    <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-                </div>
-                <div class="offcanvas-body">
-                    <form asp-action="SetStyleVariables" asp-controller="Admin" method="post" enctype="application/x-www-form-urlencoded">
-                        @if (!Model.StylesheetCustomizations.Any())
-                        {
-                            <p>
-                                There are no selected stylesheet options for this solution.
-                                Please create or select one to continue.
-                            </p>
-                        }
-                        else
-                        {
-                            @foreach (var customization in Model.StylesheetCustomizations)
-                            {
-                                switch (customization.Type)
-                                {
-                                    case "color":
-                                        <div class="form-group mb-2">
-                                            <div class="input-group">
-                                                <label class="form-check-label" for="@customization.VariableName">@customization.FriendlyName</label>
-                                                <input class="form-control" style="padding:0" type="color"
-                                                       name="@customization.VariableName" id="@customization.VariableName" value="@customization.Value">
-                                            </div>
-                                        </div>
-                                        break;
-                                    case "font":
-                                        <div class="input-group mb-2">
-                                            <label class="form-label" for="@customization.VariableName">Select your header-font</label>
-                                            <select class="form-select" aria-label="Header font picker" name="@customization.VariableName" id="@customization.VariableName">
-
-                                                @foreach (var font in Model.Fonts)
-                                                {
-                                                    if (font == customization.Value)
-                                                    {
-                                                        <option selected="selected" value="@font">@font</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@font">@font</option>
-                                                    }
-                                                }
-
-                                            </select>
-                                        </div>
-                                        break;
-                                    case "div":
-                                        <div class="input-group mb-2">
-                                            <label class="form-label" for="@customization.VariableName">Select your div-font</label>
-                                            <select class="form-select" aria-label="Header div picker" name="@customization.VariableName" id="@customization.VariableName">
-
-                                                @foreach (var font in Model.Fonts)
-                                                {
-                                                    if (font == customization.Value)
-                                                    {
-                                                        <option selected="selected" value="@font">@font</option>
-                                                    }
-                                                    else
-                                                    {
-                                                        <option value="@font">@font</option>
-                                                    }
-                                                }
-
-                                            </select>
-                                        </div>
-                                        break;
-                                }
-                            }
-                            <div style="display: none">
-                                <input type="text" name="id" value="@Model.SolutionId" />
-                            </div>
-                            <button type="submit" class="btn btn-success">Submit</button>
-                        }
-                    </form>
-
-                </div>
-            </div>
-
-
-            <table class="table table-responsive table-bordered table-hover mb-0">
-                <thead>
                     <tr>
-                        <th scope="col">Nickname</th>
-                        <th scope="col">Username</th>
-                        <th scope="col">Delete user</th>
+                        <th scope="row">@(permission.User.Nickname ?? "N/A")</th>
+                        <td class="">@permission.User.UserName</td>
+                        <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
                     </tr>
-                </thead>
-                <tbody>
-                    @foreach (var permission in Model.Solution.Permissions)
-                    {
-                        <tr>
-                            <th scope="row">@(permission.User.Nickname ?? "N/A")</th>
-                            <td class="">@permission.User.UserName</td>
-                            <td>@Html.ActionLink("Remove", "RemoveUser", "Admin", new { id = permission.User.Id, solutionId = Model.SolutionId }, new { @class = "btn btn-danger" })</td>
-                        </tr>
-                    }
-                </tbody>
-            </table>
-            <h1 class="fw-bold">Add a new user:  </h1>
-            <form asp-action="AddUser" asp-controller="Admin" method="post">
-                <div class="input-group-lg mb-2 mt-2">
-                    <label class="form-label">Assign through email</label>
-                    <input class="form-control" type="email" id="userEmail" name="userEmail" />
-                </div>
-                <div style="display: none">
-                    <input type="text" name="solutionId" value="@Model.SolutionId" />
-                </div>
-                <input type="submit" value="Add user" class="btn btn-success mb-3" />
-            </form>
-        </div>
+                }
+            </tbody>
+        </table>
+        <h1 class="fw-bold">Add a new user:  </h1>
+        <form asp-action="AddUser" asp-controller="Admin" method="post">
+            <div class="input-group-lg mb-2 mt-2">
+                <label class="form-label">Assign through email</label>
+                <input class="form-control" type="email" id="userEmail" name="userEmail" />
+            </div>
+            <div style="display: none">
+                <input type="text" name="solutionId" value="@Model.SolutionId" />
+            </div>
+            <input type="submit" value="Add user" class="btn btn-success mb-3" />
+        </form>
     </div>
-    <div class="offcanvas offcanvas-bottom" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
-        <div class="offcanvas-header">
-            <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
-            <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
-        </div>
-        <div class="offcanvas-body small">
-            <p>Welcome to <strong>VOMS</strong>. Below here will be some guides on how to execute key-features on this page.</p>
-            <hr />
-            <div class="container">
-                <div class="row">
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Pages Management:</h6>
-                        <p>The first thing you see in the page management section is the page-overview <strong>table</strong>.</p>
-                        <p><em>Do you want to <strong>delete</strong> a page?</em> Just click on the button and the page gets deleted immediately.</p>
-                        <p><em>Would you rather <strong>access</strong> a page?</em> Just click on the title of the page name.</p>
-                        <p><em>Did you accidentally delete a page?</em> Just click on the <i class="fas fa-trash-alt"> Recycle bin</i> to recover the page.</p>
-                    </div>
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Solution Management: Update Solution - Step by step</h6>
-                        <p>The first thing you are asked to use in the Solutions Management is the <strong>style selector</strong>. This is a dropdown of available stylesheets.</p>
-                        <p>When you have selected a stylesheet, you are then capable of <strong>configuring </strong>said stylesheet.</p>
-                        <p>The next thing you are capable of filling out is the <strong>friendly name</strong>. This is used to increase recognizability.</p>
-                        @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
-                        {
-                            <p>Map your <strong>custom domain</strong> here by inserting your domain-name.</p>
-                        }
-                        <p>Lastly, you are able to insert a <strong>favicon </strong>here. Just upload an image here, preferably .ico, .svg or .png</p>
-                        <p>When you're done, just click the <strong>update solution</strong> button.</p>
-                    </div>
-                    <div class="col-sm-12 col-md-6 col-lg-4">
-                        <h6>Solution Management: Users - Step by step</h6>
-                        <p>The first thing you see here is the attached users for this specific solution.</p>
-                        <p>Click on the <strong>Remove </strong>button to remove that specific user from the solution.</p>
-                        <p>Need to add that pal of yours? Fill out their email-address and hit the <strong>Add user</strong> button.</p>
-                    </div>
+</div>
+
+<div class="offcanvas offcanvas-bottom @showOffCanvas" data-bs-scroll="true" data-bs-backdrop="false" tabindex="-1" id="offcanvasScrolling" aria-labelledby="offcanvasScrollingLabel">
+    <div class="offcanvas-header">
+        <h5 class="offcanvas-title" id="offcanvasScrollingLabel">Quick help</h5>
+        <button type="button" class="btn-close text-reset" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+    </div>
+    <div class="offcanvas-body small">
+        <p>Welcome to <strong>VOMS</strong>. Below here will be some guides on how to execute key-features on this page.</p>
+        <hr />
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <h6>Pages Management:</h6>
+                    <p>The first thing you see in the page management section is the page-overview <strong>table</strong>.</p>
+                    <p><em>Do you want to <strong>delete</strong> a page?</em> Just click on the button and the page gets deleted immediately.</p>
+                    <p><em>Would you rather <strong>access</strong> a page?</em> Just click on the title of the page name.</p>
+                    <p><em>Did you accidentally delete a page?</em> Just click on the <i class="fas fa-trash-alt"> Recycle bin</i> to recover the page.</p>
+                </div>
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <h6>Solution Management: Update Solution - Step by step</h6>
+                    <p>The first thing you are asked to use in the Solutions Management is the <strong>style selector</strong>. This is a dropdown of available stylesheets.</p>
+                    <p>When you have selected a stylesheet, you are then capable of <strong>configuring </strong>said stylesheet.</p>
+                    <p>The next thing you are capable of filling out is the <strong>friendly name</strong>. This is used to increase recognizability.</p>
+                    @if (Model.User.ProductVersion == ProductType.Professional || Model.User.ProductVersion == ProductType.Enterprise)
+                    {
+                        <p>Map your <strong>custom domain</strong> here by inserting your domain-name.</p>
+                    }
+                    <p>Lastly, you are able to insert a <strong>favicon </strong>here. Just upload an image here, preferably .ico, .svg or .png</p>
+                    <p>When you're done, just click the <strong>update solution</strong> button.</p>
+                </div>
+                <div class="col-sm-12 col-md-6 col-lg-4">
+                    <h6>Solution Management: Users - Step by step</h6>
+                    <p>The first thing you see here is the attached users for this specific solution.</p>
+                    <p>Click on the <strong>Remove </strong>button to remove that specific user from the solution.</p>
+                    <p>Need to add that pal of yours? Fill out their email-address and hit the <strong>Add user</strong> button.</p>
                 </div>
             </div>
         </div>
     </div>
-}
-
-
+</div>

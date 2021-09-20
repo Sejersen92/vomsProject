@@ -34,12 +34,21 @@ namespace vomsProject.Controllers
             UserManager = userManager;
         }
 
-        public async Task<IActionResult> Index()
+        public async Task<IActionResult> Index(string searchString, int? pageNumber = 1)
         {
+            //HomePageViewModel
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var model = new HomePageViewModel 
-            { 
-                Solutions = _dbContext.Solutions.Include(x => x.Permissions).ThenInclude(x => x.User).ToList(),
+            var solutions = _repository.GetSolutionsByUser(user);
+            var pageSize = 3;
+
+            if (!string.IsNullOrEmpty(searchString) && searchString != "All")
+            {
+                solutions = solutions.Where(s => s.Subdomain == searchString);
+            }
+
+            var model = new HomePageViewModel()
+            {
+                Solutions = await PaginatedList<Solution>.CreateAsync(solutions, pageNumber ?? 1, pageSize),
                 User = user
             };
 
