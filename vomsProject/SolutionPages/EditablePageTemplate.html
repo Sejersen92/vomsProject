@@ -46,6 +46,14 @@
         <li>
             <button data-bind="click: deleteBlock">delete</button>
         </li>
+        <li id="voms-drag-element" draggable="true">
+            <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                <path d="M 0 50 l 15 -10 v 7 h 25 v 6 h -25 v 7 Z" />
+                <path d="M 100 50 l -15 10 v -7 h -25 v -6 h 25 v -7 Z" />
+                <path d="M 50 0 l -10 15 h 7 v 25 h 6 v -25 h 7 Z" />
+                <path d="M 50 100 l 10 -15 h -7 v -25 h -6 v 25 h -7 Z" />
+            </svg>
+        </li>
     </ul>
     <ul id="versionHistory" class="voms-menu" data-bind="foreach: versions">
         <li>
@@ -275,6 +283,82 @@
                 viewModel.selectedTagType("p");
             }
         });
+
+        function dragenter(event) {
+            if (editor.elementBlocks.get(event.target) !== undefined
+                && event.dataTransfer.types.indexOf("block") !== -1) {
+                event.target.classList.add("voms-allow-drop");
+            }
+        }
+
+        function dragleave(event) {
+            if (editor.elementBlocks.get(event.target) !== undefined) {
+                event.target.classList.remove("voms-allow-drop");
+            }
+        }
+
+        function dragover(event) {
+            if (editor.elementBlocks.get(event.target) !== undefined
+                && event.dataTransfer.types.indexOf("block") !== -1) {
+                event.dataTransfer.dropEffect = "move";
+                event.preventDefault();
+            }
+        }
+
+        function iterateBlocks(block, callback) {
+            callback(block);
+            if (block.type === BlockType.Container) {
+                for (var i = 0; i < block.blocks.length; i++) {
+                    iterateBlocks(block.blocks[i], callback);
+                }
+            }
+        }
+
+        function drop(event) {
+            var block = editor.elementBlocks.get(event.target);
+            if (block !== undefined) {
+                event.preventDefault();
+                if (block.type === BlockType.Container) {
+                    var block = editor.elementBlocks.get(event.target) || getEditableRoot();
+                    moveBlock(editor.selectedBlock, block, block.blocks.length);
+                    editor.selectedBlock.element.focus();
+                } else {
+                    var point = block.parent.blocks.indexOf(block);
+                    moveBlock(editor.selectedBlock, block.parent, point);
+                    editor.selectedBlock.element.focus();
+                }
+                event.target.classList.remove("voms-allow-drop");
+            }
+        }
+
+        function dragstart(event) {
+            var bounds = editor.selectedBlock.element.getBoundingClientRect();
+            event.dataTransfer.setDragImage(editor.selectedBlock.element, 0, 0);
+            event.dataTransfer.effectAllowed = "move";
+            event.dataTransfer.setData("block", "ignore");
+
+            iterateBlocks(getEditableRoot(), function (block) {
+                if (block.type === BlockType.Container) {
+                    block.element.classList.add("voms-block-drop");
+                }
+            });
+        }
+
+        function dragend(event) {
+            iterateBlocks(getEditableRoot(), function (block) {
+                if (block.type === BlockType.Container) {
+                    block.element.classList.remove("voms-block-drop");
+                }
+            });
+        }
+
+        var dragElement = document.getElementById("voms-drag-element");
+        dragElement.addEventListener("dragstart", dragstart);
+        dragElement.addEventListener("dragend", dragend);
+        editor.element.addEventListener("dragenter", dragenter);
+        editor.element.addEventListener("dragleave", dragleave);
+        editor.element.addEventListener("dragover", dragover);
+        editor.element.addEventListener("drop", drop);
 
         // The transformations we do on insertions:
         // Uploading and inserting images as a block.
