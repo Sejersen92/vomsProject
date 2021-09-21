@@ -3,6 +3,12 @@
 @model vomsProject.Models.HomePageViewModel
 @{
     ViewData["Title"] = "Home Page";
+    
+}
+@inject SignInManager<User> SignInManager
+
+@if (SignInManager.IsSignedIn(User))
+{
     var styles = "";
     var showOffCanvas = "";
     if (!Model.User.DisableTutorials)
@@ -10,11 +16,6 @@
         styles = "border: 1px solid #03ff00; box-shadow: inset 0px 0px 10px 2px #4cff00";
         showOffCanvas = "show";
     }
-}
-@inject SignInManager<User> SignInManager
-
-@if (SignInManager.IsSignedIn(User))
-{
     <div class="px-4 py-5 my-5 text-center">
         <h1 class="display-5 fw-bold">Hello @User.Identity.Name!</h1>
         <div class="col-lg-6 mx-auto">
