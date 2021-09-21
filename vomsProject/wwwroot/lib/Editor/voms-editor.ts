@@ -121,6 +121,17 @@ function emit(block: Block, eventType: EditorEventType, event: EditorEvent) {
     }
 }
 
+export function selectBlock(editor: Editor, block: Block) {
+    editor.selectedBlock = block;
+
+    emit(block, EditorEventType.BlockSelection, {
+	type: EditorEventType.BlockSelection,
+	blockSelection: {
+	    selected: block
+	}
+    });
+}
+
 // Load content into block
 export function loadContent(block: Block, content: TransferBlock[]) {
     if (block.editingDisabled) {
