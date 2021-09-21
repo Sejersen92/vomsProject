@@ -485,24 +485,30 @@ function makeRangeBold(start: Node, end: Node) {
     parent.insertBefore(bold, end);
 }
 
+function getRangeParentBlock(editor: Editor, range: Range): Block | null {
+    let blockNode = range.commonAncestorContainer;
+    let block = editor.elementBlocks.get(blockNode);
+    while (block === undefined) {
+        blockNode = blockNode.parentNode;
+        if (blockNode === null) {
+            return null;
+        }
+        block = editor.elementBlocks.get(blockNode);
+    }
+    return block;
+}
+
 // Make the current selection of the editor bold
 export function makeSelectionBlod(editor: Editor) {
     var selection = getSelection();
 
-    for(var i = 0; i < selection.rangeCount; i++) {
+    selections:
+    for (var i = 0; i < selection.rangeCount; i++) {
 	const range = selection.getRangeAt(i);
-        let blockNode = range.commonAncestorContainer;
-        let block = editor.elementBlocks.get(blockNode);
-        while (block === undefined) {
-            blockNode = blockNode.parentNode;
-            if (blockNode === null) {
-                continue;
-            }
-            block = editor.elementBlocks.get(blockNode);
-        }
-        if (block.editingDisabled) {
+        const block = getRangeParentBlock(editor, range);
+        if (block === null || block.editingDisabled) {
             // we can't throw here as it might effect the operation on an other valid selection.
-            continue;
+            continue selections;
         }
 
 	const selectArea = getCronStart(range);
