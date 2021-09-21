@@ -49,7 +49,7 @@ namespace vomsProject.Controllers
             JwtService = jwtService;
             BlobServiceClient = blobServiceClient;
         }
-        public static IEnumerable<FaviconModel> GetSolutionFavicons(Solution solution)
+        private static IEnumerable<FaviconModel> GetSolutionFavicons(Solution solution)
         {
             var favicons = new List<FaviconModel>();
             if (solution == null)
