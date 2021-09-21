@@ -264,6 +264,7 @@ export function makeBlock(parent: Block, insertAt: number, type: BlockType, tagT
         }
     }
 
+    properties = properties || {};
     var element = document.createElement(tagType);
     var block: Block = {
         root: parent.root,
