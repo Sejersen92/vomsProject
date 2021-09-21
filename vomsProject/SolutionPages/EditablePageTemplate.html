@@ -22,8 +22,12 @@
 </head>
 <body data-bind="css: { showVersionHistory: showVersionHistory() }">
     <ul id="voms-tools" class="voms-menu voms-horizontal" 
-        data-bind="style: { top: toolsTop, left: toolsLeft,
-            bottom: toolsTop() !== undefined ? undefined : 0 }, using: tools">
+        data-bind="style: {
+            top: toolsTop, 
+            left: toolsLeft,
+            bottom: toolsTop() !== undefined ? undefined : 0,
+            position: toolsTop() !== undefined ? 'absolute' : 'fixed' },
+        using: tools">
         <li>
             <label for="select-tag-type">Tag</label>
             <select id="select-tag-type" data-bind="value: $root.selectedTagType">
@@ -368,9 +372,9 @@
         editor.element.addEventListener("drop", drop);
 
         subscribe(editor, EditorEventType.BlockSelection, function (event) {
-            var bounds = editor.selectedBlock.element.getBoundingClientRect();
-            viewModel.toolsTop(bounds.bottom + "px");
-            viewModel.toolsLeft(bounds.left + "px");
+            var element = editor.selectedBlock.element;
+            viewModel.toolsTop((element.offsetTop + element.offsetHeight) + "px");
+            viewModel.toolsLeft(element.offsetLeft + "px");
         });
 
         // The transformations we do on insertions:

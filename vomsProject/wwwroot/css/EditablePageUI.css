@@ -1,5 +1,5 @@
 ﻿#voms-tools {
-    position: fixed;
+    position: absolute;
 }
 
 #menu-button {
@@ -149,12 +149,12 @@ body.showVersionHistory {
         box-sizing: border-box;
     }
 
+.voms-allow-drop {
+    border-top: 1px solid black;
+}
 .voms-block-drop {
     border: 3px dashed black;
     min-height: 1em;
-}
-.voms-allow-drop {
-    border-top: 1px solid black;
 }
 #voms-drag-element svg {
     height: 2.5em;
