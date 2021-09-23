@@ -382,9 +382,10 @@
         subscribe(editor, EditorEventType.BeforeInput, function (event) {
             const dataTransfer = event.beforeInput.event.dataTransfer;
             if (dataTransfer) {
-                uploadFiles(dataTransfer.files);
-
-                event.beforeInput.event.preventDefault()
+                if (dataTransfer.files.length > 0) {
+                    uploadFiles(dataTransfer.files);
+                    event.beforeInput.event.preventDefault();
+                }
             }
         });
 
