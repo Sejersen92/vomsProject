@@ -294,8 +294,7 @@ namespace vomsProject.Controllers
             var solution = Repository.GetSolutionById(id);
             var theSolution = await solution.SingleOrDefaultAsync();
 
-            var finalTitle = title ?? "";
-            return RedirectToAction("LoginToSolution", "Admin", new { id = theSolution.Id, finalTitle });
+            return RedirectToAction("LoginToSolution", "Admin", new { id = theSolution.Id, pageName = title });
         }
 
         /// <summary>
@@ -419,6 +418,7 @@ namespace vomsProject.Controllers
             }
             else
             {
+                var foo = Uri.EscapeDataString(pageName);
                 return Redirect($"{DomainHelper.GetSolutionIndexPageUrl(solution)}Login?token={token}&pageName={Uri.EscapeDataString(pageName)}");
             }
         }

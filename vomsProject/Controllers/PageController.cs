@@ -270,15 +270,13 @@ namespace vomsProject.Controllers
                 var user = await UserManager.FindByIdAsync(userId);
                 await SignInManager.SignInAsync(user, true);
 
+                var theSolution = await solution.SingleOrDefaultAsync();
+
                 if (pageName != null)
                 {
-                    var page = await _solutionHelper.PageQuery(solution, pageName).Include((page) => page.Solution).SingleOrDefaultAsync();
-                    if (page != null)
-                    {
-                        return Redirect(_domainHelper.GetPageUrl(page));
-                    }
+                    return Redirect(_domainHelper.GetSolutionIndexPageUrl(theSolution) + pageName);
                 }
-                var theSolution = await solution.SingleOrDefaultAsync();
+                
                 return Redirect(_domainHelper.GetSolutionIndexPageUrl(theSolution));
             }
             catch
