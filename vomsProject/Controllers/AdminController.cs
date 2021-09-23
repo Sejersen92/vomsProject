@@ -82,6 +82,8 @@ namespace vomsProject.Controllers
             var style = await _dbContext.Styles.OrderBy((style) => style.Id).FirstOrDefaultAsync();
             var pageSize = 3;
 
+            var name = title.Replace(" ", "-");
+
             switch (productVersion)
             {
                 case ProductType.Community:
@@ -117,7 +119,7 @@ namespace vomsProject.Controllers
 
                     var project = new Solution()
                     {
-                        Subdomain = title,
+                        Subdomain = name,
                         Style = style,
                         StylesheetCustomization = "",
                         SerializedStylesheet = "",
@@ -292,8 +294,8 @@ namespace vomsProject.Controllers
             var solution = Repository.GetSolutionById(id);
             var theSolution = await solution.SingleOrDefaultAsync();
 
-            title ??= "";
-            return RedirectToAction("LoginToSolution", "Admin", new { id = theSolution.Id, title });
+            var finalTitle = title ?? "";
+            return RedirectToAction("LoginToSolution", "Admin", new { id = theSolution.Id, finalTitle });
         }
 
         /// <summary>

@@ -38,7 +38,7 @@ namespace vomsProject.Controllers
         {
             //HomePageViewModel
             var user = await UserManager.GetUserAsync(HttpContext.User);
-            var solutions = _repository.GetSolutionsByUser(user);
+            var solutions = _repository.GetAllSolutions();
             var pageSize = 3;
 
             if (!string.IsNullOrEmpty(searchString) && searchString != "All")

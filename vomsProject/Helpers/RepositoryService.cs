@@ -128,5 +128,11 @@ namespace vomsProject.Helpers
                 ThenInclude(perm => perm.User).
                 Where(x => x.Permissions.Any(perm => perm.User == user));
         }
+
+        public IQueryable<Solution> GetAllSolutions()
+        {
+            return Context.Solutions.Include(x => x.Permissions).
+                ThenInclude(perm => perm.User);
+        }
     }
 }
