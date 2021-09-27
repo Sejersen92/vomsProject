@@ -53,6 +53,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
             var productVersion = user.ProductVersion;
             var disableTutorials = user.DisableTutorials;
+            var nickName = user.Nickname;
 
             Username = userName;
             Nickname = user.Nickname;
@@ -61,7 +62,8 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
             {
                 PhoneNumber = phoneNumber,
                 ProductVersion = productVersion,
-                DisableTutorials = disableTutorials
+                DisableTutorials = disableTutorials,
+                Nickname = nickName
             };
         }
 
