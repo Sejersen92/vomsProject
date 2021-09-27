@@ -30,11 +30,11 @@
         using: tools">
         <li>
             <label for="select-tag-type">Tag</label>
-            <select id="select-tag-type" data-bind="value: $root.selectedTagType">
-                <option value="p">Paragraph</option>
-                <option value="h1">Header 1</option>
-                <option value="h2">Header 2</option>
-                <option value="h3">Header 3</option>
+            <select id="select-tag-type" data-bind="value: $root.selectedTagType,
+                                                    options: $root.tagTypes,
+                                                    optionsText: 'text',
+                                                    optionsValue: 'value',
+                                                    optionsAfterRender: $root.hideEmptyOption">
             </select>
         </li>
         <li>
@@ -236,6 +236,34 @@
             editableAreas: ko.observableArray(["header", "footer", "main"]),
             // The selectet area to edit.
             selectedEditableArea: ko.observable("main"),
+            // The tag type options
+            tagTypes: [
+                {
+                    text: "Paragraph",
+                    value: "p"
+                },
+                {
+                    text: "Header 1",
+                    value: "h1"
+                },
+                {
+                    text: "Header 2",
+                    value: "h2"
+                },
+                {
+                    text: "Header 3",
+                    value: "h3"
+                },
+                {
+                    text: "None",
+                    value: ""
+                },
+            ],
+            hideEmptyOption: function (option, item) {
+                if (item.value === "") {
+                    option.setAttribute("hidden", "");
+                }
+            },
             // The tag type to use for a new block.
             selectedTagType: ko.observable("p"),
             toolsTop: ko.observable(),
@@ -288,10 +316,12 @@
 
         // Change the current selected tag type to the one of the selected block
         subscribe(editor, EditorEventType.BlockSelection, function () {
-            if (editor.selectedBlock !== null && editor.selectedBlock.type === BlockType.Text) {
-                viewModel.selectedTagType(editor.selectedBlock.tagType);
-            } else {
+            if (editor.selectedBlock === null || editor.selectedBlock.type !== BlockType.Text) {
                 viewModel.selectedTagType("p");
+            } else if (viewModel.tagTypes.some(function (item) {
+                return item.value === editor.selectedBlock.tagType
+            })) {
+                viewModel.selectedTagType(editor.selectedBlock.tagType);
             }
         });
 
