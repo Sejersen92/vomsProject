@@ -95,6 +95,7 @@ namespace vomsProject.Areas.Identity.Pages.Account.Manage
 
             user.ProductVersion = Input.ProductVersion;
             user.DisableTutorials = Input.DisableTutorials;
+            user.Nickname = Input.Nickname;
             await _dbContext.SaveChangesAsync();
 
             var phoneNumber = await _userManager.GetPhoneNumberAsync(user);
